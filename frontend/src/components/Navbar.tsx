@@ -11,7 +11,7 @@ const Navbar = () => {
   return (
     <nav className=" w-full py-4 px-10 flex flex-row justify-between items-center fixed shadow-md bg-transparent backdrop-blur-md">
       <div className="lg:hidden flex-1">
-        <div className="text-lg font-bold">Logo</div>
+        <div className="text-lg font-bold">FXMA</div>
       </div>
 
       <div className="lg:hidden absolute right-4 top-4 border-1 border-black">
@@ -30,7 +30,7 @@ const Navbar = () => {
           onClick={() => setIsMenuOpen(false)}
           className="absolute top-4 right-4 text-2xl"
         >
-          &times; 
+          &times;
         </button>
         <div className="bg-red-500 w-full">
           <ul className="flex flex-col gap-4 font-bold text-center mt-[20rem] bg-slate-100">
