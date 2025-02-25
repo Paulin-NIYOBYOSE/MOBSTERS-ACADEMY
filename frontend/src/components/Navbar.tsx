@@ -13,24 +13,24 @@ const Navbar = () => {
       {/* Desktop nav */}
       <div className="flex justify-between items-center px-10 h-20">
         {/* Logo */}
-        <div className="text-xl font-bold text-green-600">FXMA</div>
+        <div className="text-xl font-bold text-blue-600">FXMA</div>
 
         {/* Menu */}
         <div>
           <ul className="flex gap-5">
-            <li className="text-green-500">Home</li>
-            <li className="hover:text-green-500 cursor-pointer">About</li>
-            <li className="hover:text-green-500 cursor-pointer">Plans</li>
-            <li className="hover:text-green-500 cursor-pointer">Blog</li>
-            <li className="hover:text-green-500 cursor-pointer">FAQs</li>
-            <li className="hover:text-green-500 cursor-pointer">
+            <li className="text-blue-500">Home</li>
+            <li className="hover:text-blue-500 cursor-pointer">About</li>
+            <li className="hover:text-blue-500 cursor-pointer">Plans</li>
+            <li className="hover:text-blue-500 cursor-pointer">Blog</li>
+            <li className="hover:text-blue-500 cursor-pointer">FAQs</li>
+            <li className="hover:text-blue-500 cursor-pointer">
               Lotsize Calculator
             </li>
           </ul>
         </div>
 
         {/* Button */}
-        <button className="inline-flex items-center w-60 justify-center bg-green-500 text-white font-bold h-16 rounded-tr-full rounded-tl-full rounded-bl-full hover:bg-green-600 transition ease-in-out duration-300">
+        <button className="inline-flex items-center w-60 justify-center bg-blue-500 text-white font-bold h-16 rounded-tr-full rounded-tl-full rounded-bl-full hover:bg-blue-600 transition ease-in-out duration-300">
           <a href="#">
             Access Learning Dashboard
             <span>➜</span>
