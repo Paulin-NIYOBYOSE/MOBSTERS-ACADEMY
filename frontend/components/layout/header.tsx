@@ -52,7 +52,7 @@ export default function Header() {
                   {item.title}
                 </Link>
               ))}
-<Button className="hidden md:block md:flex items-center justify-center">
+<Button className="hidden md:flex items-center justify-center">
   Join Now
 </Button>
             </div>

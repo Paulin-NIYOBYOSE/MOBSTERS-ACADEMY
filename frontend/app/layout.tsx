@@ -8,7 +8,7 @@ import Footer from "@/components/layout/footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Bitrade - Cryptocurrency Trading Platform",
+  title: "Forex Mobsters - Cryptocurrency Trading Platform",
   description: "Invest money in different currencies to increase your earnings through online trading",
 }
 

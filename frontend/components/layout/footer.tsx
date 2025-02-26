@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export default function Footer() {
   return (
-    <footer className="bg-[#001a12] text-white pt-16 px-20">
+    <footer className="bg-[#001a12] text-white pt-16 md:px-20">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Company Info */}
@@ -15,7 +15,7 @@ export default function Footer() {
               <span className="text-xl font-bold">{siteConfig.name}</span>
             </Link>
             <p className="text-gray-400 mb-4">
-              Bitrade is a leading cryptocurrency trading platform offering secure and efficient trading solutions.
+            Forex Mobsters Academy offers expert training in forex trading, covering market analysis, risk management, trading psychology, and live trading sessions. We equip traders with the skills and strategies needed to navigate the markets profitably and confidently.
             </p>
             <div className="flex space-x-4">
               <Link href={siteConfig.links.twitter} className="text-gray-400 hover:text-[#00DC82]">

@@ -1,11 +1,11 @@
 export const siteConfig = {
-    name: "Bitrade",
+    name: "Forex Mobsters",
     description: "Cryptocurrency Trading Platform",
-    url: "https://bitrade.com",
-    ogImage: "https://bitrade.com/og.jpg",
+    url: "https://forexmobsters.com",
+    ogImage: "https://forexmobsters.com/og.jpg",
     links: {
-      twitter: "https://twitter.com/bitrade",
-      github: "https://github.com/bitrade",
+      twitter: "https://twitter.com/forexmobsters",
+      github: "https://github.com/forexmobsters",
     },
     nav: [
       {
@@ -21,8 +21,8 @@ export const siteConfig = {
         href: "/about",
       },
       {
-        title: "Tokens",
-        href: "/tokens",
+        title: "Pricing",
+        href: "/pricing",
       },
       {
         title: "Contact",
