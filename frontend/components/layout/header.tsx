@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Menu, X } from "lucide-react"
-import { siteConfig } from "@/config/site"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation"; // ✅ Use correct router
+import { Menu, X } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter(); // ✅ Initialize router
 
   return (
     <header className="bg-[#002419] text-white px-20">
@@ -25,16 +26,27 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`hover:text-[#00DC82] transition-colors ${pathname === item.href ? "text-[#00DC82]" : ""}`}
+                className={`hover:text-[#00DC82] transition-colors ${
+                  pathname === item.href ? "text-[#00DC82]" : ""
+                }`}
               >
                 {item.title}
               </Link>
             ))}
           </div>
 
-          <Button className="hidden md:block">Join Now</Button>
+          {/* ✅ Fixed Join Now button */}
+          <Button
+            onClick={() => router.push("/signup")} 
+            className="hidden md:flex items-center justify-center bg-[#00DC82] hover:bg-[#00DC82]/90"
+          >
+            Join Now
+          </Button>
 
-          <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button
+            className="md:hidden text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </nav>
@@ -46,20 +58,24 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`hover:text-[#00DC82] transition-colors ${pathname === item.href ? "text-[#00DC82]" : ""}`}
+                  className={`hover:text-[#00DC82] transition-colors ${
+                    pathname === item.href ? "text-[#00DC82]" : ""
+                  }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.title}
                 </Link>
               ))}
-<Button className="hidden md:flex items-center justify-center">
-  Join Now
-</Button>
+              <Button
+                onClick={() => router.push("/signup")} 
+                className="hidden md:flex items-center justify-center bg-[#00DC82] hover:bg-[#00DC82]/90"
+              >
+                Join Now
+              </Button>
             </div>
           </div>
         )}
       </div>
     </header>
-  )
+  );
 }
-
