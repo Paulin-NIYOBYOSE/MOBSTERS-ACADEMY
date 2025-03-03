@@ -38,7 +38,7 @@ const services = [
 
 export default function ServicesPage() {
   return (
-    <div className="container mx-auto md:px-4 py-8 mt-6">
+    <div className="container mx-auto md:px-4 py-8 mt-10">
       {/* Services Section */}
       <section className="p-4">
         <div className="text-center mb-16">

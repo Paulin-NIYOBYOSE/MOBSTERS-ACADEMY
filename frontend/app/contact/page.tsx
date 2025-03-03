@@ -7,7 +7,7 @@ export default function ContactPage() {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <div className="container mx-auto md:px-28 py-12 mt-5">
+    <div className="container mx-auto md:px-28 py-12 mt-10">
       {/* Header Section */}
       <section className="text-center max-w-3xl mx-auto mb-12">
         <h1 className="text-5xl font-bold text-white mb-6">Get in Touch</h1>

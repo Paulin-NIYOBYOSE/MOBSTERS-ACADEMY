@@ -76,7 +76,7 @@ export default function ServicesPage() {
   ];
 
   return (
-    <div className="container mx-auto md:px-4 py-8 mt-5">
+    <div className="container mx-auto md:px-4 py-8 mt-10">
       <section className="container mx-auto p-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">

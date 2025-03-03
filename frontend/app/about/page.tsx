@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <div className="container mx-auto md:px-4 py-12 mt-5">
+    <div className="container mx-auto md:px-4 py-12 mt-10">
       <section className="text-center max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-white mb-6">
           About Forex Mobsters
