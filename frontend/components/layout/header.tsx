@@ -13,7 +13,8 @@ export default function Header() {
   const router = useRouter(); // ✅ Initialize router
 
   return (
-    <header className="bg-[#002419] text-white px-20">
+    <header className="fixed top-0 left-0 w-full bg-[#002419]/80 backdrop-blur-md text-white px-20  z-50 shadow-md transition-all duration-300">
+      {" "}
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -37,7 +38,7 @@ export default function Header() {
 
           {/* ✅ Fixed Join Now button */}
           <Button
-            onClick={() => router.push("/signup")} 
+            onClick={() => router.push("/signup")}
             className="hidden md:flex items-center justify-center bg-[#00DC82] hover:bg-[#00DC82]/90"
           >
             Join Now
@@ -67,7 +68,7 @@ export default function Header() {
                 </Link>
               ))}
               <Button
-                onClick={() => router.push("/signup")} 
+                onClick={() => router.push("/signup")}
                 className="hidden md:flex items-center justify-center bg-[#00DC82] hover:bg-[#00DC82]/90"
               >
                 Join Now
