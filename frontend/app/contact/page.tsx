@@ -7,12 +7,14 @@ export default function ContactPage() {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <div className="container mx-auto md:px-28 py-12">
+    <div className="container mx-auto md:px-28 py-12 mt-5">
       {/* Header Section */}
       <section className="text-center max-w-3xl mx-auto mb-12">
         <h1 className="text-5xl font-bold text-white mb-6">Get in Touch</h1>
         <p className="text-lg text-gray-300 leading-relaxed">
-          Whether you have a question, need support, or want to collaborate, our team is here to help. Reach out to us, and we’ll get back to you as soon as possible.
+          Whether you have a question, need support, or want to collaborate, our
+          team is here to help. Reach out to us, and we’ll get back to you as
+          soon as possible.
         </p>
       </section>
 
@@ -37,7 +39,9 @@ export default function ContactPage() {
 
       {/* Contact Form */}
       <section className="mt-16 max-w-2xl mx-auto bg-[#003626] p-8 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">Send Us a Message</h2>
+        <h2 className="text-3xl font-bold text-white mb-6 text-center">
+          Send Us a Message
+        </h2>
         <form className="space-y-6">
           {/* Name Field */}
           <div>
@@ -71,7 +75,9 @@ export default function ContactPage() {
           </div>
           {/* Message Field */}
           <div>
-            <label className="text-white block mb-2 text-lg">Your Message</label>
+            <label className="text-white block mb-2 text-lg">
+              Your Message
+            </label>
             <textarea
               rows={5}
               className="w-full px-4 py-3 rounded-md bg-[#002419] text-white focus:outline-none focus:ring-2 focus:ring-[#28c193]"
@@ -80,9 +86,12 @@ export default function ContactPage() {
             ></textarea>
           </div>
           {/* Submit Button */}
-          <Button size="lg" className="bg-[#00DC82] text-[#002419] hover:bg-[#00DC82]/90 text-lg">
-           Send message
-            </Button>
+          <Button
+            size="lg"
+            className="bg-[#00DC82] text-[#002419] hover:bg-[#00DC82]/90 text-lg"
+          >
+            Send message
+          </Button>
         </form>
       </section>
 
@@ -90,7 +99,8 @@ export default function ContactPage() {
       <div className="text-center mt-16">
         <h2 className="text-3xl font-bold text-white mb-4">Connect With Us</h2>
         <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-          Follow us on social media for real-time updates, trading insights, and exclusive offers.
+          Follow us on social media for real-time updates, trading insights, and
+          exclusive offers.
         </p>
         <div className="flex justify-center gap-6 mt-6">
           <a href="#" className="text-gray-400 hover:text-[#00DC82]">

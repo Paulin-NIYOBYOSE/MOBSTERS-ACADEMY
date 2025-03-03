@@ -7,13 +7,15 @@ export default function PaymentPage() {
   const price = searchParams.get("price");
 
   return (
-    <div className="container mx-auto p-8">
+    <div className="container mx-auto p-8 mt-10">
       <h2 className="text-4xl font-bold mb-6">Payment Methods</h2>
-      <p className="text-xl mb-4">Selected Plan: <strong>{plan}</strong></p>
-      <p className="text-xl mb-4">Price: <strong>${price}</strong></p>
-      <div className="mt-6">
-        {/* Payment methods UI here */}
-      </div>
+      <p className="text-xl mb-4">
+        Selected Plan: <strong>{plan}</strong>
+      </p>
+      <p className="text-xl mb-4">
+        Price: <strong>${price}</strong>
+      </p>
+      <div className="mt-6">{/* Payment methods UI here */}</div>
     </div>
   );
 }

@@ -43,32 +43,35 @@ export default function Home() {
   const PricingPlans = [
     {
       name: "Basic",
-      price: "59",
+      price: "97",
+      duration: "3 Months",
       features: [
-        "Basic trading features",
-        "Market analysis tools",
-        "Email support",
-        "Basic reporting",
+        "✅ Full access to recorded videos",
+        "✅ Sunday recap and Review",
+        "✅ My Whole Strategy",
+        "✅ My private community",
+        "✅ 60 minutes group call for Q/A",
       ],
     },
     {
       name: "Pro",
       price: "199",
+      duration: "6 Months",
       features: [
-        "Advanced trading features",
-        "Premium analysis tools",
-        "24/7 priority support",
-        "Advanced reporting",
+        "✅ All Basic Plan features",
+        "✅ 1-on-1 mentorship (30min/month)",
+        "✅ Deep-dive analysis on student trades",
       ],
     },
     {
       name: "Enterprise",
-      price: "299",
+      price: "399",
+      duration: "Lifetime",
       features: [
-        "Custom solutions",
-        "Dedicated account manager",
-        "API access",
-        "Custom reporting",
+        "✅ All Pro Plan features",
+        "✅ 1-on-1 mentorship twice a week",
+        "✅ Personalized trading roadmap",
+        "✅ Strategy for passing prop firms",
       ],
     },
   ];
@@ -181,23 +184,20 @@ export default function Home() {
           {PricingPlans.map((plan, index) => (
             <div
               key={index}
-              className={`bg-[#003626] p-10 rounded-lg transition-all duration-300 ${
-                hoveredPlan === index
-                  ? "transform scale-105 border-2 border-[#00DC82] shadow-xl"
-                  : ""
+              className={`bg-[#003626] p-8 rounded-lg  duration-100 ${
+                hoveredPlan === index ? " border-2 border-[#00DC82]" : ""
               }`}
               onMouseEnter={() => setHoveredPlan(index)}
               onMouseLeave={() => setHoveredPlan(null)}
             >
               <h3 className="text-3xl font-bold mb-4">{plan.name}</h3>
-              <div className="mb-6">
+              <div className="mb-2">
                 <span className="text-5xl font-bold">${plan.price}</span>
-                <span className="text-gray-300 text-xl">/month</span>
+                <span className="text-gray-300 text-xl">/{plan.duration}</span>
               </div>
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-2 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center text-lg">
-                    <CheckCircle2 className="text-[#00DC82] mr-3" size={24} />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -212,71 +212,6 @@ export default function Home() {
               >
                 Get Started
               </Button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Advisors Section */}
-      <section className="container mx-auto md:px-4 mb-24">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Meet Your Mentors
-          </h2>
-          <p className="text-gray-300 text-xl">
-            Expert guidance from industry professionals
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {advisors.map((advisor, index) => (
-            <div
-              key={index}
-              className="text-center border h-[300px] w-[300px] border-green-300 flex flex-col items-center justify-center rounded-lg"
-            >
-              <div className="relative w-40 h-40 mx-auto mb-6">
-                <Image
-                  src={advisor.image || "/placeholder.svg"}
-                  alt={advisor.name}
-                  fill
-                  className="rounded-full object-cover"
-                />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">{advisor.name}</h3>
-              <p className="text-gray-300 text-lg">{advisor.role}</p>
-              <div className="flex items-center justify-center gap-4">
-                <Link href="#" className="text-gray-400 hover:text-[#00DC82]">
-                  <Instagram size={20} />
-                </Link>
-                <Link href="#" className="text-gray-400 hover:text-[#00DC82]">
-                  <Linkedin size={20} />
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      {/* Features Section */}
-      <section className="container mx-auto p-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Features We Have
-          </h2>
-          <p className="text-gray-300 text-xl">
-            Discover our powerful trading features
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {features.map((feature, index) => (
-            <div key={index} className="bg-[#003626] p-8 rounded-lg">
-              <Image
-                src={feature.icon || "/crypto.svg"}
-                alt={feature.title}
-                width={64}
-                height={64}
-                className="mb-6"
-              />
-              <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
-              <p className="text-gray-300 text-lg">{feature.description}</p>
             </div>
           ))}
         </div>

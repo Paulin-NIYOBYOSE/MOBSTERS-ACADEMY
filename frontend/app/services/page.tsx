@@ -18,28 +18,33 @@ const services = [
   },
   {
     title: "Forex Trading Signals",
-    description: "Access the most accurate signals in Rwanda with the most trusted forex community",
+    description:
+      "Access the most accurate signals in Rwanda with the most trusted forex community",
     icon: "/signal.svg",
   },
   {
     title: "Forex Trading Signals",
-    description: "Access the most accurate signals in Rwanda with the most trusted forex community",
+    description:
+      "Access the most accurate signals in Rwanda with the most trusted forex community",
     icon: "/signal.svg",
   },
   {
     title: "Forex Trading Signals",
-    description: "Access the most accurate signals in Rwanda with the most trusted forex community",
+    description:
+      "Access the most accurate signals in Rwanda with the most trusted forex community",
     icon: "/signal.svg",
   },
 ];
 
 export default function ServicesPage() {
   return (
-    <div className="container mx-auto md:px-4 py-8">
+    <div className="container mx-auto md:px-4 py-8 mt-6">
       {/* Services Section */}
       <section className="p-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Services We Offer</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Services We Offer
+          </h2>
           <p className="text-gray-300 text-xl">
             Comprehensive trading solutions for every trader
           </p>
@@ -60,7 +65,9 @@ export default function ServicesPage() {
                 />
               </div>
               <h3 className="text-2xl font-semibold mb-4">{service.title}</h3>
-              <p className="text-gray-300 text-lg text-center">{service.description}</p>
+              <p className="text-gray-300 text-lg text-center">
+                {service.description}
+              </p>
             </div>
           ))}
         </div>
