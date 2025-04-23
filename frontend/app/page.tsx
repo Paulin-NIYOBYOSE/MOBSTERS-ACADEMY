@@ -3,10 +3,12 @@ import { useState } from "react";
 import { ArrowUpRight, Play, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Instagram, Linkedin } from "lucide-react";
-import Link from "next/link";
+import { PricingPlans } from "@/lib/pricing";
 
 export default function Home() {
+  // Filter to only show mentorship plans
+  const mentorshipPlans = PricingPlans.filter(plan => plan.type === "mentorship");
+
   const features = [
     {
       title: "Live Trading Sessions",
@@ -14,67 +16,28 @@ export default function Home() {
       icon: "/video.svg",
     },
     {
-      title: "live video calls ",
-      description:
-        "Advanced encryption and security measures to protect your assets",
+      title: "Live Video Calls",
+      description: "Weekly interactive sessions with trading experts",
       icon: "/video.svg",
     },
     {
-      title: "Traders set up group",
-      description: "Join a team of 1000+ like-minded traders ",
+      title: "Traders Support Group",
+      description: "Join a team of 1000+ like-minded traders",
       icon: "/video.svg",
     },
     {
-      title: "Weekely  A+ set ups",
-      description: "We do provide market weekly analyis every sundays",
+      title: "Weekly A+ Setups",
+      description: "We provide market weekly analysis every Sunday",
       icon: "/video.svg",
     },
     {
-      title: "Trading competitions",
-      description:
-        "We also award best traders at the end of the month basing on different criterias",
+      title: "Trading Competitions",
+      description: "We award top traders monthly based on performance metrics",
       icon: "/video.svg",
     },
-    // Add more features as needed
   ];
 
   const [hoveredPlan, setHoveredPlan] = useState<number | null>(null);
-
-  const PricingPlans = [
-    {
-      name: "Basic",
-      price: "97",
-      duration: "3 Months",
-      features: [
-        "✅ Full access to recorded videos",
-        "✅ Sunday recap and Review",
-        "✅ My Whole Strategy",
-        "✅ My private community",
-        "✅ 60 minutes group call for Q/A",
-      ],
-    },
-    {
-      name: "Pro",
-      price: "199",
-      duration: "6 Months",
-      features: [
-        "✅ All Basic Plan features",
-        "✅ 1-on-1 mentorship (30min/month)",
-        "✅ Deep-dive analysis on student trades",
-      ],
-    },
-    {
-      name: "Enterprise",
-      price: "399",
-      duration: "Lifetime",
-      features: [
-        "✅ All Pro Plan features",
-        "✅ 1-on-1 mentorship twice a week",
-        "✅ Personalized trading roadmap",
-        "✅ Strategy for passing prop firms",
-      ],
-    },
-  ];
 
   const advisors = [
     {
@@ -97,7 +60,6 @@ export default function Home() {
       role: "Trading Expert",
       image: "/Paulin.png",
     },
-    // Add more advisors
   ];
 
   return (
@@ -107,8 +69,8 @@ export default function Home() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-10">
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              Master The Charts{" "}
-              <span className="text-[#00DC82]">Own the streets</span>
+              Born To Trade{" "}
+              <span className="text-[#00DC82]">Built to flex</span>
             </h1>
             <p className="text-gray-300 text-xl">
               Master the charts, rule the market, and stack your wealth with
@@ -170,62 +132,126 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="container mx-auto p-4">
+      {/* Features Section */}
+      <section className="container mx-auto p-4 my-16">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Our Pricing Plan
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">What We Offer</h2>
           <p className="text-gray-300 text-xl">
-            Choose the perfect plan for your trading needs
+            Comprehensive trading education and support
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-10">
-          {PricingPlans.map((plan, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <div key={index} className="bg-[#003626] p-6 rounded-lg">
+              <div className="flex items-center mb-4">
+                <Image
+                  src={feature.icon}
+                  alt={feature.title}
+                  width={40}
+                  height={40}
+                  className="mr-4"
+                />
+                <h3 className="text-2xl font-bold">{feature.title}</h3>
+              </div>
+              <p className="text-gray-300">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="container mx-auto p-4 my-16">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Our Mentorship Programs
+          </h2>
+          <p className="text-gray-300 text-xl">
+            Choose the perfect mentorship for your trading journey
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2 justify-center">
+          {mentorshipPlans.map((plan, index) => (
             <div
               key={index}
-              className={`bg-[#003626] p-8 rounded-lg  duration-100 ${
-                hoveredPlan === index ? " border-2 border-[#00DC82]" : ""
+              className={`bg-[#003626] p-8 rounded-lg transition-all duration-300 ${
+                hoveredPlan === index ? "border-2 border-[#00DC82] transform scale-105" : "border border-[#003626]"
               }`}
               onMouseEnter={() => setHoveredPlan(index)}
               onMouseLeave={() => setHoveredPlan(null)}
             >
               <h3 className="text-3xl font-bold mb-4">{plan.name}</h3>
-              <div className="mb-2">
+              <div className="mb-4">
                 <span className="text-5xl font-bold">${plan.price}</span>
-                <span className="text-gray-300 text-xl">/{plan.duration}</span>
+                {plan.duration && (
+                  <span className="text-gray-300 text-xl">/{plan.duration}</span>
+                )}
               </div>
-              <ul className="space-y-2 mb-8">
+              <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center text-lg">
+                  <li key={i} className="flex items-start text-lg">
+                    <CheckCircle2 className="text-[#00DC82] mr-2 mt-1 flex-shrink-0" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
               <Button
                 size="lg"
-                className={`w-full text-lg ${
+                className={`w-full text-lg transition-colors ${
                   hoveredPlan === index
-                    ? "bg-[#00dc80dd] text-[#002419] hover:bg-[#00DC82]/90"
-                    : "bg-[#002419] text-white hover:bg-[#002419]/90"
+                    ? "bg-[#00DC82] text-[#002419] hover:bg-[#00DC82]/90"
+                    : "bg-[#002419] text-white hover:bg-[#002419]/90 border border-[#00DC82]"
                 }`}
               >
-                Get Started
+                Join Now
               </Button>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center mt-10">
+          <Button
+            variant="outline"
+            className="text-lg border-[#00DC82] text-[#00DC82] hover:bg-[#00DC82]/10"
+          >
+            Compare All Plans
+          </Button>
+        </div>
+      </section>
+
+      {/* Advisors Section */}
+      <section className="container mx-auto p-4 my-16">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Trading Experts</h2>
+          <p className="text-gray-300 text-xl">
+            Learn from experienced professionals in the field
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          {advisors.map((advisor, index) => (
+            <div key={index} className="bg-[#003626] rounded-lg overflow-hidden text-center p-6">
+              <div className="relative h-48 w-48 mx-auto mb-4 rounded-full overflow-hidden border-2 border-[#00DC82]">
+                <Image
+                  src={advisor.image}
+                  alt={advisor.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-2xl font-bold">{advisor.name}</h3>
+              <p className="text-gray-300">{advisor.role}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="container mx-auto md:px-4">
+      <section className="container mx-auto md:px-4 my-16">
         <div className="bg-[#003626] rounded-lg p-12 md:p-16">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Subscribe Our News
+              Subscribe To Our Newsletter
             </h2>
             <p className="text-gray-300 text-xl mb-10">
-              Stay updated with our latest news and special offers
+              Stay updated with our latest trading insights, market analysis, and exclusive offers
             </p>
             <div className="flex flex-col md:flex-row gap-6">
               <input
