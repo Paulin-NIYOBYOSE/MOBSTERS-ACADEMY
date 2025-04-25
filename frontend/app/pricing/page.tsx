@@ -70,7 +70,11 @@ export default function AllPlansPage() {
           Compare All Plans
         </Button>
       </div>
+
     </section>
+
+
+    
   );
 
   return (
@@ -88,6 +92,22 @@ export default function AllPlansPage() {
         "Join the signal squad and get those daily pips",
         signalPlans
       )}
+            <section className="mt-16 text-center max-w-2xl mx-auto">
+  <h2 className="text-3xl font-bold text-white mb-4">
+    Not Ready Yet?
+  </h2>
+  <p className="text-gray-300 text-lg mb-6">
+    Tap into our free Telegram channel—real signals, real value. No pressure, just precision.
+  </p>
+  <a
+    href="https://t.me/your_free_channel_link" // replace this with your actual link
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-block bg-[#003626] text-[#00DC82] border border-[#00DC82] px-6 py-3 rounded-xl text-lg font-semibold hover:bg-[#00DC82] hover:text-[#002419] transition"
+  >
+    Join Free Channel
+  </a>
+</section>
 
       {/* Modal */}
       {selectedPlan && (

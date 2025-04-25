@@ -24,8 +24,8 @@ export default function AboutPage() {
           <p className="text-gray-300 text-lg">Traders in Our Community</p>
         </div>
         <div className="bg-[#003626] p-6 rounded-xl text-center shadow-lg">
-          <h2 className="text-4xl font-bold text-[#28c193]">65%+</h2>
-          <p className="text-gray-300 text-lg">Signal Accuracy with 1:3RR</p>
+          <h2 className="text-4xl font-bold text-[#28c193]">60%+</h2>
+          <p className="text-gray-300 text-lg">Signal Accuracy with 1:2RR</p>
         </div>
         <div className="bg-[#003626] p-6 rounded-xl text-center shadow-lg">
           <h2 className="text-4xl font-bold text-[#28c193]">24/7</h2>
