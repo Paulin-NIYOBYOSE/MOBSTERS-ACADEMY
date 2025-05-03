@@ -1,49 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { AlertCircle } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { AlertCircle } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export default function SignupPage() {
-  const router = useRouter()
-  const { signup } = useAuth()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const { signup } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = async () => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!name || !email || !password) {
-      setError("All fields are required.")
-      return
+      setError("All fields are required.");
+      return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.")
-      return
+      setError("Password must be at least 6 characters.");
+      return;
     }
 
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
 
     try {
-      const result = await signup(name, email, password)
+      const result = await signup(name, email, password);
 
       if (result.success) {
-        router.push("/dashboard")
+        router.push("/dashboard");
       } else {
-        setError(result.error || "Signup failed")
+        setError(result.error || "Signup failed");
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError("An unexpected error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#002419]">
@@ -56,13 +57,13 @@ export default function SignupPage() {
           </div>
         )}
 
-        <div className="space-y-5">
+        <form onSubmit={handleSignup} className="space-y-5">
           <Input
             type="text"
             placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
+            className="w-full bg-[#002f1e] text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
             disabled={isLoading}
           />
           <Input
@@ -70,26 +71,25 @@ export default function SignupPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
+            className="w-full bg-[#002f1e] text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
             disabled={isLoading}
           />
           <Input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
+            className="w-full bg-[#002f1e] text-white border border-[#00DC82] focus:ring-2 focus:ring-[#00DC82] rounded-md px-4 py-2"
             disabled={isLoading}
           />
-        </div>
-
-        <Button
-          onClick={handleSignup}
-          className="w-full text-[#002419] font-semibold mt-6 rounded-lg hover:bg-[#00b56e]"
-          disabled={isLoading}
-        >
-          {isLoading ? "Creating Account..." : "Sign Up"}
-        </Button>
+          <Button
+            type="submit"
+            className="w-full bg-[#00DC82] text-[#002419] font-semibold mt-6 rounded-lg hover:bg-[#00b56e]"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating Account..." : "Sign Up"}
+          </Button>
+        </form>
 
         <p className="text-gray-400 text-center mt-4">
           Already have an account?{" "}
@@ -99,6 +99,5 @@ export default function SignupPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
-

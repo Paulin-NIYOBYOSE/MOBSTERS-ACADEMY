@@ -1,47 +1,48 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { AlertCircle } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { AlertCircle } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { login } = useAuth()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!email || !password) {
-      setError("Both fields are required.")
-      return
+      setError("Both fields are required.");
+      return;
     }
-
-    setIsLoading(true)
-    setError("")
-
+  
+    setIsLoading(true);
+    setError("");
+  
     try {
-      const result = await login(email, password)
-
-      if (result.success) {
-        router.push("/dashboard")
+      const result = await login(email, password);
+      console.log('Login result:', result); // Debug log
+  
+      if (result.success && result.token) {
+        // Ensure token is present before redirect
+        router.push("/dashboard");
       } else {
-        setError(result.error || "Login failed")
+        setError(result.error || "Login failed");
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      console.error('Login error:', err);
+      setError("An unexpected error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#002419]">
@@ -88,6 +89,5 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
-

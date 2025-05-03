@@ -3,7 +3,7 @@
 export const PricingPlans = [
     {
       type: "mentorship",
-      name: "Basic Mentorship",
+      name: "Basic",
       price: "147",
       duration: "Lifetime",
       features: [
@@ -12,12 +12,13 @@ export const PricingPlans = [
         "✅ Bi-weekly 60 minutes group call(Q/A & mentorship)",
         "✅ My private Student community",
         "✅ My Whole Strategy",
+        "✅ Full access to all our trades"
      
       ],
     },
     {
       type: "mentorship",
-      name: "Enterprise Mentorship",
+      name: "Enterprise",
       price: "254",
       duration: "Lifetime",
       features: [
