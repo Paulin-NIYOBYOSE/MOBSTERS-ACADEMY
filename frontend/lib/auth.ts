@@ -76,6 +76,7 @@ export const authService = {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'content-Type': 'application/json',
         },
       });
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ProtectedRoute from '@/components/protected-route';
 
 interface UserData {
   name: string;
@@ -17,32 +18,39 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
   useEffect(() => {
+    // First check localStorage for user data
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setLoading(false);
+      return;
+    }
+
+    // If no token, redirect immediately
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    // Fallback to API request if no user in storage
     const fetchUserData = async () => {
       try {
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        const response = await fetch("http://localhost:8080/api/user/profile", {
+        const response = await fetch(`${API_URL}/user/profile`, {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Authorization": `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
+        if (!response.ok) throw new Error("Failed to fetch user data");
+        
         const userData = await response.json();
         setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
-        setError("Failed to load user data");
+        console.error('Failed to load user data:', err);
         logout();
-        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -52,22 +60,14 @@ export default function DashboardPage() {
   }, [token, router, logout]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#002419] flex items-center justify-center">
-        <div className="text-white">Loading dashboard...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-[#002419] flex items-center justify-center">
+      <div className="text-white">Loading...</div>
+    </div>;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#002419] flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
 
-  return (
+   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-[#002419] mt-20">
       <header className="bg-[#003626] border-b border-[#00DC82] p-4 px-10">
         <div className="container mx-auto flex justify-between items-center">
@@ -105,5 +105,7 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
+
 }
