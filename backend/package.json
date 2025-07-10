@@ -5,14 +5,11 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
-    "start": "node dist/main",
+    "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev --name init",
-    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
-    "postinstall": "prisma generate",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "prisma": {
