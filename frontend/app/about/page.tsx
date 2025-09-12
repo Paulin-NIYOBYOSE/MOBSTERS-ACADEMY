@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "";
 import { ArrowRight } from "lucide-react";
 
 export default function AboutPage() {
