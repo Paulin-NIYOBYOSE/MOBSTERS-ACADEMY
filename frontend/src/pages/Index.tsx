@@ -19,8 +19,7 @@ import {
   Target,
   BarChart3,
   Clock,
-  Zap,
-  Shield
+  Zap
 } from 'lucide-react';
 import heroImage from '@/assets/hero-forex-academy.jpg';
 
@@ -35,8 +34,6 @@ const Index = () => {
     alert('Community signup feature coming soon!');
   };
 
-  
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -47,43 +44,51 @@ const Index = () => {
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-transparent"></div>
+        
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl floating-animation"></div>
+          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-success/10 rounded-full blur-2xl floating-animation" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-1/4 left-1/2 w-20 h-20 bg-primary/5 rounded-full blur-xl floating-animation" style={{ animationDelay: '4s' }}></div>
+        </div>
+        
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <Badge className="mb-6 bg-primary/20 text-primary-dark border-primary/30">
+            <Badge className="mb-6 bg-primary/20 text-primary-dark border-primary/30 hover-lift">
               🎯 Limited Cohort Opening - December 2024
             </Badge>
             
             <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground mb-6 leading-tight">
               Master Forex Trading with
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> Mobsters Academy</span>
+              <span className="gradient-text block mt-2"> Mobsters Academy</span>
             </h1>
             
-            <p className="text-xl text-primary-foreground/80 mb-8 leading-relaxed">
+            <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
               Transform from beginner to professional trader with our comprehensive 6-month program. 
               Join thousands of successful traders who've mastered the markets.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Button variant="cta" size="xl" onClick={handleEnrollClick}>
+              <Button variant="cta" size="xl" onClick={handleEnrollClick} className="hover-lift">
                 <TrendingUp className="mr-2" />
                 Enroll in Academy
               </Button>
-              <Button variant="outline-primary" size="xl" onClick={handleJoinCommunityClick}>
+              <Button variant="outline-primary" size="xl" onClick={handleJoinCommunityClick} className="hover-lift">
                 <Users className="mr-2" />
                 Join Free Community
               </Button>
             </div>
             
             <div className="flex flex-wrap gap-8 text-primary-foreground/90">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>6-Month Structured Program</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>Weekly Live Sessions</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>Personal Trading Plan</span>
               </div>
@@ -93,7 +98,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-accent/80">
+      <section className="py-16 bg-accent/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -117,7 +122,7 @@ const Index = () => {
       </section>
 
       {/* Programs Section */}
-      <section id="programs" className="py-24 px-6 bg-accent/30">
+      <section id="programs" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -134,7 +139,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-6 bg-gradient-card bg-accent/50">
+      <section className="py-24 px-6 bg-gradient-card">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -178,13 +183,18 @@ const Index = () => {
                 description: "Complete your trading plan project and receive professional trading certification."
               }
             ].map((feature, index) => (
-              <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 border-border/50">
+              <Card 
+                key={index} 
+                className="shadow-soft hover:shadow-medium transition-all duration-300 border-border/50 card-glow hover-lift group"
+              >
                 <CardHeader>
-                  <feature.icon className="w-12 h-12 text-primary mb-4" />
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <div className="mb-4 p-3 rounded-lg bg-primary/10 w-fit group-hover:bg-primary/20 transition-colors">
+                    <feature.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl group-hover:text-primary transition-colors">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -196,82 +206,38 @@ const Index = () => {
       <Testimonials />
 
       {/* CTA Section */}
-<section className="relative py-24 px-6 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.1),transparent_50%)] bg-[radial-gradient(circle_at_70%_80%,rgba(5,150,105,0.08),transparent_50%)]" />
-
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_center,#059669_1px,transparent_1px)] bg-[length:24px_24px]" />
-
-      <div className="relative max-w-4xl mx-auto text-center">
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <TrendingUp className="w-4 h-4" />
-            Next Cohort Starting December 2024
-          </div>
-          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance">
-            Ready to Start Your{" "}
-            <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
-              Trading Journey?
-            </span>
+      <section className="py-24 px-6 bg-gradient-hero">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
+            Ready to Start Your Trading Journey?
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 text-pretty max-w-3xl mx-auto">
-            Join our exclusive forex trading program and transform your financial future with expert guidance and proven
-            strategies.
+          <p className="text-xl text-primary-foreground/90 mb-8">
+            Join our next cohort starting December 2024. Limited seats available.
           </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/25 px-8 py-6 text-lg font-semibold"
-            onClick={handleEnrollClick}
-          >
-            <Zap className="mr-2 w-5 h-5" />
-            Enroll Now - $497
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-8 py-6 text-lg font-semibold bg-transparent"
-          >
-            <Clock className="mr-2 w-5 h-5" />
-            Join Waitlist
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="flex flex-col items-center gap-3 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-emerald-100 shadow-sm">
-            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-              <Shield className="w-6 h-6 text-emerald-600" />
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-foreground mb-1">Money Back Guarantee</h3>
-              <p className="text-sm text-muted-foreground">30-day full refund policy</p>
-            </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button variant="hero" size="xl" onClick={handleEnrollClick}>
+              <Zap className="mr-2" />
+              Enroll Now - $497
+            </Button>
+            <Button variant="outline-primary" size="xl">
+              <Clock className="mr-2" />
+              Join Waitlist
+            </Button>
           </div>
-
-          <div className="flex flex-col items-center gap-3 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-emerald-100 shadow-sm">
-            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-              <Users className="w-6 h-6 text-emerald-600" />
+          
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-primary-foreground/80">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5" />
+              <span>30-Day Money Back Guarantee</span>
             </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-foreground mb-1">Limited Seats</h3>
-              <p className="text-sm text-muted-foreground">Beginner menotship happnes only twice a year, book yours early</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-3 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-emerald-100 shadow-sm">
-            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-              <Star className="w-6 h-6 text-emerald-600" />
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-foreground mb-1">Expert Support</h3>
-              <p className="text-sm text-muted-foreground">Direct access to mentors</p>
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              <span>Only 50 Seats Available</span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       {/* FAQ Section */}
       <FAQ />

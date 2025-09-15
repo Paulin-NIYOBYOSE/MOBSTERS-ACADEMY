@@ -1,13 +1,26 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, TrendingUp } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { AuthModal } from '@/components/auth/AuthModal';
+import { UserMenu } from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  
+  const { isAuthenticated } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     setIsMenuOpen(false);
+  };
+
+  const openAuthModal = (mode: 'login' | 'register') => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
   };
 
   return (
@@ -42,12 +55,31 @@ export const Header = () => {
             >
               FAQ
             </button>
-            <Button variant="outline-primary" size="sm">
-              Login
-            </Button>
-            <Button variant="hero" size="sm">
-              Get Started
-            </Button>
+            
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => openAuthModal('login')}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    variant="hero" 
+                    size="sm"
+                    onClick={() => openAuthModal('register')}
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
+            </div>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -81,18 +113,40 @@ export const Header = () => {
               >
                 FAQ
               </button>
-              <div className="flex flex-col gap-2 mt-4">
-                <Button variant="outline-primary" size="sm">
-                  Login
-                </Button>
-                <Button variant="hero" size="sm">
-                  Get Started
-                </Button>
+              <div className="flex items-center gap-2 mt-4">
+                <ThemeToggle />
+                
+                {isAuthenticated ? (
+                  <UserMenu />
+                ) : (
+                  <div className="flex flex-col gap-2 flex-1">
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm"
+                      onClick={() => openAuthModal('login')}
+                    >
+                      Login
+                    </Button>
+                    <Button 
+                      variant="hero" 
+                      size="sm"
+                      onClick={() => openAuthModal('register')}
+                    >
+                      Get Started
+                    </Button>
+                  </div>
+                )}
               </div>
             </nav>
           </div>
         )}
       </div>
+      
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </header>
   );
 };

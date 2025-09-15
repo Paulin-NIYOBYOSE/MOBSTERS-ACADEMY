@@ -173,3 +173,33 @@ All colors MUST be HSL.
     @apply bg-primary/50;
   }
 }
+
+/* Beautiful animations and effects */
+@layer components {
+  .glass-effect {
+    @apply backdrop-blur-md bg-background/80 border border-border/50;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+  
+  .floating-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:transform hover:scale-105 hover:shadow-strong;
+  }
+  
+  .card-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Enhanced focus states for accessibility */
