@@ -1,216 +1,167 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  BookOpen, 
-  Users, 
-  Calendar, 
-  MessageSquare, 
-  Award,
-  CheckCircle,
-  Star,
-  Zap,
-  TrendingUp,
-  Target,
-  Clock,
-  Gift
-} from 'lucide-react';
+"use client"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Award, Users, MessageSquare, CheckCircle, Star, Zap, TrendingUp, Gift, Clock } from "lucide-react"
 
 export const ProgramCards = () => {
   const programs = [
     {
-      id: 'academy',
-      title: '6-Month Academy Program',
-      price: '$497',
-      originalPrice: '$697',
-      badge: 'Most Popular',
-      badgeVariant: 'success' as const,
-      description: 'Complete beginner-to-advanced forex trading education',
-      features: [
-        'Structured video lessons (50+ hours)',
-        'Comprehensive PDFs and resources',
-        'Weekly live Zoom calls with experts',
-        'Hands-on demo trading exercises',
-        'Interactive quizzes and assignments',
-        'Personal trading journal templates',
-        'Final project: Complete trading plan',
-        'Trading certification upon completion',
-        'Lifetime access to materials',
-        '6-month mentorship included'
+      id: "academy",
+      title: "6-Month Academy",
+      subtitle: "Complete Trading Education",
+      price: "$497",
+      originalPrice: "$697",
+      badge: "Most Popular",
+      keyFeatures: [
+        "50+ hours of structured lessons",
+        "Weekly live mentorship calls",
+        "Trading certification included",
+        "Lifetime access to materials",
       ],
-      highlights: [
-        'Cohorts open Dec 2024 & June 2025',
-        'Limited to 50 students per cohort',
-        '30-day money back guarantee'
-      ],
+      highlight: "Limited to 50 students per cohort",
       icon: Award,
-      gradient: 'bg-gradient-hero'
+      popular: true,
     },
     {
-      id: 'mentorship',
-      title: 'Monthly Mentorship',
-      price: '$97/month',
-      originalPrice: null,
-      badge: 'Ongoing Support',
-      badgeVariant: 'default' as const,
-      description: 'Continuous learning and advanced strategy development',
-      features: [
-        'Weekly live mentorship calls',
-        'Advanced strategy library access',
-        'Free educational signals daily',
-        'In-depth market analysis',
-        'Risk management tools & calculators',
-        'Monthly trading challenges',
-        'Access to past academy content',
-        'Priority support in community',
-        'Advanced trading indicators',
-        'Market recap sessions'
+      id: "mentorship",
+      title: "Monthly Mentorship",
+      subtitle: "Ongoing Expert Support",
+      price: "$97",
+      priceUnit: "/month",
+      badge: "Ongoing Support",
+      keyFeatures: [
+        "Weekly live strategy sessions",
+        "Advanced trading indicators",
+        "Daily market analysis",
+        "Priority community support",
       ],
-      highlights: [
-        'Cancel anytime',
-        'Join existing community',
-        'Perfect for academy graduates'
-      ],
+      highlight: "Cancel anytime",
       icon: Users,
-      gradient: 'bg-gradient-primary'
+      popular: false,
     },
     {
-      id: 'community',
-      title: 'Free Community & Signals',
-      price: 'Free',
-      originalPrice: null,
-      badge: 'Get Started',
-      badgeVariant: 'secondary' as const,
-      description: 'Join our trading community and receive daily market insights',
-      features: [
-        'Daily forex signals with explanations',
-        'Market recap and analysis',
-        'Motivational trading tips',
-        'Private Telegram/Discord access',
-        'Basic risk management guides',
-        'Community support and discussions',
-        'Weekly market outlook',
-        'Beginner-friendly resources'
-      ],
-      highlights: [
-        'No commitment required',
-        'Instant access',
-        'Perfect for beginners'
-      ],
+      id: "community",
+      title: "Free Community",
+      subtitle: "Daily Signals & Support",
+      price: "Free",
+      badge: "Get Started",
+      keyFeatures: ["Daily forex signals", "Market analysis & tips", "Community discussions", "Beginner resources"],
+      highlight: "No commitment required",
       icon: MessageSquare,
-      gradient: 'bg-gradient-card'
-    }
-  ];
+      popular: false,
+    },
+  ]
 
   const handleEnrollClick = (programId: string) => {
-    if (programId === 'community') {
-      // For free community
-      alert('Redirecting to Telegram/Discord signup...');
+    if (programId === "community") {
+      alert("Redirecting to community signup...")
     } else {
-      // For paid programs - would integrate with Stripe
-      alert(`Enrolling in ${programId}... Payment integration coming soon!`);
+      alert(`Enrolling in ${programId}... Payment integration coming soon!`)
     }
-  };
-
-  const handleWaitlistClick = () => {
-    alert('Joining waitlist... Feature coming soon!');
-  };
+  }
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
-      {programs.map((program, index) => (
-        <Card 
-          key={program.id} 
-          className={`relative overflow-hidden shadow-medium hover:shadow-strong transition-all duration-300 border-2 ${
-            program.id === 'academy' ? 'border-primary scale-105 lg:scale-110' : 'border-border/50'
+    <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      {programs.map((program) => (
+        <Card
+          key={program.id}
+          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+            program.popular
+              ? "border-2 border-primary shadow-lg scale-105"
+              : "border border-border hover:border-primary/50"
           }`}
         >
           {program.badge && (
-            <div className="absolute -right-12 top-6 rotate-45 w-32 py-1 bg-primary text-primary-foreground text-sm font-bold text-center">
-              {program.badge}
+            <div className="absolute top-1 right-4">
+              <Badge
+                variant={program.popular ? "default" : "secondary"}
+                className={program.popular ? "bg-primary text-primary-foreground" : ""}
+              >
+                {program.badge}
+              </Badge>
             </div>
           )}
-          
-          <CardHeader className={`${program.gradient} text-primary-foreground p-6`}>
-            <div className="flex items-center justify-between mb-4">
-              <program.icon className="w-12 h-12" />
+
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between mb-4">
+              <div className={`p-3 rounded-lg ${program.popular ? "bg-primary/10" : "bg-muted"}`}>
+                <program.icon className={`w-6 h-6 ${program.popular ? "text-primary" : "text-muted-foreground"}`} />
+              </div>
               <div className="text-right">
-                <div className="text-3xl font-bold">{program.price}</div>
+                <div className="text-3xl font-bold text-foreground">
+                  {program.price}
+                  {program.priceUnit && (
+                    <span className="text-lg font-normal text-muted-foreground">{program.priceUnit}</span>
+                  )}
+                </div>
                 {program.originalPrice && (
-                  <div className="text-sm line-through opacity-75">{program.originalPrice}</div>
+                  <div className="text-sm line-through text-red-500">{program.originalPrice}</div>
                 )}
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold mb-2">{program.title}</CardTitle>
-            <CardDescription className="text-primary-foreground/90 text-lg">
-              {program.description}
-            </CardDescription>
+
+            <CardTitle className="text-xl font-bold text-foreground mb-1">{program.title}</CardTitle>
+            <p className="text-muted-foreground text-sm">{program.subtitle}</p>
           </CardHeader>
-          
-          <CardContent className="p-6">
-            <div className="space-y-4 mb-6">
-              {program.features.map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground">{feature}</span>
-                </div>
-              ))}
-            </div>
-            
+
+          <CardContent className="pt-0">
             <div className="space-y-3 mb-6">
-              {program.highlights.map((highlight, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-primary font-medium">
-                  <Star className="w-4 h-4" />
-                  <span className="text-sm">{highlight}</span>
+              {program.keyFeatures.map((feature, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-card-foreground leading-relaxed">{feature}</span>
                 </div>
               ))}
             </div>
-            
+
+            <div className="flex items-center gap-2 text-primary font-medium mb-6">
+              <Star className="w-4 h-4" />
+              <span className="text-sm">{program.highlight}</span>
+            </div>
+
             <div className="space-y-3">
-              {program.id === 'academy' && (
+              {program.id === "academy" && (
                 <>
-                  <Button 
-                    variant="cta" 
-                    size="lg" 
-                    className="w-full"
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    size="lg"
                     onClick={() => handleEnrollClick(program.id)}
                   >
-                    <Zap className="mr-2" />
-                    Enroll Now - Limited Seats
+                    <Zap className="mr-2 w-4 h-4" />
+                    Enroll Now
                   </Button>
-                  <Button 
-                    variant="outline-primary" 
-                    size="lg" 
-                    className="w-full"
-                    onClick={handleWaitlistClick}
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full border-primary text-primary hover:bg-primary/5 bg-transparent"
+                    onClick={() => alert("Joining waitlist...")}
                   >
-                    <Clock className="mr-2" />
+                    <Clock className="mr-2 w-4 h-4" />
                     Join Waitlist
                   </Button>
                 </>
               )}
-              
-              {program.id === 'mentorship' && (
-                <Button 
-                  variant="premium" 
-                  size="lg" 
-                  className="w-full"
+
+              {program.id === "mentorship" && (
+                <Button
+                  className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                  size="lg"
                   onClick={() => handleEnrollClick(program.id)}
                 >
-                  <TrendingUp className="mr-2" />
+                  <TrendingUp className="mr-2 w-4 h-4" />
                   Start Mentorship
                 </Button>
               )}
-              
-              {program.id === 'community' && (
-                <Button 
-                  variant="success" 
-                  size="lg" 
-                  className="w-full"
+
+              {program.id === "community" && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-accent text-accent hover:bg-accent/5 bg-transparent"
                   onClick={() => handleEnrollClick(program.id)}
                 >
-                  <Gift className="mr-2" />
+                  <Gift className="mr-2 w-4 h-4" />
                   Join Free Community
                 </Button>
               )}
@@ -219,5 +170,5 @@ export const ProgramCards = () => {
         </Card>
       ))}
     </div>
-  );
-};
+  )
+}

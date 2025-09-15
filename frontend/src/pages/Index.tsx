@@ -19,7 +19,8 @@ import {
   Target,
   BarChart3,
   Clock,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import heroImage from '@/assets/hero-forex-academy.jpg';
 
@@ -206,38 +207,73 @@ const Index = () => {
       <Testimonials />
 
       {/* CTA Section */}
-      <section className="py-24 px-6 bg-gradient-hero">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
-            Ready to Start Your Trading Journey?
-          </h2>
-          <p className="text-xl text-primary-foreground/90 mb-8">
-            Join our next cohort starting December 2024. Limited seats available.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="xl" onClick={handleEnrollClick}>
-              <Zap className="mr-2" />
-              Enroll Now - $497
-            </Button>
-            <Button variant="outline-primary" size="xl">
-              <Clock className="mr-2" />
-              Join Waitlist
-            </Button>
+    <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-br from-background via-muted/50 to-background">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+
+      <div className="relative max-w-4xl mx-auto text-center">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-primary/20">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Limited Time Offer</span>
           </div>
-          
-          <div className="mt-8 flex flex-wrap justify-center gap-6 text-primary-foreground/80">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5" />
-              <span>30-Day Money Back Guarantee</span>
+
+          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance leading-tight">
+            Ready to Start Your
+            <span className="block text-primary">Trading Journey?</span>
+          </h2>
+
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto text-pretty leading-relaxed">
+            Join our next cohort starting December 2024. Transform your financial future with expert guidance.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            onClick={handleEnrollClick}
+          >
+            <Zap className="mr-2 w-5 h-5" />
+            Enroll Now - $497
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="border-primary text-primary hover:bg-primary/5 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 bg-transparent"
+          >
+            <Clock className="mr-2 w-5 h-5" />
+            Join Waitlist
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="flex flex-col items-center gap-3 bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-colors duration-300">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <Shield className="w-6 h-6 text-primary" />
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              <span>Only 50 Seats Available</span>
+            <span className="text-card-foreground font-semibold">30-Day Money Back</span>
+            <span className="text-muted-foreground text-sm text-center">Risk-free guarantee</span>
+          </div>
+
+          <div className="flex flex-col items-center gap-3 bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-colors duration-300">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <Users className="w-6 h-6 text-primary" />
             </div>
+            <span className="text-card-foreground font-semibold">Only 50 Seats</span>
+            <span className="text-muted-foreground text-sm text-center">Limited availability</span>
+          </div>
+
+          <div className="flex flex-col items-center gap-3 bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-colors duration-300">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <Star className="w-6 h-6 text-primary" />
+            </div>
+            <span className="text-card-foreground font-semibold">Expert Mentorship</span>
+            <span className="text-muted-foreground text-sm text-center">1-on-1 guidance included</span>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* FAQ Section */}
       <FAQ />
