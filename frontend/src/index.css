@@ -202,4 +202,11 @@ All colors MUST be HSL.
   50% { transform: translateY(-10px); }
 }
 
-
+/* Enhanced focus states for accessibility */
+@layer base {
+  input:focus,
+  button:focus,
+  [tabindex]:focus {
+    @apply ring-2 ring-primary/50 ring-offset-2 ring-offset-background outline-none;
+  }
+}

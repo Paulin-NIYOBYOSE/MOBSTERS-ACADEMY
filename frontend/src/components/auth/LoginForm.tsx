@@ -35,6 +35,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
         title: "Welcome back!",
         description: "You've been signed in successfully.",
       });
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
+      
       onSuccess?.();
     } else {
       setError('Invalid email or password. Please try again.');

@@ -74,11 +74,12 @@ class AuthService {
     return response.data;
   }
 
-  async register(email: string, name: string, password: string): Promise<RegisterResponse> {
+  async register(email: string, name: string, password: string, program?: string): Promise<RegisterResponse> {
     const response = await axios.post<RegisterResponse>(`${API_BASE_URL}/auth/register`, {
       email,
       name,
       password,
+      program,
     });
 
     return response.data;
@@ -144,9 +145,39 @@ class AuthService {
     await axios.post(`${API_BASE_URL}/admin/users/${userId}/roles`, { roles });
   }
 
-  // Mentor endpoint
-  async getMentorDashboard(): Promise<any> {
-    const response = await axios.get(`${API_BASE_URL}/mentor/dashboard`);
+  // Content endpoints
+  async getCommunityContent(): Promise<any> {
+    const response = await axios.get(`${API_BASE_URL}/community/content`);
+    return response.data;
+  }
+
+  async getAcademyContent(): Promise<any> {
+    const response = await axios.get(`${API_BASE_URL}/academy/content`);
+    return response.data;
+  }
+
+  async getMentorshipContent(): Promise<any> {
+    const response = await axios.get(`${API_BASE_URL}/mentor/mentorship-content`);
+    return response.data;
+  }
+
+  // Admin role request endpoints
+  async getPendingRoleRequests(): Promise<any> {
+    const response = await axios.get(`${API_BASE_URL}/admin/role-requests`);
+    return response.data;
+  }
+
+  async approveRoleRequest(requestId: string): Promise<void> {
+    await axios.post(`${API_BASE_URL}/admin/role-requests/${requestId}/approve`);
+  }
+
+  // Payment endpoint
+  async createPaymentIntent(amount: number, userId: string, program: string): Promise<any> {
+    const response = await axios.post(`${API_BASE_URL}/payment/create-payment-intent`, {
+      amount,
+      userId,
+      program,
+    });
     return response.data;
   }
 }

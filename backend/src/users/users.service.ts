@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PendingRoleRequest } from '@prisma/client'; // optional, for type hints
 
 @Injectable()
 export class UsersService {
@@ -35,14 +36,11 @@ export class UsersService {
 
   async assignRoles(userId: number, roleNames: string[]) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
 
     const roles = await this.prisma.role.findMany({ where: { name: { in: roleNames } } });
-    if (roles.length !== roleNames.length) {
+    if (roles.length !== roleNames.length)
       throw new BadRequestException('Invalid role names');
-    }
 
     await this.prisma.userRole.deleteMany({ where: { userId } });
     await this.prisma.userRole.createMany({
@@ -72,7 +70,9 @@ export class UsersService {
       mentorship: 'mentorship_student',
     };
 
-    const role = await this.prisma.role.findUnique({ where: { name: roleMap[request.program] } });
+    const role = await this.prisma.role.findUnique({
+      where: { name: roleMap[request.program] },
+    });
     if (!role) throw new BadRequestException('Invalid program');
 
     await this.prisma.userRole.create({

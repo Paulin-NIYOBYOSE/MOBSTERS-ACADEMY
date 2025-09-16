@@ -5,11 +5,12 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, name: string, password: string) => Promise<boolean>;
+  register: (email: string, name: string, password: string, program: string) => Promise<boolean>; // added program
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
