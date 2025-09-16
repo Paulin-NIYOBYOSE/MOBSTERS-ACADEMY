@@ -9,7 +9,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
   imports: [
     UsersModule,
-    PrismaModule, // Add PrismaModule to provide PrismaService
+    PrismaModule,
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,

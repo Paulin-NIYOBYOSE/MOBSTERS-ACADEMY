@@ -25,4 +25,18 @@ export class UsersController {
   ) {
     return this.usersService.assignRoles(id, dto.roles);
   }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  @Get('role-requests')
+  async getPendingRoleRequests() {
+    return this.usersService.getPendingRoleRequests();
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  @Post('role-requests/:id/approve')
+  async approveRoleRequest(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.approveRoleRequest(id);
+  }
 }

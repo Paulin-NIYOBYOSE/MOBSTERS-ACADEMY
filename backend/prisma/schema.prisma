@@ -14,6 +14,7 @@ model User {
   password      String
   roles         UserRole[]
   refreshTokens RefreshToken[]
+  pendingRequests PendingRoleRequest[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -45,4 +46,16 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PendingRoleRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  program   String   // 'free', 'academy', 'mentorship'
+  status    String   @default("pending") // 'pending', 'paid', 'approved', 'rejected'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, program])
 }

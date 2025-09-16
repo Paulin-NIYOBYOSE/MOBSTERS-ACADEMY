@@ -44,14 +44,46 @@ export class UsersService {
       throw new BadRequestException('Invalid role names');
     }
 
-    // Clear existing roles
     await this.prisma.userRole.deleteMany({ where: { userId } });
-
-    // Assign new roles
     await this.prisma.userRole.createMany({
       data: roles.map((role) => ({ userId, roleId: role.id })),
     });
 
     return { message: 'Roles assigned successfully' };
+  }
+
+  async getPendingRoleRequests() {
+    return this.prisma.pendingRoleRequest.findMany({
+      where: { status: { in: ['pending', 'paid'] } },
+      include: { user: { select: { id: true, email: true, name: true } } },
+    });
+  }
+
+  async approveRoleRequest(requestId: number) {
+    const request = await this.prisma.pendingRoleRequest.findUnique({
+      where: { id: requestId },
+      include: { user: true },
+    });
+    if (!request) throw new NotFoundException('Request not found');
+
+    const roleMap = {
+      free: 'community_student',
+      academy: 'academy_student',
+      mentorship: 'mentorship_student',
+    };
+
+    const role = await this.prisma.role.findUnique({ where: { name: roleMap[request.program] } });
+    if (!role) throw new BadRequestException('Invalid program');
+
+    await this.prisma.userRole.create({
+      data: { userId: request.userId, roleId: role.id },
+    });
+
+    await this.prisma.pendingRoleRequest.update({
+      where: { id: requestId },
+      data: { status: 'approved' },
+    });
+
+    return { message: 'Role assigned successfully' };
   }
 }

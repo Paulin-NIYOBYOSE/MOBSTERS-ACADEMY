@@ -29,6 +29,16 @@ export class AuthService {
       },
     });
 
+    // Create pending role request if program selected
+    if (dto.program) {
+      await this.prisma.pendingRoleRequest.create({
+        data: {
+          userId: user.id,
+          program: dto.program,
+        },
+      });
+    }
+
     return { message: 'User registered successfully', userId: user.id };
   }
 
@@ -59,7 +69,7 @@ export class AuthService {
   private async storeRefreshToken(token: string, userId: number) {
     const hashedToken = await bcrypt.hash(token, 10);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -86,7 +96,6 @@ export class AuthService {
     const newAccessToken = this.jwt.sign(payload);
     const newRefreshToken = this.generateRefreshToken();
 
-    // Rotate: delete old, store new
     await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
     await this.storeRefreshToken(newRefreshToken, user.id);
 
@@ -101,7 +110,6 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    // Revoke all refresh tokens for the user
     await this.prisma.refreshToken.updateMany({
       where: { userId, revoked: false },
       data: { revoked: true },

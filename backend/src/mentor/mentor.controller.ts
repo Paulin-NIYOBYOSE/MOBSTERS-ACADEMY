@@ -11,4 +11,11 @@ export class MentorController {
   async dashboard() {
     return { message: 'Welcome to the mentor dashboard' };
   }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('mentorship_student', 'mentor', 'admin')
+  @Get('mentorship-content')
+  async getMentorshipContent() {
+    return { message: 'Mentorship program: personalized sessions', sessions: ['1:1 Trading Review', 'Custom Strategy'] };
+  }
 }
