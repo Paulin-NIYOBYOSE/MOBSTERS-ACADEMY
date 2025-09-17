@@ -32,10 +32,19 @@ export const AdminDashboard: React.FC = () => {
   const [roleRequests, setRoleRequests] = useState<RoleRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadRoleRequests();
+    
+    // Auto-refresh admin data every minute
+    const interval = setInterval(() => {
+      loadRoleRequests();
+      setLastRefresh(new Date());
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadRoleRequests = async () => {
@@ -107,7 +116,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const pendingRequests = roleRequests.filter(req => req.status === 'paid');
+const pendingRequests = roleRequests.filter(req => req.status === 'pending');
   const allRequests = roleRequests;
 
   if (loading) {
@@ -119,17 +128,37 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6">
+    <div className="p-6 bg-gradient-to-br from-background via-background to-muted/30 min-h-full">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-            <Shield className="w-10 h-10 text-primary" />
-            Admin <span className="text-primary">Dashboard</span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Manage user role requests and monitor academy operations.
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+                <Shield className="w-10 h-10 text-primary" />
+                Admin <span className="text-primary">Dashboard</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Manage user role requests and monitor academy operations.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  loadRoleRequests();
+                  setLastRefresh(new Date());
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -217,7 +246,7 @@ export const AdminDashboard: React.FC = () => {
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-muted-foreground">
-                        Request ID: {request.id.slice(0, 8)}...
+                    Request ID: {request.id.toString().slice(0, 8)}...
                       </div>
                       <Button 
                         onClick={() => handleApproveRequest(request.id)}

@@ -17,7 +17,7 @@ async function main() {
   // Create initial admin user
   const adminEmail = 'admin@example.com';
   const adminPassword = 'adminpassword';
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
 
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
@@ -25,11 +25,11 @@ async function main() {
     create: {
       email: adminEmail,
       name: 'Admin User',
-      password: hashedPassword,
+      password: hashedAdminPassword,
     },
   });
 
-  // Assign admin role to admin user
+  // Assign admin role
   const adminRole = await prisma.role.findUnique({ where: { name: 'admin' } });
   if (adminRole) {
     await prisma.userRole.upsert({
@@ -39,7 +39,54 @@ async function main() {
     });
   }
 
-  console.log('Seeding completed: roles created, admin user created with admin role.');
+  // Create sample normal users
+  const sampleUsers = [
+    { email: 'alice@example.com', name: 'Alice', password: 'alice123', role: 'academy_student' },
+    { email: 'bob@example.com', name: 'Bob', password: 'bob123', role: 'mentorship_student' },
+    { email: 'charlie@example.com', name: 'Charlie', password: 'charlie123', role: 'community_student' },
+  ];
+
+  for (const u of sampleUsers) {
+    const hashedPw = await bcrypt.hash(u.password, 10);
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: {
+        email: u.email,
+        name: u.name,
+        password: hashedPw,
+      },
+    });
+
+    const role = await prisma.role.findUnique({ where: { name: u.role } });
+    if (role) {
+      await prisma.userRole.upsert({
+        where: { userId_roleId: { userId: user.id, roleId: role.id } },
+        update: {},
+        create: { userId: user.id, roleId: role.id },
+      });
+    }
+
+    // Give them a refresh token
+    await prisma.refreshToken.create({
+      data: {
+        hashedToken: `token-${u.email}`,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
+      },
+    });
+
+    // Add one pending role request
+    await prisma.pendingRoleRequest.create({
+      data: {
+        userId: user.id,
+        program: 'academy',
+        status: 'pending',
+      },
+    });
+  }
+
+  console.log('✅ Seeding completed: roles, admin, and sample users created.');
 }
 
 main()

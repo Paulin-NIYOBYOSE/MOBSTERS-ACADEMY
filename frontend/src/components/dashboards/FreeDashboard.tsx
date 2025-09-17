@@ -32,10 +32,19 @@ export const FreeDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<{ name: string; amount: number } | null>(null);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadCommunityContent();
+    
+    // Set up auto-refresh every 5 minutes
+    const interval = setInterval(() => {
+      loadCommunityContent();
+      setLastRefresh(new Date());
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadCommunityContent = async () => {
@@ -81,16 +90,36 @@ export const FreeDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-6">
+    <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Welcome Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Welcome to <span className="text-primary">Mobsters Forex Academy</span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Start your forex trading journey with our free community content and explore our premium programs.
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">
+                Welcome to <span className="text-primary">Mobsters Forex Academy</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Start your forex trading journey with our free community content and explore our premium programs.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  loadCommunityContent();
+                  setLastRefresh(new Date());
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">

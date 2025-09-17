@@ -57,12 +57,15 @@ export class UsersService {
     });
   }
 
-  async approveRoleRequest(requestId: number) {
+async approveRoleRequest(requestId: number) {
+  try {
     const request = await this.prisma.pendingRoleRequest.findUnique({
       where: { id: requestId },
       include: { user: true },
     });
     if (!request) throw new NotFoundException('Request not found');
+
+    console.log('Approving request:', request);
 
     const roleMap = {
       free: 'community_student',
@@ -70,13 +73,17 @@ export class UsersService {
       mentorship: 'mentorship_student',
     };
 
-    const role = await this.prisma.role.findUnique({
-      where: { name: roleMap[request.program] },
-    });
-    if (!role) throw new BadRequestException('Invalid program');
+    const roleName = roleMap[request.program.trim().toLowerCase()];
+    if (!roleName) throw new BadRequestException('Invalid program');
 
-    await this.prisma.userRole.create({
-      data: { userId: request.userId, roleId: role.id },
+    const role = await this.prisma.role.findUnique({ where: { name: roleName } });
+    if (!role) throw new BadRequestException('Role not found in DB');
+
+    // Upsert avoids duplicate role assignment
+    await this.prisma.userRole.upsert({
+      where: { userId_roleId: { userId: request.userId, roleId: role.id } },
+      update: {},
+      create: { userId: request.userId, roleId: role.id },
     });
 
     await this.prisma.pendingRoleRequest.update({
@@ -85,5 +92,12 @@ export class UsersService {
     });
 
     return { message: 'Role assigned successfully' };
+  } catch (err) {
+    console.error('approveRoleRequest failed:', err);
+    throw err;
   }
+}
+
+
+
 }

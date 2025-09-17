@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import { LoginForm } from "./components/auth/LoginForm";
 import { RegisterForm } from "./components/auth/RegisterForm";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { FreeDashboard } from "./components/dashboards/FreeDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 import { AcademyDashboard } from "./components/dashboards/AcademyDashboard";
@@ -63,7 +64,9 @@ const App = () => (
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <DashboardRouter />
+                <DashboardLayout>
+                  <DashboardRouter />
+                </DashboardLayout>
               </ProtectedRoute>
             } 
           />
@@ -71,7 +74,9 @@ const App = () => (
             path="/admin" 
             element={
               <ProtectedRoute requiredRoles={['admin']}>
-                <AdminDashboard />
+                <DashboardLayout>
+                  <AdminDashboard />
+                </DashboardLayout>
               </ProtectedRoute>
             } 
           />
@@ -79,7 +84,9 @@ const App = () => (
             path="/academy" 
             element={
               <ProtectedRoute requiredRoles={['academy_student', 'admin']}>
-                <AcademyDashboard />
+                <DashboardLayout>
+                  <AcademyDashboard />
+                </DashboardLayout>
               </ProtectedRoute>
             } 
           />
@@ -87,7 +94,9 @@ const App = () => (
             path="/mentorship" 
             element={
               <ProtectedRoute requiredRoles={['mentorship_student', 'admin']}>
-                <MentorshipDashboard />
+                <DashboardLayout>
+                  <MentorshipDashboard />
+                </DashboardLayout>
               </ProtectedRoute>
             } 
           />

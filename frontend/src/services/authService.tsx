@@ -73,7 +73,6 @@ class AuthService {
     this.setTokens(response.data.accessToken, response.data.refreshToken);
     return response.data;
   }
-
   async register(email: string, name: string, password: string, program?: string): Promise<RegisterResponse> {
     const response = await axios.post<RegisterResponse>(`${API_BASE_URL}/auth/register`, {
       email,
@@ -84,19 +83,27 @@ class AuthService {
 
     return response.data;
   }
+async refreshTokens(): Promise<LoginResponse> {
+  if (!this.refreshToken) {
+    this.clearTokens();
+    window.location.href = '/login';
+    throw new Error('No refresh token available');
+  }
 
-  async refreshTokens(): Promise<LoginResponse> {
-    if (!this.refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
+  try {
     const response = await axios.post<LoginResponse>(`${API_BASE_URL}/auth/refresh`, {
       refreshToken: this.refreshToken,
     });
 
     this.setTokens(response.data.accessToken, response.data.refreshToken);
     return response.data;
+  } catch (err) {
+    this.clearTokens();
+    window.location.href = '/login';
+    throw err;
   }
+}
+
 
   async getCurrentUser(): Promise<User> {
     const response = await axios.get<User>(`${API_BASE_URL}/auth/me`);
@@ -163,12 +170,12 @@ class AuthService {
 
   // Admin role request endpoints
   async getPendingRoleRequests(): Promise<any> {
-    const response = await axios.get(`${API_BASE_URL}/admin/role-requests`);
+    const response = await axios.get(`${API_BASE_URL}/role-requests`);
     return response.data;
   }
 
   async approveRoleRequest(requestId: string): Promise<void> {
-    await axios.post(`${API_BASE_URL}/admin/role-requests/${requestId}/approve`);
+    await axios.post(`${API_BASE_URL}/role-requests/${requestId}/approve`);
   }
 
   // Payment endpoint

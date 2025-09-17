@@ -29,10 +29,19 @@ interface MentorshipContent {
 export const MentorshipDashboard: React.FC = () => {
   const [content, setContent] = useState<MentorshipContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadMentorshipContent();
+    
+    // Auto-refresh every 2 minutes for mentorship (most dynamic content)
+    const interval = setInterval(() => {
+      loadMentorshipContent();
+      setLastRefresh(new Date());
+    }, 2 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadMentorshipContent = async () => {
@@ -60,21 +69,39 @@ export const MentorshipDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-background to-teal-50 dark:from-background dark:via-background dark:to-muted/30 p-6">
+    <div className="p-6 bg-gradient-to-br from-green-50/30 via-background to-teal-50/30 dark:from-background dark:via-background dark:to-muted/30 min-h-full">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-              <Crown className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">
+                  Elite <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500">Mentorship</span>
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  Advanced trading strategies and personalized guidance.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold">
-                Elite <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500">Mentorship</span>
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Advanced trading strategies and personalized guidance.
-              </p>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  loadMentorshipContent();
+                  setLastRefresh(new Date());
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
             </div>
           </div>
 

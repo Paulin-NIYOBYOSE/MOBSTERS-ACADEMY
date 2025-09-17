@@ -30,10 +30,19 @@ interface AcademyContent {
 export const AcademyDashboard: React.FC = () => {
   const [content, setContent] = useState<AcademyContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadAcademyContent();
+    
+    // Auto-refresh every 3 minutes for academy content
+    const interval = setInterval(() => {
+      loadAcademyContent();
+      setLastRefresh(new Date());
+    }, 3 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadAcademyContent = async () => {
@@ -63,21 +72,39 @@ export const AcademyDashboard: React.FC = () => {
   const overallProgress = content?.progress?.overallProgress || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-background dark:via-background dark:to-muted/30 p-6">
+    <div className="p-6 bg-gradient-to-br from-blue-50/30 via-background to-purple-50/30 dark:from-background dark:via-background dark:to-muted/30 min-h-full">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">
+                  Academy <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">Dashboard</span>
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  Your 6-month journey to forex trading mastery.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold">
-                Academy <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">Dashboard</span>
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Your 6-month journey to forex trading mastery.
-              </p>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  loadAcademyContent();
+                  setLastRefresh(new Date());
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
             </div>
           </div>
           
