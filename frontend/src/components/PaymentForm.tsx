@@ -66,7 +66,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
 
     try {
       // Create payment intent
-      const { client_secret } = await authService.createPaymentIntent(
+      const { clientSecret } = await authService.createPaymentIntent(
         amount,
         user.id,
         program
@@ -74,7 +74,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
 
       // Confirm payment
       const { error: stripeError } = await stripe.confirmCardPayment(
-        client_secret,
+        clientSecret,
         {
           payment_method: {
             card: cardElement,
