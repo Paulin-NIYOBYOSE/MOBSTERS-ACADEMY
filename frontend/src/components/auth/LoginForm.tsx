@@ -36,7 +36,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
         description: "You've been signed in successfully.",
       });
       
-      // Redirect to dashboard
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 1000);

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   Play, 
   BookOpen, 
@@ -28,7 +28,9 @@ interface CommunityContent {
 }
 
 export const FreeDashboard: React.FC = () => {
-  const [content, setContent] = useState<CommunityContent | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [signals, setSignals] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<{ name: string; amount: number } | null>(null);
@@ -37,20 +39,23 @@ export const FreeDashboard: React.FC = () => {
 
   useEffect(() => {
     loadCommunityContent();
-    
-    // Set up auto-refresh every 5 minutes
     const interval = setInterval(() => {
       loadCommunityContent();
       setLastRefresh(new Date());
     }, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
 
   const loadCommunityContent = async () => {
     try {
-      const data = await authService.getCommunityContent();
-      setContent(data);
+      const [coursesData, signalsData, sessionsData] = await Promise.all([
+        authService.getCourses(),
+        authService.getSignals(),
+        authService.getLiveSessions(),
+      ]);
+      setCourses(coursesData);
+      setSignals(signalsData);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Failed to load community content:', error);
       toast({
@@ -72,13 +77,17 @@ export const FreeDashboard: React.FC = () => {
     setPaymentModalOpen(false);
     toast({
       title: 'Welcome!',
-      description: 'Your enrollment was successful. Redirecting to your new dashboard...',
+      description: 'Your enrollment was successful. Admin will approve soon. Refresh to check status.',
     });
-    
-    // Refresh page to update user roles and redirect to appropriate dashboard
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
+    loadCommunityContent(); // Refresh to check if approved
+  };
+
+  // Compose content object from state
+  const content: CommunityContent = {
+    freeCourses: courses,
+    dailySignals: signals,
+    marketRecaps: [],
+    communityLinks: {},
   };
 
   if (loading) {
@@ -92,7 +101,6 @@ export const FreeDashboard: React.FC = () => {
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -104,9 +112,9 @@ export const FreeDashboard: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   loadCommunityContent();
                   setLastRefresh(new Date());
@@ -131,9 +139,7 @@ export const FreeDashboard: React.FC = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Upgrade Cards */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              {/* Academy Program */}
+            <div className="grid md:grid-cols-1 max-w-2xl mx-auto gap-6 mb-8">
               <Card className="relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-colors">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-primary/10" />
                 <CardHeader className="relative">
@@ -168,8 +174,8 @@ export const FreeDashboard: React.FC = () => {
                       <span className="text-sm">Final project & certification</span>
                     </div>
                   </div>
-                  <Button 
-                    variant="cta" 
+                  <Button
+                    variant="cta"
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                     onClick={() => handleUpgrade('academy', 5000)}
                   >
@@ -179,54 +185,52 @@ export const FreeDashboard: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Mentorship Program */}
-              <Card className="relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-colors">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-teal-500/10 to-primary/10" />
+              <Card className="relative overflow-hidden border-2 border-secondary/20 hover:border-secondary/40 transition-colors">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-secondary/10" />
                 <CardHeader className="relative">
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary" className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+                    <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                       <Star className="w-3 h-3 mr-1" />
                       Elite
                     </Badge>
-                    <div className="text-2xl font-bold text-primary">$100</div>
+                    <div className="text-2xl font-bold text-secondary">$100</div>
                   </div>
                   <CardTitle className="text-xl">Monthly Mentorship Program</CardTitle>
                   <CardDescription>
-                    Advanced trading strategies and personalized mentorship for experienced traders.
+                    Personalized 1:1 coaching, VIP signals, and exclusive trading room access.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="space-y-3 mb-6">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-primary" />
-                      <span className="text-sm">Weekly live mentorship calls</span>
+                      <Users className="w-4 h-4 text-secondary" />
+                      <span className="text-sm">1:1 weekly mentorship calls</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="text-sm">Advanced strategy library</span>
+                      <TrendingUp className="w-4 h-4 text-secondary" />
+                      <span className="text-sm">VIP trading signals</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-primary" />
-                      <span className="text-sm">Free educational signals</span>
+                      <MessageCircle className="w-4 h-4 text-secondary" />
+                      <span className="text-sm">Private mentorship group</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Award className="w-4 h-4 text-primary" />
-                      <span className="text-sm">Monthly trading challenges</span>
+                      <Award className="w-4 h-4 text-secondary" />
+                      <span className="text-sm">Custom trading plan</span>
                     </div>
                   </div>
-                  <Button 
-                    variant="cta" 
-                    className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
+                  <Button
+                    variant="cta"
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                     onClick={() => handleUpgrade('mentorship', 10000)}
                   >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Upgrade to Mentorship
+                    <Star className="w-4 h-4 mr-2" />
+                    Join Mentorship
                   </Button>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Free Content Preview */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -264,10 +268,11 @@ export const FreeDashboard: React.FC = () => {
               {content?.freeCourses?.map((course, index) => (
                 <Card key={index}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Play className="w-4 h-4 text-primary" />
-                      {course.title}
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">Free</Badge>
+                      <div className="text-sm font-medium">0:45</div>
+                    </div>
+                    <CardTitle className="text-lg">{course.title}</CardTitle>
                     <CardDescription>{course.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -279,6 +284,7 @@ export const FreeDashboard: React.FC = () => {
               )) || (
                 <Card className="col-span-full">
                   <CardContent className="text-center py-8">
+                    <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Free courses will appear here once available.</p>
                   </CardContent>
                 </Card>
@@ -291,18 +297,45 @@ export const FreeDashboard: React.FC = () => {
               {content?.dailySignals?.map((signal, index) => (
                 <Card key={index}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                      Daily Signal #{index + 1}
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{signal.pair}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge className={signal.direction === 'BUY' ? 'bg-green-500' : 'bg-red-500'}>
+                          {signal.direction}
+                        </Badge>
+                        <Badge variant="outline">{signal.status}</Badge>
+                      </div>
+                    </div>
+                    <CardDescription>
+                      Sent {new Date(signal.timestamp).toLocaleDateString()}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p>{signal.content}</p>
+                    <div className="grid md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Entry: </span>
+                        <span className="font-medium">{signal.entry}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Take Profit: </span>
+                        <span className="font-medium text-green-500">{signal.takeProfit}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Stop Loss: </span>
+                        <span className="font-medium text-red-500">{signal.stopLoss}</span>
+                      </div>
+                    </div>
+                    {signal.analysis && (
+                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm">{signal.analysis}</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )) || (
                 <Card>
                   <CardContent className="text-center py-8">
+                    <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Daily signals will appear here.</p>
                   </CardContent>
                 </Card>
@@ -333,7 +366,6 @@ export const FreeDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Payment Modal */}
         <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
           <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-transparent border-none shadow-none">
             {selectedProgram && (

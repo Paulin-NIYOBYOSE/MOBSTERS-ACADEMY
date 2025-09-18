@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,8 +18,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    program: 'free',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,19 +31,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     }));
     setError('');
   };
 
-  const handleProgramChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      program: value,
-    }));
-  };
-
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     if (!formData.name.trim()) {
       setError('Name is required');
       return false;
@@ -67,27 +58,22 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!validateForm()) return;
 
     setLoading(true);
     setError('');
 
     try {
-      // ✅ pass 4 arguments
-      const registered = await register(
-        formData.email,
-        formData.name,
-        formData.password,
-        formData.program,
-      );
-
-      if (registered) {
+      const success = await register(formData.email, formData.name, formData.password);
+      
+      if (success) {
         setSuccess(true);
         toast({
           title: 'Registration successful!',
-          description: 'Your account has been created. Redirecting to sign in...',
+          description: 'Your account has been created. Please sign in to continue.',
         });
-
+        
         setTimeout(() => {
           window.location.href = '/login';
           onSuccess?.();
@@ -95,9 +81,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
       } else {
         setError('Registration failed. Please try again.');
       }
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setError(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -116,10 +102,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <Button
-            variant="cta"
-            className="w-full"
+          <Button 
+            variant="cta" 
             onClick={() => window.location.href = '/login'}
+            className="w-full"
           >
             Go to Sign In
           </Button>
@@ -133,7 +119,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         <CardDescription>
-          Join Mobsters Forex Academy and start your trading journey
+          Join Mobsters Forex Academy community and start your trading journey
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -144,7 +130,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             </Alert>
           )}
 
-          {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input
@@ -158,7 +143,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
             <Input
@@ -172,22 +156,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             />
           </div>
 
-          {/* Program */}
-          <div className="space-y-2">
-            <Label htmlFor="program">Choose Your Program</Label>
-            <Select value={formData.program} onValueChange={handleProgramChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a program" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free Community Access</SelectItem>
-                <SelectItem value="academy">6-Month Academy Program</SelectItem>
-                <SelectItem value="mentorship">Monthly Mentorship Program</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <div className="relative">
@@ -217,7 +185,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
@@ -231,7 +198,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             />
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             variant="cta"
@@ -249,7 +215,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
           </Button>
         </form>
 
-        {/* Switch to Login */}
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}

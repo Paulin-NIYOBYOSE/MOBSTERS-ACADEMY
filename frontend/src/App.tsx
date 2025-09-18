@@ -14,6 +14,7 @@ import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 import { AcademyDashboard } from "./components/dashboards/AcademyDashboard";
 import { MentorshipDashboard } from "./components/dashboards/MentorshipDashboard";
 import { useAuth } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +33,8 @@ const DashboardRouter = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+ <ErrorBoundary>
+   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -110,6 +112,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+ </ErrorBoundary>
 );
 
 export default App;

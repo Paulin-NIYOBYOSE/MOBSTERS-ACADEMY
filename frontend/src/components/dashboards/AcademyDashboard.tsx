@@ -4,18 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Play, 
-  BookOpen, 
-  Calendar, 
-  Users, 
-  CheckCircle, 
-  Clock,
-  FileText,
-  Award,
-  TrendingUp,
-  Download
-} from 'lucide-react';
+import { Play, BookOpen, Calendar, Users, CheckCircle, FileText, Award, TrendingUp, Download } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,26 +18,34 @@ interface AcademyContent {
 
 export const AcademyDashboard: React.FC = () => {
   const [content, setContent] = useState<AcademyContent | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [signals, setSignals] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadAcademyContent();
-    
-    // Auto-refresh every 3 minutes for academy content
     const interval = setInterval(() => {
       loadAcademyContent();
       setLastRefresh(new Date());
     }, 3 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
 
   const loadAcademyContent = async () => {
     try {
-      const data = await authService.getAcademyContent();
-      setContent(data);
+      const [contentData, coursesData, signalsData, sessionsData] = await Promise.all([
+        authService.getAcademyContent(),
+        authService.getCourses(),
+        authService.getSignals(),
+        authService.getLiveSessions(),
+      ]);
+      setContent(contentData);
+      setCourses(coursesData);
+      setSignals(signalsData);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Failed to load academy content:', error);
       toast({
@@ -74,7 +71,6 @@ export const AcademyDashboard: React.FC = () => {
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50/30 via-background to-purple-50/30 dark:from-background dark:via-background dark:to-muted/30 min-h-full">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -91,9 +87,9 @@ export const AcademyDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   loadAcademyContent();
                   setLastRefresh(new Date());
@@ -107,8 +103,7 @@ export const AcademyDashboard: React.FC = () => {
               </div>
             </div>
           </div>
-          
-          {/* Progress Bar */}
+
           <Card className="border-l-4 border-l-blue-500">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -138,7 +133,6 @@ export const AcademyDashboard: React.FC = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Quick Stats */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Completed Lessons</CardTitle>
@@ -156,65 +150,42 @@ export const AcademyDashboard: React.FC = () => {
                   <FileText className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{content?.assignments?.filter(a => a.submitted).length || 0}</div>
+                  <div className="text-2xl font-bold">{content?.assignments?.filter((a: any) => a.submitted).length || 0}</div>
                   <p className="text-xs text-muted-foreground">of {content?.assignments?.length || 0} submitted</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Live Sessions</CardTitle>
+                  <CardTitle className="text-sm font-medium">Next Live Session</CardTitle>
                   <Calendar className="h-4 w-4 text-purple-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{content?.progress?.attendedSessions || 0}</div>
-                  <p className="text-xs text-muted-foreground">sessions attended</p>
+                  <div className="text-sm font-bold">{content?.liveSession?.title || 'No upcoming session'}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {content?.liveSession?.scheduledTime
+                      ? new Date(content.liveSession.scheduledTime).toLocaleDateString()
+                      : 'Check schedule'}
+                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Journal Entries</CardTitle>
+                  <CardTitle className="text-sm font-medium">Trading Journal</CardTitle>
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{content?.tradingJournal?.entries?.length || 0}</div>
-                  <p className="text-xs text-muted-foreground">trades recorded</p>
+                  <div className="text-2xl font-bold">{content?.tradingJournal?.totalTrades || 0}</div>
+                  <p className="text-xs text-muted-foreground">Trades logged</p>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Upcoming Session */}
-            {content?.liveSession && (
-              <Card className="border-l-4 border-l-purple-500">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-purple-500" />
-                    Next Live Session
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold mb-1">{content.liveSession.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(content.liveSession.scheduledTime).toLocaleDateString()} at{' '}
-                        {new Date(content.liveSession.scheduledTime).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <Button variant="cta">
-                      <Users className="w-4 h-4 mr-2" />
-                      Join Session
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
 
           <TabsContent value="courses">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {content?.courses?.map((course, index) => (
+              {courses.map((course, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -252,23 +223,35 @@ export const AcademyDashboard: React.FC = () => {
 
           <TabsContent value="live">
             <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-purple-500" />
-                    Weekly Live Sessions
-                  </CardTitle>
-                  <CardDescription>
-                    Interactive sessions with your mentor and fellow students.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              {sessions.map((session, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-purple-500" />
+                      {session.title}
+                    </CardTitle>
+                    <CardDescription>{session.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Scheduled {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString()}
+                      </p>
+                      <Button variant="cta">
+                        <Users className="w-4 h-4 mr-2" />
+                        Join Session
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )) || (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Live session schedule will appear here.</p>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 

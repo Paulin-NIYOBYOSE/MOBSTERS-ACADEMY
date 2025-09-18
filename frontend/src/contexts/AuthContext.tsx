@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User } from '@/services/authService';
+import Cookies from 'js-cookie';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, name: string, password: string, program: string) => Promise<boolean>; // added program
+  register: (email: string, name: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
 }
-
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,13 +32,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = authService.getAccessToken();
+      const token = localStorage.getItem('accessToken');
       if (token) {
         try {
           const userData = await authService.getCurrentUser();
           setUser(userData);
         } catch (error) {
-          authService.clearTokens();
+          console.error('Failed to fetch user:', error);
+          localStorage.removeItem('accessToken');
+          Cookies.remove('refreshToken');
         }
       }
       setLoading(false);
@@ -49,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const tokens = await authService.login(email, password);
+      await authService.login(email, password);
       const userData = await authService.getCurrentUser();
       setUser(userData);
       return true;
@@ -72,6 +74,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     authService.logout();
     setUser(null);
+    localStorage.removeItem('accessToken');
+    Cookies.remove('refreshToken');
   };
 
   const hasRole = (role: string): boolean => {

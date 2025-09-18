@@ -3,18 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  TrendingUp, 
-  Calendar, 
-  MessageCircle, 
-  Award, 
-  Target,
-  BarChart3,
-  Star,
-  Zap,
-  Crown
-} from 'lucide-react';
+import { Users, TrendingUp, Calendar, MessageCircle, Award, Target, BarChart3, Star, Crown } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,26 +17,34 @@ interface MentorshipContent {
 
 export const MentorshipDashboard: React.FC = () => {
   const [content, setContent] = useState<MentorshipContent | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [signals, setSignals] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     loadMentorshipContent();
-    
-    // Auto-refresh every 2 minutes for mentorship (most dynamic content)
     const interval = setInterval(() => {
       loadMentorshipContent();
       setLastRefresh(new Date());
     }, 2 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
 
   const loadMentorshipContent = async () => {
     try {
-      const data = await authService.getMentorshipContent();
-      setContent(data);
+      const [contentData, coursesData, signalsData, sessionsData] = await Promise.all([
+        authService.getMentorshipContent(),
+        authService.getCourses(),
+        authService.getSignals(),
+        authService.getLiveSessions(),
+      ]);
+      setContent(contentData);
+      setCourses(coursesData);
+      setSignals(signalsData);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Failed to load mentorship content:', error);
       toast({
@@ -71,7 +68,6 @@ export const MentorshipDashboard: React.FC = () => {
   return (
     <div className="p-6 bg-gradient-to-br from-green-50/30 via-background to-teal-50/30 dark:from-background dark:via-background dark:to-muted/30 min-h-full">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -88,9 +84,9 @@ export const MentorshipDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   loadMentorshipContent();
                   setLastRefresh(new Date());
@@ -105,7 +101,6 @@ export const MentorshipDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Performance Overview */}
           <Card className="border-l-4 border-l-green-500">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -155,7 +150,6 @@ export const MentorshipDashboard: React.FC = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Upcoming Session */}
               <Card className="md:col-span-2 lg:col-span-1 border-green-200 dark:border-green-800">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -166,122 +160,78 @@ export const MentorshipDashboard: React.FC = () => {
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-semibold">Advanced Risk Management</h4>
+                      <h4 className="font-semibold">{content?.mentorshipSessions[0]?.title || 'No upcoming session'}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Tomorrow, 3:00 PM EST
+                        {content?.mentorshipSessions[0]?.date
+                          ? `${new Date(content.mentorshipSessions[0].date).toLocaleDateString()} at ${new Date(content.mentorshipSessions[0].date).toLocaleTimeString()}`
+                          : 'Check schedule for updates'}
                       </p>
                     </div>
-                    <Button variant="cta" className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600">
+                    <Button variant="cta">
                       <Users className="w-4 h-4 mr-2" />
-                      Join Call
+                      Join Session
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Latest Signal */}
-              <Card className="border-blue-200 dark:border-blue-800">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-500" />
-                    Latest Signal
+                    <Star className="w-5 h-5 text-purple-500" />
+                    Featured Strategy
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">EUR/USD</span>
-                      <Badge className="bg-green-500 text-white">BUY</Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Entry: 1.0850<br/>
-                      TP: 1.0920<br/>
-                      SL: 1.0800
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full">
-                      View Analysis
+                  <div className="space-y-3">
+                    <h4 className="font-semibold">{content?.advancedStrategies[0]?.title || 'No strategy available'}</h4>
+                    <p className="text-sm text-muted-foreground">{content?.advancedStrategies[0]?.description || 'Check back for new strategies'}</p>
+                    <Button variant="cta" size="sm" className="w-full">
+                      Learn Strategy
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Active Challenge */}
-              <Card className="border-purple-200 dark:border-purple-800">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-500" />
-                    Monthly Challenge
+                    <Target className="w-5 h-5 text-orange-500" />
+                    Active Challenge
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Consistency Challenge</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Maintain 70%+ win rate
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div className="bg-purple-500 h-2 rounded-full" style={{ width: '65%' }}></div>
-                      </div>
-                      <span className="text-sm font-medium">65%</span>
-                    </div>
+                  <div className="space-y-3">
+                    <h4 className="font-semibold">{content?.challenges[0]?.title || 'No active challenge'}</h4>
+                    <p className="text-sm text-muted-foreground">{content?.challenges[0]?.description || 'Join a challenge to compete!'}</p>
+                    <Button variant="cta" size="sm" className="w-full">
+                      View Challenge
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary" />
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-                    <MessageCircle className="w-6 h-6 text-blue-500" />
-                    <span>Ask Mentor</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-                    <BarChart3 className="w-6 h-6 text-green-500" />
-                    <span>View Analytics</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-                    <Star className="w-6 h-6 text-yellow-500" />
-                    <span>Rate Session</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-                    <Award className="w-6 h-6 text-purple-500" />
-                    <span>Leaderboard</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="sessions">
             <div className="space-y-4">
-              {content?.mentorshipSessions?.map((session, index) => (
-                <Card key={index}>
+              {sessions.map((session, index) => (
+                <Card key={index} className="border-l-4 border-l-green-500">
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{session.title}</CardTitle>
-                      <Badge variant={session.status === 'upcoming' ? 'default' : 'secondary'}>
-                        {session.status}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      {new Date(session.scheduledTime).toLocaleDateString()} at{' '}
-                      {new Date(session.scheduledTime).toLocaleTimeString()}
-                    </CardDescription>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-green-500" />
+                      {session.title}
+                    </CardTitle>
+                    <CardDescription>{session.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">{session.description}</p>
-                      <Button variant={session.status === 'upcoming' ? 'cta' : 'outline'}>
-                        {session.status === 'upcoming' ? 'Join Session' : 'View Recording'}
+                      <p className="text-sm text-muted-foreground">
+                        Scheduled {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString()}
+                      </p>
+                      <Button variant="cta">
+                        <Users className="w-4 h-4 mr-2" />
+                        Join Session
                       </Button>
                     </div>
                   </CardContent>
@@ -290,7 +240,7 @@ export const MentorshipDashboard: React.FC = () => {
                 <Card>
                   <CardContent className="text-center py-8">
                     <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Mentorship sessions will appear here.</p>
+                    <p className="text-muted-foreground">Live sessions will appear here.</p>
                   </CardContent>
                 </Card>
               )}
@@ -300,12 +250,12 @@ export const MentorshipDashboard: React.FC = () => {
           <TabsContent value="strategies">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content?.advancedStrategies?.map((strategy, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
+                <Card key={index}>
                   <CardHeader>
-                    <Badge variant="secondary" className="w-fit mb-2">
-                      {strategy.category}
-                    </Badge>
-                    <CardTitle className="text-lg">{strategy.title}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Star className="w-5 h-5 text-purple-500" />
+                      {strategy.title}
+                    </CardTitle>
                     <CardDescription>{strategy.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -339,11 +289,11 @@ export const MentorshipDashboard: React.FC = () => {
 
           <TabsContent value="signals">
             <div className="space-y-4">
-              {content?.signals?.map((signal, index) => (
+              {signals.map((signal, index) => (
                 <Card key={index} className="border-l-4 border-l-blue-500">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{signal.pair}</CardTitle>
+                      <CardTitle className="text-lg">{signal.title}</CardTitle>
                       <div className="flex items-center gap-2">
                         <Badge className={signal.direction === 'BUY' ? 'bg-green-500' : 'bg-red-500'}>
                           {signal.direction}
@@ -352,7 +302,7 @@ export const MentorshipDashboard: React.FC = () => {
                       </div>
                     </div>
                     <CardDescription>
-                      Sent {new Date(signal.timestamp).toLocaleDateString()}
+                      Sent {new Date(signal.createdAt).toLocaleDateString()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -370,9 +320,9 @@ export const MentorshipDashboard: React.FC = () => {
                         <span className="font-medium text-red-500">{signal.stopLoss}</span>
                       </div>
                     </div>
-                    {signal.analysis && (
+                    {signal.content && (
                       <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm">{signal.analysis}</p>
+                        <p className="text-sm">{signal.content}</p>
                       </div>
                     )}
                   </CardContent>
@@ -411,7 +361,7 @@ export const MentorshipDashboard: React.FC = () => {
                         <span className="text-sm font-medium">{challenge.progress}%</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-purple-500 h-2 rounded-full transition-all"
                           style={{ width: `${challenge.progress}%` }}
                         ></div>
