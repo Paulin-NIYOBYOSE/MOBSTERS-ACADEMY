@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PendingRoleRequest } from '@prisma/client'; // optional, for type hints
 
 @Injectable()
 export class UsersService {
@@ -36,11 +35,14 @@ export class UsersService {
 
   async assignRoles(userId: number, roleNames: string[]) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     const roles = await this.prisma.role.findMany({ where: { name: { in: roleNames } } });
-    if (roles.length !== roleNames.length)
+    if (roles.length !== roleNames.length) {
       throw new BadRequestException('Invalid role names');
+    }
 
     await this.prisma.userRole.deleteMany({ where: { userId } });
     await this.prisma.userRole.createMany({
@@ -57,33 +59,23 @@ export class UsersService {
     });
   }
 
-async approveRoleRequest(requestId: number) {
-  try {
+  async approveRoleRequest(requestId: number) {
     const request = await this.prisma.pendingRoleRequest.findUnique({
       where: { id: requestId },
       include: { user: true },
     });
     if (!request) throw new NotFoundException('Request not found');
 
-    console.log('Approving request:', request);
-
     const roleMap = {
-      free: 'community_student',
       academy: 'academy_student',
       mentorship: 'mentorship_student',
     };
 
-    const roleName = roleMap[request.program.trim().toLowerCase()];
-    if (!roleName) throw new BadRequestException('Invalid program');
+    const role = await this.prisma.role.findUnique({ where: { name: roleMap[request.program] } });
+    if (!role) throw new BadRequestException('Invalid program');
 
-    const role = await this.prisma.role.findUnique({ where: { name: roleName } });
-    if (!role) throw new BadRequestException('Role not found in DB');
-
-    // Upsert avoids duplicate role assignment
-    await this.prisma.userRole.upsert({
-      where: { userId_roleId: { userId: request.userId, roleId: role.id } },
-      update: {},
-      create: { userId: request.userId, roleId: role.id },
+    await this.prisma.userRole.create({
+      data: { userId: request.userId, roleId: role.id },
     });
 
     await this.prisma.pendingRoleRequest.update({
@@ -92,12 +84,5 @@ async approveRoleRequest(requestId: number) {
     });
 
     return { message: 'Role assigned successfully' };
-  } catch (err) {
-    console.error('approveRoleRequest failed:', err);
-    throw err;
   }
-}
-
-
-
 }

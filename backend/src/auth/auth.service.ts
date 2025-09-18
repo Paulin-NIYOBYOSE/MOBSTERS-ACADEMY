@@ -14,33 +14,31 @@ export class AuthService {
     private usersService: UsersService,
   ) {}
 
-  async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (existingUser) {
-      throw new BadRequestException('Email already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        name: dto.name,
-        password: hashedPassword,
-      },
-    });
-
-    // Create pending role request if program selected
-    if (dto.program) {
-      await this.prisma.pendingRoleRequest.create({
-        data: {
-          userId: user.id,
-          program: dto.program,
-        },
-      });
-    }
-
-    return { message: 'User registered successfully', userId: user.id };
+async register(dto: RegisterDto) {
+  const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  if (existingUser) {
+    throw new BadRequestException('Email already exists');
   }
+
+  const hashedPassword = await bcrypt.hash(dto.password, 10);
+  const user = await this.prisma.user.create({
+    data: {
+      email: dto.email,
+      name: dto.name,
+      password: hashedPassword,
+    },
+  });
+
+  // Assign default 'community_student' role
+  const communityRole = await this.prisma.role.findUnique({ where: { name: 'community_student' } });
+  if (communityRole) {
+    await this.prisma.userRole.create({
+      data: { userId: user.id, roleId: communityRole.id },
+    });
+  }
+
+  return { message: 'User registered successfully', userId: user.id };
+}
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });

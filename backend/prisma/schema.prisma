@@ -15,6 +15,9 @@ model User {
   roles         UserRole[]
   refreshTokens RefreshToken[]
   pendingRequests PendingRoleRequest[]
+  uploadedCourses Course[]
+  uploadedSessions LiveSession[]
+  uploadedSignals Signal[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -51,11 +54,45 @@ model RefreshToken {
 model PendingRoleRequest {
   id        Int      @id @default(autoincrement())
   userId    Int
-  program   String   // 'free', 'academy', 'mentorship'
+  program   String   // 'academy', 'mentorship'
   status    String   @default("pending") // 'pending', 'paid', 'approved', 'rejected'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, program])
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  roleAccess  String[] // e.g., ['academy_student', 'community_student']
+  uploadedBy  Int
+  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LiveSession {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  roleAccess  String[]
+  uploadedBy  Int
+  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Signal {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  roleAccess  String[]
+  uploadedBy  Int
+  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

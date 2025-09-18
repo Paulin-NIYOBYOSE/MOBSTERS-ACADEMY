@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create roles
-  const roles = ['admin', 'mentor', 'academy_student', 'mentorship_student', 'community_student'];
+  // Create roles (restored mentorship_student)
+  const roles = ['admin', 'academy_student', 'mentorship_student', 'community_student'];
   for (const roleName of roles) {
     await prisma.role.upsert({
       where: { name: roleName },
@@ -17,7 +17,7 @@ async function main() {
   // Create initial admin user
   const adminEmail = 'admin@example.com';
   const adminPassword = 'adminpassword';
-  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
@@ -25,11 +25,11 @@ async function main() {
     create: {
       email: adminEmail,
       name: 'Admin User',
-      password: hashedAdminPassword,
+      password: hashedPassword,
     },
   });
 
-  // Assign admin role
+  // Assign admin role to admin user
   const adminRole = await prisma.role.findUnique({ where: { name: 'admin' } });
   if (adminRole) {
     await prisma.userRole.upsert({
@@ -39,54 +39,34 @@ async function main() {
     });
   }
 
-  // Create sample normal users
-  const sampleUsers = [
-    { email: 'alice@example.com', name: 'Alice', password: 'alice123', role: 'academy_student' },
-    { email: 'bob@example.com', name: 'Bob', password: 'bob123', role: 'mentorship_student' },
-    { email: 'charlie@example.com', name: 'Charlie', password: 'charlie123', role: 'community_student' },
-  ];
+  // Seed sample courses
+  await prisma.course.createMany({
+    data: [
+      { title: 'Basic Trading Signals', content: 'Free signals for community students.', roleAccess: ['community_student'], uploadedBy: adminUser.id },
+      { title: 'Advanced Strategies', content: 'Premium academy content.', roleAccess: ['academy_student'], uploadedBy: adminUser.id },
+      { title: 'Personalized Trading Plan', content: 'Mentorship-specific sessions.', roleAccess: ['mentorship_student'], uploadedBy: adminUser.id },
+    ],
+  });
 
-  for (const u of sampleUsers) {
-    const hashedPw = await bcrypt.hash(u.password, 10);
-    const user = await prisma.user.upsert({
-      where: { email: u.email },
-      update: {},
-      create: {
-        email: u.email,
-        name: u.name,
-        password: hashedPw,
-      },
-    });
+  // Seed sample live sessions
+  await prisma.liveSession.createMany({
+    data: [
+      { title: 'Weekly Q&A', description: 'Free community session.', date: new Date(), roleAccess: ['community_student'], uploadedBy: adminUser.id },
+      { title: 'Strategy Workshop', description: 'Academy live class.', date: new Date(), roleAccess: ['academy_student'], uploadedBy: adminUser.id },
+      { title: '1:1 Review', description: 'Mentorship session.', date: new Date(), roleAccess: ['mentorship_student'], uploadedBy: adminUser.id },
+    ],
+  });
 
-    const role = await prisma.role.findUnique({ where: { name: u.role } });
-    if (role) {
-      await prisma.userRole.upsert({
-        where: { userId_roleId: { userId: user.id, roleId: role.id } },
-        update: {},
-        create: { userId: user.id, roleId: role.id },
-      });
-    }
+  // Seed sample signals
+  await prisma.signal.createMany({
+    data: [
+      { title: 'Daily Signal', content: 'Free daily market signal.', roleAccess: ['community_student'], uploadedBy: adminUser.id },
+      { title: 'Premium Alert', content: 'Academy premium alert.', roleAccess: ['academy_student'], uploadedBy: adminUser.id },
+      { title: 'VIP Trade Setup', content: 'Mentorship VIP setup.', roleAccess: ['mentorship_student'], uploadedBy: adminUser.id },
+    ],
+  });
 
-    // Give them a refresh token
-    await prisma.refreshToken.create({
-      data: {
-        hashedToken: `token-${u.email}`,
-        userId: user.id,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
-      },
-    });
-
-    // Add one pending role request
-    await prisma.pendingRoleRequest.create({
-      data: {
-        userId: user.id,
-        program: 'academy',
-        status: 'pending',
-      },
-    });
-  }
-
-  console.log('✅ Seeding completed: roles, admin, and sample users created.');
+  console.log('Seeding completed: roles created, admin user created, sample courses/sessions/signals seeded.');
 }
 
 main()
