@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, CreditCard } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { authService } from '@/services/authService';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, CreditCard } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { authService } from "@/services/authService";
+import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes"; // ✅ for detecting dark/light mode
 
 // Initialize Stripe
 const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51MExamplePublishableKey12345'
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+    "pk_test_51MExamplePublishableKey12345"
 );
 
 interface PaymentFormProps {
@@ -20,13 +33,18 @@ interface PaymentFormProps {
   onSuccess?: () => void;
 }
 
-const CheckoutForm: React.FC<PaymentFormProps> = ({ amount, program, onSuccess }) => {
+const CheckoutForm: React.FC<PaymentFormProps> = ({
+  amount,
+  program,
+  onSuccess,
+}) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const stripe = useStripe();
   const elements = useElements();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { theme } = useTheme(); // ✅ detect theme
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -36,56 +54,87 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ amount, program, onSuccess }
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     const cardElement = elements.getElement(CardElement);
 
     if (!cardElement) {
-      setError('Card element not found');
+      setError("Card element not found");
       setLoading(false);
       return;
     }
 
     try {
       // Create payment intent
-      const { client_secret } = await authService.createPaymentIntent(amount, user.id, program);
+      const { client_secret } = await authService.createPaymentIntent(
+        amount,
+        user.id,
+        program
+      );
 
       // Confirm payment
-      const { error: stripeError } = await stripe.confirmCardPayment(client_secret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: user.name,
-            email: user.email,
+      const { error: stripeError } = await stripe.confirmCardPayment(
+        client_secret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: user.name,
+              email: user.email,
+            },
           },
-        },
-      });
+        }
+      );
 
       if (stripeError) {
-        setError(stripeError.message || 'Payment failed');
+        setError(stripeError.message || "Payment failed");
       } else {
         toast({
-          title: 'Payment successful!',
-          description: 'Your enrollment has been processed. Refreshing your access...',
+          title: "Payment successful!",
+          description:
+            "Your enrollment has been processed. Refreshing your access...",
         });
-        
-        // Refresh user data to get updated roles
+
         setTimeout(() => {
           window.location.reload();
           onSuccess?.();
         }, 2000);
       }
     } catch (err: any) {
-      console.error('Payment error:', err);
-      setError(err.response?.data?.message || 'Payment failed. Please try again.');
+      console.error("Payment error:", err);
+      setError(
+        err.response?.data?.message || "Payment failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const programNames = {
-    academy: '6-Month Academy Program',
-    mentorship: 'Monthly Mentorship Program'
+    academy: "6-Month Academy Program",
+    mentorship: "Monthly Mentorship Program",
+  };
+
+  // ✅ Stripe color styling (explicit hex because Stripe can’t read Tailwind variables)
+  const cardElementOptions = {
+    style: {
+      base: {
+        fontSize: "16px",
+        fontFamily: "inherit",
+        color: theme === "dark" ? "#ffffff" : "#111827", // white in dark, gray-900 in light
+        "::placeholder": {
+          color: theme === "dark" ? "#9ca3af" : "#6b7280", // gray-400 vs gray-500
+        },
+        iconColor: theme === "dark" ? "#9ca3af" : "#6b7280",
+      },
+      invalid: {
+        color: "#ef4444", // red-500
+        iconColor: "#ef4444",
+      },
+      complete: {
+        color: theme === "dark" ? "#ffffff" : "#111827",
+      },
+    },
   };
 
   return (
@@ -96,7 +145,8 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ amount, program, onSuccess }
         </div>
         <CardTitle className="text-xl font-bold">Complete Payment</CardTitle>
         <CardDescription>
-          {programNames[program as keyof typeof programNames]} - ${(amount / 100).toFixed(2)}
+          {programNames[program as keyof typeof programNames]} - $
+          {(amount / 100).toFixed(2)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,19 +160,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ amount, program, onSuccess }
           <div className="space-y-2">
             <label className="text-sm font-medium">Card Details</label>
             <div className="border rounded-md p-3 bg-background">
-              <CardElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: 'hsl(var(--foreground))',
-                      '::placeholder': {
-                        color: 'hsl(var(--muted-foreground))',
-                      },
-                    },
-                  },
-                }}
-              />
+              <CardElement options={cardElementOptions} />
             </div>
           </div>
 
@@ -145,7 +183,8 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ amount, program, onSuccess }
 
         <div className="mt-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Secure payment powered by Stripe. Your card information is encrypted and secure.
+            Secure payment powered by Stripe. Your card information is encrypted
+            and secure.
           </p>
         </div>
       </CardContent>
