@@ -2,12 +2,12 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
+  Users,
   BookOpen,
-  Shield,
   Calendar,
-  TrendingUp,
   BarChart3,
-  Award,
+  DollarSign,
+  MessageSquare,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -31,38 +31,53 @@ import { authService } from "@/services/authService";
 const navigationItems = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/admin/overview",
     icon: Home,
-    roles: ["community_student", "academy_student", "admin"],
+    roles: ["admin"],
   },
   {
-    title: "Academy",
-    url: "/academy",
+    title: "Users",
+    url: "/admin/users",
+    icon: Users,
+    roles: ["admin"],
+  },
+  {
+    title: "Courses",
+    url: "/admin/courses",
     icon: BookOpen,
-    roles: ["academy_student", "admin"],
-    badge: "Premium",
+    roles: ["admin"],
   },
   {
-    title: "Admin Panel",
-    url: "/admin",
-    icon: Shield,
+    title: "Live Sessions",
+    url: "/admin/sessions",
+    icon: Calendar,
     roles: ["admin"],
-    badge: "Admin",
   },
   {
-    title: "Community Panel",
-    url: "/mentorship",
-    icon: Shield,
+    title: "Signals",
+    url: "/admin/signals",
+    icon: BarChart3,
     roles: ["admin"],
-    badge: "Admin",
+  },
+  {
+    title: "Transactions",
+    url: "/admin/transactions",
+    icon: DollarSign,
+    roles: ["admin"],
+  },
+  {
+    title: "Messages",
+    url: "/admin/messages",
+    icon: MessageSquare,
+    roles: ["admin"],
   },
 ];
 
 const quickActions = [
-  { title: "Live Sessions", icon: Calendar, action: "sessions" },
-  { title: "Trading Signals", icon: TrendingUp, action: "signals" },
-  { title: "Performance", icon: BarChart3, action: "performance" },
-  { title: "Leaderboard", icon: Award, action: "leaderboard" },
+  { title: "Manage Users", icon: Users, action: "users" },
+  { title: "Add Course", icon: BookOpen, action: "courses" },
+  { title: "Schedule Session", icon: Calendar, action: "sessions" },
+  { title: "Create Signal", icon: BarChart3, action: "signals" },
 ];
 
 export function DashboardSidebar() {
@@ -157,14 +172,6 @@ export function DashboardSidebar() {
                       {!collapsed && (
                         <div className="flex items-center justify-between flex-1 min-w-0">
                           <span className="truncate">{item.title}</span>
-                          {item.badge && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs ml-2 shrink-0"
-                            >
-                              {item.badge}
-                            </Badge>
-                          )}
                         </div>
                       )}
                     </NavLink>
@@ -174,28 +181,6 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Quick Actions */}
-        {!collapsed && (
-          <SidebarGroup className="mt-6">
-            <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <div className="grid grid-cols-2 gap-2">
-                {quickActions.map((action) => (
-                  <Button
-                    key={action.title}
-                    variant="outline"
-                    size="sm"
-                    className="h-auto flex-col gap-1 p-3 text-xs"
-                  >
-                    <action.icon className="w-4 h-4" />
-                    <span className="truncate">{action.title}</span>
-                  </Button>
-                ))}
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
 
         {/* Settings & Logout */}
         <div className="mt-auto pt-4 border-t border-border/50">

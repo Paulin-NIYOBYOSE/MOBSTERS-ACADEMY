@@ -1,56 +1,57 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Loader2, UserPlus } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-interface RegisterFormProps {
-  onSuccess?: () => void;
-  onSwitchToLogin?: () => void;
-}
-
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin }) => {
+export const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const { register } = useAuth();
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
-    setError('');
+    setError("");
   };
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError("Name is required");
       return false;
     }
     if (!formData.email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return false;
     }
     return true;
@@ -58,32 +59,39 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const success = await register(formData.email, formData.name, formData.password);
-      
+      const success = await register(
+        formData.email,
+        formData.name,
+        formData.password
+      );
+
       if (success) {
         setSuccess(true);
         toast({
-          title: 'Registration successful!',
-          description: 'Your account has been created. Please sign in to continue.',
+          title: "Registration successful!",
+          description:
+            "Your account has been created. Please sign in to continue.",
         });
-        
+
         setTimeout(() => {
-          window.location.href = '/login';
-          onSuccess?.();
+          window.location.href = "/login";
         }, 2000);
       } else {
-        setError('Registration failed. Please try again.');
+        setError("Registration failed. Please try again.");
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
-      setError(error.response?.data?.message || 'Registration failed. Please try again.');
+      console.error("Registration error:", error);
+      setError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -96,15 +104,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <UserPlus className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Registration Successful!</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Registration Successful!
+          </CardTitle>
           <CardDescription>
-            Your account has been created successfully. Redirecting to sign in...
+            Your account has been created successfully. Redirecting to sign
+            in...
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <Button 
-            variant="cta" 
-            onClick={() => window.location.href = '/login'}
+          <Button
+            variant="cta"
+            onClick={() => (window.location.href = "/login")}
             className="w-full"
           >
             Go to Sign In
@@ -162,7 +173,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               <Input
                 id="password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter your password"
@@ -210,21 +221,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                 Creating Account...
               </>
             ) : (
-              'Create Account'
+              "Create Account"
             )}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Button
-              variant="link"
-              onClick={onSwitchToLogin}
-              className="p-0 h-auto font-semibold text-primary"
+            Already have an account?{" "}
+            <a
+              href="/login"
+              className="font-semibold text-primary hover:text-primary-dark transition-colors"
             >
               Sign in here
-            </Button>
+            </a>
           </p>
         </div>
       </CardContent>

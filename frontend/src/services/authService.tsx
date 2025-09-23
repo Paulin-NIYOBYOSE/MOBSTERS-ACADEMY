@@ -7,6 +7,9 @@ export interface User {
   email: string;
   name: string;
   roles: string[];
+  plan: string;
+  status: string;
+  subscriptionEnd?: string;
 }
 
 interface Tokens {
@@ -17,6 +20,13 @@ interface Tokens {
 interface RegisterResponse {
   message: string;
   userId: number;
+}
+
+interface OverviewStats {
+  totalStudents: number;
+  activeMentorships: number;
+  revenueThisMonth: number;
+  expiringSoon: User[];
 }
 
 const api: AxiosInstance = axios.create({
@@ -162,6 +172,21 @@ export const authService = {
     (await api.get("/admin/role-requests")).data,
   approveRoleRequest: async (id: number) =>
     (await api.post(`/admin/role-requests/${id}/approve`)).data,
+
+  // User Management
+  getUsers: async (): Promise<User[]> => (await api.get("/admin/users")).data,
+  updateUser: async (id: number, userData: { plan: string; status: string }) =>
+    (await api.put(`/admin/users/${id}`, userData)).data,
+
+  // Subscription Management
+  extendSubscription: async (userId: number) =>
+    (await api.post(`/admin/subscriptions/${userId}/extend`)).data,
+  cancelSubscription: async (userId: number) =>
+    (await api.post(`/admin/subscriptions/${userId}/cancel`)).data,
+
+  // Overview Stats
+  getOverviewStats: async (): Promise<OverviewStats> =>
+    (await api.get("/admin/overview")).data,
 
   // Payments
   createPaymentIntent: async (amount: number, id: number, program: string) =>
