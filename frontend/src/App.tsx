@@ -20,99 +20,88 @@ const queryClient = new QueryClient();
 
 const DashboardRouter = () => {
   const { hasRole } = useAuth();
-  
-  if (hasRole('admin')) {
-    return <AdminDashboard />;
-  } else if (hasRole('academy_student')) {
-    return <AcademyDashboard />;
-  } else if (hasRole('mentorship_student')) {
-    return <MentorshipDashboard />;
-  } else {
-    return <FreeDashboard />;
-  }
+  if (hasRole("admin")) return <AdminDashboard />;
+  if (hasRole("academy_student")) return <AcademyDashboard />;
+  if (hasRole("mentorship_student")) return <MentorshipDashboard />;
+  return <FreeDashboard />;
 };
 
 const App = () => (
- <ErrorBoundary>
-   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Index />} />
-          
-          {/* Auth Routes */}
-          <Route 
-            path="/login" 
-            element={
-              <div className="min-h-screen flex items-center justify-center p-6">
-                <LoginForm />
-              </div>
-            } 
-          />
-          <Route 
-            path="/register" 
-            element={
-              <div className="min-h-screen flex items-center justify-center p-6">
-                <RegisterForm />
-              </div>
-            } 
-          />
-          
-          {/* Protected Dashboard Routes */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <DashboardRouter />
-                </DashboardLayout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requiredRoles={['admin']}>
-                <DashboardLayout>
-                  <AdminDashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/academy" 
-            element={
-              <ProtectedRoute requiredRoles={['academy_student', 'admin']}>
-                <DashboardLayout>
-                  <AcademyDashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/mentorship" 
-            element={
-              <ProtectedRoute requiredRoles={['mentorship_student', 'admin']}>
-                <DashboardLayout>
-                  <MentorshipDashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Redirects */}
-          <Route path="/free" element={<Navigate to="/dashboard" replace />} />
-          
-          {/* 404 Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
- </ErrorBoundary>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<Index />} />
+            <Route
+              path="/login"
+              element={
+                <div className="min-h-screen flex items-center justify-center p-6">
+                  <LoginForm />
+                </div>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <div className="min-h-screen flex items-center justify-center p-6">
+                  <RegisterForm />
+                </div>
+              }
+            />
+
+            {/* Protected */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <DashboardRouter />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRoles={["admin"]}>
+                  <DashboardLayout>
+                    <AdminDashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academy"
+              element={
+                <ProtectedRoute requiredRoles={["academy_student", "admin"]}>
+                  <DashboardLayout>
+                    <AcademyDashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mentorship"
+              element={
+                <ProtectedRoute requiredRoles={["mentorship_student", "admin"]}>
+                  <DashboardLayout>
+                    <MentorshipDashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

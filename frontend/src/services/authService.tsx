@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import Cookies from "js-cookie";
 
 export interface User {
-  avatarUrl: string;
+  avatarUrl?: string;
   id: number;
   email: string;
   name: string;
@@ -24,14 +24,16 @@ const api: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Attach access token
 api.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem("accessToken");
-  if (accessToken) {
+  if (accessToken && config.headers) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 });
 
+// Refresh token interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -51,7 +53,9 @@ api.interceptors.response.use(
           secure: true,
           sameSite: "strict",
         });
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        }
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
@@ -65,12 +69,12 @@ api.interceptors.response.use(
 );
 
 export const authService = {
-  async register(
+  register: async (
     email: string,
     name: string,
     password: string
-  ): Promise<RegisterResponse> {
-    const { data } = await api.post("/auth/register", {
+  ): Promise<RegisterResponse> => {
+    const { data } = await api.post<RegisterResponse>("/auth/register", {
       email,
       name,
       password,
@@ -78,7 +82,7 @@ export const authService = {
     return data;
   },
 
-  async login(email: string, password: string): Promise<Tokens> {
+  login: async (email: string, password: string): Promise<Tokens> => {
     const { data } = await api.post<Tokens>("/auth/login", { email, password });
     localStorage.setItem("accessToken", data.accessToken);
     Cookies.set("refreshToken", data.refreshToken, {
@@ -89,178 +93,78 @@ export const authService = {
     return data;
   },
 
-  async getCurrentUser(): Promise<User> {
+  getCurrentUser: async (): Promise<User> => {
     const { data } = await api.get<User>("/auth/me");
     return data;
   },
 
-  async logout(): Promise<void> {
+  logout: async (): Promise<void> => {
     await api.post("/auth/logout");
     localStorage.removeItem("accessToken");
     Cookies.remove("refreshToken");
   },
 
-  async getCommunityContent(): Promise<any> {
-    const { data } = await api.get("/community/content");
-    return data;
-  },
+  getAccessToken: (): string | null => localStorage.getItem("accessToken"),
 
-  async getAcademyContent(): Promise<any> {
-    const { data } = await api.get("/academy/content");
-    return data;
-  },
+  // Content & course APIs
+  getCommunityContent: async () => (await api.get("/community/content")).data,
+  getAcademyContent: async () => (await api.get("/academy/content")).data,
+  getMentorshipContent: async () =>
+    (await api.get("/mentor/mentorship-content")).data,
 
-  async getMentorshipContent(): Promise<any> {
-    const { data } = await api.get("/mentor/mentorship-content");
-    return data;
-  },
-
-  async getCourses(): Promise<
-    {
-      id: number;
-      title: string;
-      content: string;
-      roleAccess: string[];
-      createdAt: string;
-    }[]
-  > {
-    const { data } = await api.get("/courses");
-    return data;
-  },
-
-  async createCourse(courseData: {
+  getCourses: async () => (await api.get("/courses")).data,
+  createCourse: async (courseData: {
     title: string;
     content: string;
     roleAccess: string[];
-  }): Promise<any> {
-    const { data } = await api.post("/courses", courseData);
-    return data;
-  },
-
-  async updateCourse(
-    courseId: number,
+  }) => (await api.post("/courses", courseData)).data,
+  updateCourse: async (
+    id: number,
     courseData: { title: string; content: string; roleAccess: string[] }
-  ): Promise<any> {
-    const { data } = await api.put(`/courses/${courseId}`, courseData);
-    return data;
-  },
+  ) => (await api.put(`/courses/${id}`, courseData)).data,
+  deleteCourse: async (id: number) => await api.delete(`/courses/${id}`),
 
-  async deleteCourse(courseId: number): Promise<void> {
-    await api.delete(`/courses/${courseId}`);
-  },
-
-  async createLiveSession(sessionData: {
+  // Live sessions
+  createLiveSession: async (data: {
     title: string;
     description: string;
     date: string;
     roleAccess: string[];
-  }): Promise<any> {
-    const { data } = await api.post("/courses/live-session", sessionData);
-    return data;
-  },
-
-  async updateLiveSession(
-    sessionId: number,
-    sessionData: {
+  }) => (await api.post("/courses/live-session", data)).data,
+  updateLiveSession: async (
+    id: number,
+    data: {
       title: string;
       description: string;
       date: string;
       roleAccess: string[];
     }
-  ): Promise<any> {
-    const { data } = await api.put(
-      `/courses/live-session/${sessionId}`,
-      sessionData
-    );
-    return data;
-  },
+  ) => (await api.put(`/courses/live-session/${id}`, data)).data,
+  deleteLiveSession: async (id: number) =>
+    await api.delete(`/courses/live-session/${id}`),
+  getLiveSessions: async () => (await api.get("/courses/live-sessions")).data,
 
-  async deleteLiveSession(sessionId: number): Promise<void> {
-    await api.delete(`/courses/live-session/${sessionId}`);
-  },
-
-  async getLiveSessions(): Promise<
-    {
-      id: number;
-      title: string;
-      description: string;
-      date: string;
-      roleAccess: string[];
-      createdAt: string;
-    }[]
-  > {
-    const { data } = await api.get("/courses/live-sessions");
-    return data;
-  },
-
-  async createSignal(signalData: {
+  // Signals
+  createSignal: async (data: {
     title: string;
     content: string;
     roleAccess: string[];
-  }): Promise<any> {
-    const { data } = await api.post("/courses/signal", signalData);
-    return data;
-  },
-
-  async updateSignal(
-    signalId: number,
-    signalData: { title: string; content: string; roleAccess: string[] }
-  ): Promise<any> {
-    const { data } = await api.put(`/courses/signal/${signalId}`, signalData);
-    return data;
-  },
-
-  async deleteSignal(signalId: number): Promise<void> {
-    await api.delete(`/courses/signal/${signalId}`);
-  },
-
-  async getSignals(): Promise<
-    {
-      id: number;
-      title: string;
-      content: string;
-      roleAccess: string[];
-      createdAt: string;
-    }[]
-  > {
-    const { data } = await api.get("/courses/signals");
-    return data;
-  },
-
-  async getPendingRoleRequests(): Promise<
-    {
-      id: number;
-      userId: number;
-      program: string;
-      status: string;
-      createdAt: string;
-      user: { email: string; name: string };
-    }[]
-  > {
-    const { data } = await api.get("/admin/role-requests");
-    return data;
-  },
-
-  async approveRoleRequest(requestId: number): Promise<any> {
-    const { data } = await api.post(
-      `/admin/role-requests/${requestId}/approve`
-    );
-    return data;
-  },
-
-  async createPaymentIntent(
-    amount: number,
+  }) => (await api.post("/courses/signal", data)).data,
+  updateSignal: async (
     id: number,
-    program: string
-  ): Promise<{ clientSecret: string }> {
-    const { data } = await api.post("/payment/create-payment-intent", {
-      amount,
-      program,
-    });
-    return data;
-  },
+    data: { title: string; content: string; roleAccess: string[] }
+  ) => (await api.put(`/courses/signal/${id}`, data)).data,
+  deleteSignal: async (id: number) => await api.delete(`/courses/signal/${id}`),
+  getSignals: async () => (await api.get("/courses/signals")).data,
 
-  getAccessToken(): string | null {
-    return localStorage.getItem("accessToken");
-  },
+  // Admin
+  getPendingRoleRequests: async () =>
+    (await api.get("/admin/role-requests")).data,
+  approveRoleRequest: async (id: number) =>
+    (await api.post(`/admin/role-requests/${id}/approve`)).data,
+
+  // Payments
+  createPaymentIntent: async (amount: number, id: number, program: string) =>
+    (await api.post("/payment/create-payment-intent", { amount, program }))
+      .data,
 };

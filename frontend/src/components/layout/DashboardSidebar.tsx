@@ -3,22 +3,20 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
   BookOpen,
-  Crown,
   Shield,
-  Users,
-  Settings,
-  TrendingUp,
   Calendar,
-  Award,
+  TrendingUp,
   BarChart3,
+  Award,
+  Settings,
   LogOut,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -51,9 +49,9 @@ const navigationItems = [
     roles: ["admin"],
     badge: "Admin",
   },
-   {
-    title: "Community panel",
-    url: "/mentoship",
+  {
+    title: "Community Panel",
+    url: "/mentorship",
     icon: Shield,
     roles: ["admin"],
     badge: "Admin",
@@ -68,28 +66,22 @@ const quickActions = [
 ];
 
 export function DashboardSidebar() {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { user, hasRole, logout } = useAuth();
-  const currentPath = location.pathname;
+  const { user, hasRole } = useAuth();
 
-  const isActive = (path: string) => currentPath === path;
-
-  const getNavClassName = (path: string) => {
-    return cn(
+  const isActive = (path: string) => location.pathname === path;
+  const getNavClassName = (path: string) =>
+    cn(
       "w-full justify-start transition-colors",
       isActive(path)
         ? "bg-primary text-primary-foreground font-medium"
         : "hover:bg-muted/50"
     );
-  };
 
-  const visibleItems = navigationItems.filter(
-    (item) =>
-      item.roles.some((role) => hasRole(role)) ||
-      (item.roles.includes("community_student") &&
-        (!user?.roles?.length || user.roles.includes("community_student")))
+  const visibleItems = navigationItems.filter((item) =>
+    item.roles.some((role) => hasRole(role))
   );
 
   return (
@@ -100,7 +92,7 @@ export function DashboardSidebar() {
       )}
     >
       <SidebarContent className="p-4">
-        {/* User Profile Section */}
+        {/* User Profile */}
         <div
           className={cn(
             "mb-6 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20",
@@ -124,11 +116,11 @@ export function DashboardSidebar() {
                   </p>
                 </div>
               </div>
-              {user?.roles && user.roles.length > 0 && (
+              {user?.roles?.length && (
                 <div className="flex flex-wrap gap-1">
-                  {user.roles.map((role, index) => (
+                  {user.roles.map((role, idx) => (
                     <Badge
-                      key={index}
+                      key={idx}
                       variant="secondary"
                       className="text-xs px-2 py-0.5"
                     >
@@ -217,12 +209,8 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={async () => {
-                  try {
-                    await authService.logout(); // perform logout
-                    window.location.href = "/"; // redirect to home page
-                  } catch (error) {
-                    console.error("Logout failed:", error);
-                  }
+                  await authService.logout();
+                  window.location.href = "/";
                 }}
                 className="text-destructive hover:text-destructive"
               >
