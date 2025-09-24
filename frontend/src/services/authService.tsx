@@ -180,6 +180,11 @@ export const authService = {
   },
   approveRoleRequest: async (id: number) =>
     (await api.post(`/role-requests/${id}/approve`)).data,
+  rejectRoleRequest: async (id: number) =>
+    (await api.post(`/role-requests/${id}/reject`)).data,
+  requestRole: async (program: 'academy' | 'mentorship') =>
+    (await api.post(`/role-requests`, { program })).data,
+  getMyRoleRequests: async () => (await api.get(`/me/role-requests`)).data,
 
   // User Management
   getUsers: async (): Promise<User[]> => (await api.get("/admin/users")).data,

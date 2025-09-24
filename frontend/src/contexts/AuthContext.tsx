@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,13 +31,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('accessToken');
       if (token) {
         try {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
+          await refreshUser();
         } catch (error) {
           console.error('Failed to fetch user:', error);
           localStorage.removeItem('accessToken');
@@ -47,13 +56,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initializeAuth();
+
+    // Refresh when window gains focus (e.g., after admin approves roles)
+    const onFocus = () => {
+      if (localStorage.getItem('accessToken')) {
+        refreshUser();
+      }
+    };
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onFocus();
+    });
+    window.addEventListener('focus', onFocus);
+
+    // Periodic refresh (every 45s) to pick up role changes
+    const interval = window.setInterval(() => {
+      if (localStorage.getItem('accessToken')) {
+        refreshUser();
+      }
+    }, 45 * 1000);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('visibilitychange', onFocus as any);
+      window.clearInterval(interval);
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       await authService.login(email, password);
-      const userData = await authService.getCurrentUser();
-      setUser(userData);
+      await refreshUser();
       return true;
     } catch (error) {
       console.error('Login failed:', error);
@@ -90,6 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     isAuthenticated: !!user,
     hasRole,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Bar,
   BarChart,
@@ -146,6 +147,7 @@ export const AdminDashboard: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -201,11 +203,40 @@ export const AdminDashboard: React.FC = () => {
         description: "The role request has been approved successfully.",
       });
       await loadData();
+      // Ensure current session user data is fresh
+      await refreshUser();
     } catch (error) {
       console.error("Failed to approve request:", error);
       toast({
         title: "Error",
         description: "Failed to approve request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(requestId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleRejectRequest = async (requestId: number) => {
+    setProcessingIds((prev) => new Set(prev).add(requestId));
+    try {
+      await authService.rejectRoleRequest(requestId);
+      toast({
+        title: "Request Rejected",
+        description: "The role request has been rejected.",
+      });
+      await loadData();
+      // Ensure current session user data is fresh
+      await refreshUser();
+    } catch (error) {
+      console.error("Failed to reject request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reject request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -725,6 +756,64 @@ export const AdminDashboard: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Pending Role Requests moved here */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Pending Role Requests</CardTitle>
+          <CardDescription>Approve or reject user upgrade requests</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Program</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {roleRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <span className="text-sm text-muted-foreground">No pending requests</span>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                roleRequests.map((req) => (
+                  <TableRow key={req.id}>
+                    <TableCell>{req.user?.name}</TableCell>
+                    <TableCell>{req.user?.email}</TableCell>
+                    <TableCell>{req.program}</TableCell>
+                    <TableCell>{req.status}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button
+                        size="sm"
+                        variant="cta"
+                        disabled={processingIds.has(req.id)}
+                        onClick={() => handleApproveRequest(req.id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive border-destructive"
+                        disabled={processingIds.has(req.id)}
+                        onClick={() => handleRejectRequest(req.id)}
+                      >
+                        Reject
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </>
   );
 

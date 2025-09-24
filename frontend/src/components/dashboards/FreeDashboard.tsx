@@ -25,6 +25,7 @@ import {
 import { authService } from "@/services/authService";
 import { PaymentForm } from "@/components/PaymentForm";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CommunityContent {
   freeCourses: any[];
@@ -37,6 +38,7 @@ export const FreeDashboard: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [signals, setSignals] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
+  const [myRequests, setMyRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<{
@@ -46,6 +48,9 @@ export const FreeDashboard: React.FC = () => {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
   const location = useLocation();
+  const { refreshUser } = useAuth();
+  const hasPending = (program: 'academy' | 'mentorship') =>
+    (myRequests || []).some((r: any) => r.program === program && r.status === 'pending');
 
   useEffect(() => {
     loadCommunityContent();
@@ -56,16 +61,33 @@ export const FreeDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Poll role requests every 20s to pick up status changes quickly
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const reqs = await authService.getMyRoleRequests().catch(() => []);
+        setMyRequests(reqs || []);
+        // If any request approved, refresh user to switch dashboard
+        if ((reqs || []).some((r: any) => r.status === 'approved')) {
+          await refreshUser();
+        }
+      } catch {}
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [refreshUser]);
+
   const loadCommunityContent = async () => {
     try {
-      const [coursesData, signalsData, sessionsData] = await Promise.all([
+      const [coursesData, signalsData, sessionsData, myReq] = await Promise.all([
         authService.getCourses(),
         authService.getSignals(),
         authService.getLiveSessions(),
+        authService.getMyRoleRequests().catch(() => []),
       ]);
       setCourses(coursesData);
       setSignals(signalsData);
       setSessions(sessionsData);
+      setMyRequests(myReq || []);
     } catch (error) {
       console.error("Failed to load community content:", error);
       toast({
@@ -147,8 +169,79 @@ export const FreeDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Testing: Request Roles without Payment */}
+        {section === "overview" && (
+          <Card className="mb-6 border-dashed">
+            <CardHeader>
+              <CardTitle>Request Program Access (Testing)</CardTitle>
+              <CardDescription>Submit a role request for Academy or Mentorship without payment. Admin can approve in Users panel.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                disabled={hasPending('academy')}
+                onClick={async () => {
+                  try {
+                    await authService.requestRole('academy');
+                    toast({ title: 'Request Sent', description: 'Academy role request submitted. You will be upgraded after admin approval.' });
+                    await refreshUser();
+                    const reqs = await authService.getMyRoleRequests().catch(() => []);
+                    setMyRequests(reqs || []);
+                  } catch (e) {
+                    toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
+                  }
+                }}
+              >
+                Request Academy Role
+              </Button>
+              <Button
+                variant="outline"
+                disabled={hasPending('mentorship')}
+                onClick={async () => {
+                  try {
+                    await authService.requestRole('mentorship');
+                    toast({ title: 'Request Sent', description: 'Mentorship role request submitted. You will be upgraded after admin approval.' });
+                    await refreshUser();
+                    const reqs = await authService.getMyRoleRequests().catch(() => []);
+                    setMyRequests(reqs || []);
+                  } catch (e) {
+                    toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
+                  }
+                }}
+              >
+                Request Mentorship Role
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {section === "overview" && (
           <div className="space-y-6">
+            {myRequests && myRequests.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Role Requests</CardTitle>
+                  <CardDescription>Track status of your program access requests</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {myRequests.map((r, i) => (
+                      <div key={i} className="flex items-center justify-between rounded-md border p-3">
+                        <div>
+                          <div className="text-sm font-medium capitalize">{r.program}</div>
+                          <div className="text-xs text-muted-foreground">Status: {r.status}</div>
+                        </div>
+                        <Badge
+                          variant={r.status === 'approved' ? 'default' : r.status === 'rejected' ? 'destructive' : 'secondary'}
+                        >
+                          {r.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <div className="flex flex-wrap gap-16 mx-auto mb-8 max-w-full items-center justify-center">
               <div className="flex-1 min-w-[300px] max-w-sm">
                 <Card className="relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-colors">
