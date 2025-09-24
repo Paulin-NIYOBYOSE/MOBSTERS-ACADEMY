@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Navigate, useLocation } from "react-router-dom";
 import {
   Play,
   BookOpen,
@@ -45,6 +45,7 @@ export const FreeDashboard: React.FC = () => {
   } | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
     loadCommunityContent();
@@ -108,6 +109,10 @@ export const FreeDashboard: React.FC = () => {
     );
   }
 
+  // Determine section from URL: /dashboard/<section>
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const section = pathParts[0] === "dashboard" && !pathParts[1] ? "overview" : pathParts[1];
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -142,15 +147,8 @@ export const FreeDashboard: React.FC = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="courses">Free Courses</TabsTrigger>
-            <TabsTrigger value="signals">Daily Signals</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
+        {section === "overview" && (
+          <div className="space-y-6">
             <div className="flex flex-wrap gap-16 mx-auto mb-8 max-w-full items-center justify-center">
               <div className="flex-1 min-w-[300px] max-w-sm">
                 <Card className="relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-colors">
@@ -308,9 +306,10 @@ export const FreeDashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="courses">
+        {section === "courses" && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content?.freeCourses?.map((course, index) => (
                 <Card key={index}>
@@ -339,9 +338,9 @@ export const FreeDashboard: React.FC = () => {
                 </Card>
               )}
             </div>
-          </TabsContent>
+        )}
 
-          <TabsContent value="signals">
+        {section === "signals" && (
             <div className="space-y-4">
               {content?.dailySignals?.map((signal, index) => (
                 <Card key={index}>
@@ -406,9 +405,9 @@ export const FreeDashboard: React.FC = () => {
                 </Card>
               )}
             </div>
-          </TabsContent>
+        )}
 
-          <TabsContent value="community">
+        {section === "community" && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -428,8 +427,7 @@ export const FreeDashboard: React.FC = () => {
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+        )}
 
         <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
           <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-transparent border-none shadow-none">

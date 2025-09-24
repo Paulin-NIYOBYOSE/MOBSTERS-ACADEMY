@@ -28,50 +28,63 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
 
-const navigationItems = [
-  {
-    title: "Dashboard",
-    url: "/admin/overview",
-    icon: Home,
-    roles: ["admin"],
-  },
-  {
-    title: "Users",
-    url: "/admin/users",
-    icon: Users,
-    roles: ["admin"],
-  },
-  {
-    title: "Courses",
-    url: "/admin/courses",
-    icon: BookOpen,
-    roles: ["admin"],
-  },
-  {
-    title: "Live Sessions",
-    url: "/admin/sessions",
-    icon: Calendar,
-    roles: ["admin"],
-  },
-  {
-    title: "Signals",
-    url: "/admin/signals",
-    icon: BarChart3,
-    roles: ["admin"],
-  },
-  {
-    title: "Transactions",
-    url: "/admin/transactions",
-    icon: DollarSign,
-    roles: ["admin"],
-  },
-  {
-    title: "Messages",
-    url: "/admin/messages",
-    icon: MessageSquare,
-    roles: ["admin"],
-  },
-];
+interface DashboardSidebarProps {
+  onQuickAction?: (action: string) => void;
+}
+
+const navigationItems = (
+  hasRole: (r: string) => boolean
+): { title: string; url: string; icon: any; roles: string[] }[] => {
+  const items: { title: string; url: string; icon: any; roles: string[] }[] = [];
+
+  // Admin section
+  if (hasRole("admin")) {
+    items.push(
+      { title: "Dashboard", url: "/dashboard", icon: Home, roles: ["admin"] },
+      { title: "Users", url: "/dashboard/users", icon: Users, roles: ["admin"] },
+      { title: "Courses", url: "/dashboard/courses", icon: BookOpen, roles: ["admin"] },
+      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["admin"] },
+      { title: "Signals", url: "/dashboard/signals", icon: BarChart3, roles: ["admin"] },
+      { title: "Transactions", url: "/dashboard/transactions", icon: DollarSign, roles: ["admin"] },
+      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, roles: ["admin"] }
+    );
+  }
+
+  // Academy student section
+  if (hasRole("academy_student")) {
+    items.push(
+      { title: "Overview", url: "/dashboard", icon: Home, roles: ["academy_student", "admin"] },
+      { title: "Courses", url: "/dashboard/courses", icon: BookOpen, roles: ["academy_student", "admin"] },
+      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["academy_student", "admin"] },
+      { title: "Assignments", url: "/dashboard/assignments", icon: MessageSquare, roles: ["academy_student", "admin"] },
+      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["academy_student", "admin"] }
+    );
+  }
+
+  // Mentorship student section
+  if (hasRole("mentorship_student")) {
+    items.push(
+      { title: "Overview", url: "/dashboard", icon: Home, roles: ["mentorship_student", "admin"] },
+      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["mentorship_student", "admin"] },
+      { title: "Strategies", url: "/dashboard/strategies", icon: BookOpen, roles: ["mentorship_student", "admin"] },
+      { title: "Premium Signals", url: "/dashboard/signals", icon: BarChart3, roles: ["mentorship_student", "admin"] },
+      { title: "Challenges", url: "/dashboard/challenges", icon: Users, roles: ["mentorship_student", "admin"] }
+    );
+  }
+
+  // Default: if no specific roles, show nothing (FreeDashboard is routed elsewhere)
+  if (items.length === 0) {
+    // Free/Community users: dashboard sections via sidebar
+    items.push(
+      { title: "Overview", url: "/dashboard", icon: Home, roles: [] },
+      { title: "Free Courses", url: "/dashboard/courses", icon: BookOpen, roles: [] },
+      { title: "Daily Signals", url: "/dashboard/signals", icon: BarChart3, roles: [] },
+      { title: "Community", url: "/dashboard/community", icon: Users, roles: [] }
+    );
+  }
+
+  return items;
+};
 
 const quickActions = [
   { title: "Manage Users", icon: Users, action: "users" },
@@ -80,13 +93,18 @@ const quickActions = [
   { title: "Create Signal", icon: BarChart3, action: "signals" },
 ];
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { user, hasRole } = useAuth();
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/dashboard") return location.pathname === "/dashboard";
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
+  };
   const getNavClassName = (path: string) =>
     cn(
       "w-full justify-start transition-colors",
@@ -95,9 +113,7 @@ export function DashboardSidebar() {
         : "hover:bg-muted/50"
     );
 
-  const visibleItems = navigationItems.filter((item) =>
-    item.roles.some((role) => hasRole(role))
-  );
+  const visibleItems = navigationItems(hasRole);
 
   return (
     <Sidebar
@@ -181,6 +197,31 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Quick Actions */}
+        {/* {!collapsed && (
+          <SidebarGroup className="mt-6">
+            <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="grid grid-cols-2 gap-2">
+                {quickActions.map((action) => (
+                  <Button
+                    key={action.title}
+                    variant="outline"
+                    size="sm"
+                    className="h-auto flex-col gap-1 p-3 text-xs"
+                    onClick={() =>
+                      onQuickAction && onQuickAction(action.action)
+                    }
+                  >
+                    <action.icon className="w-4 h-4" />
+                    <span className="truncate">{action.title}</span>
+                  </Button>
+                ))}
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )} */}
 
         {/* Settings & Logout */}
         <div className="mt-auto pt-4 border-t border-border/50">

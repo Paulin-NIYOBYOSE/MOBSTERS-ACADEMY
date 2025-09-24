@@ -59,6 +59,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { Navigate, useLocation } from "react-router-dom";
 
 interface RoleRequest {
   id: number;
@@ -145,6 +146,7 @@ export const AdminDashboard: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
     loadData();
@@ -518,6 +520,671 @@ export const AdminDashboard: React.FC = () => {
     completion: course.completion || 0,
   }));
 
+  // Determine active section from URL: /admin/<section>
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const section = pathParts[0] === "dashboard" ? (pathParts[1] || "overview") : pathParts[1];
+  if (pathParts[0] === "admin" && !section) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const renderOverview = () => (
+    <>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{overviewStats.totalStudents}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Mentorships</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{overviewStats.activeMentorships}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Revenue This Month</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${overviewStats.revenueThisMonth.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Expiring Mentorships</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{overviewStats.expiringSoon.length}</div>
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Beginner Course Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="completion" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Expiring Mentorships Soon</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Subscription End</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {overviewStats.expiringSoon.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.subscriptionEnd}</TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => handleExtendSubscription(user.id)}>
+                      Extend
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
+  );
+
+  const renderUsers = () => (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Users / Students</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{getProgramBadge(user.plan)}</TableCell>
+                  <TableCell>{getStatusBadge(user.status)}</TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      {/* Edit user dialog remains unchanged */}
+      <Dialog open={userModalOpen} onOpenChange={setUserModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <form onSubmit={handleUserSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="plan">Plan</Label>
+                <Select
+                  value={editingUser.plan}
+                  onValueChange={(value) =>
+                    setEditingUser((prev) =>
+                      prev ? { ...prev, plan: value } : null
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="academy">Academy</SelectItem>
+                    <SelectItem value="mentorship">Mentorship</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={editingUser.status}
+                  onValueChange={(value) =>
+                    setEditingUser((prev) =>
+                      prev ? { ...prev, status: value } : null
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  variant="cta"
+                  disabled={contentLoading}
+                >
+                  {contentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update User"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUserModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
+  const renderCourses = () => (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Course Management</h3>
+        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="cta"
+              onClick={() => {
+                setEditingContent(null);
+                setContentType("course");
+                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Course
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingContent
+                  ? `Edit ${
+                      contentType.charAt(0).toUpperCase() +
+                      contentType.slice(1)
+                    }`
+                  : `Create New ${
+                      contentType.charAt(0).toUpperCase() +
+                      contentType.slice(1)
+                    }`}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleContentSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="contentType">Content Type</Label>
+                <Select
+                  value={contentType}
+                  onValueChange={(
+                    value: "course" | "session" | "signal"
+                  ) => {
+                    setContentType(value);
+                    setContentForm({
+                      ...contentForm,
+                      title: "",
+                      content: "",
+                      description: "",
+                      date: "",
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">Course</SelectItem>
+                    <SelectItem value="session">Live Session</SelectItem>
+                    <SelectItem value="signal">Signal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={contentForm.title}
+                  onChange={(e) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter title"
+                  required
+                />
+              </div>
+
+              {contentType !== "session" && (
+                <div className="space-y-2">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    value={contentForm.content}
+                    onChange={(e) =>
+                      setContentForm((prev) => ({
+                        ...prev,
+                        content: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter content (markdown supported)"
+                    rows={8}
+                    required
+                  />
+                </div>
+              )}
+
+              {contentType === "session" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={contentForm.description}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter session description"
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="datetime-local"
+                      value={contentForm.date}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          date: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="roleAccess">Access Level</Label>
+                <Select
+                  value={contentForm.roleAccess[0] || "community_student"}
+                  onValueChange={(value) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      roleAccess: [value],
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="community_student">
+                      Community (Free)
+                    </SelectItem>
+                    <SelectItem value="academy_student">
+                      Academy (Premium)
+                    </SelectItem>
+                    <SelectItem value="mentorship_student">
+                      Mentorship (Elite)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  variant="cta"
+                  disabled={contentLoading}
+                  className="flex-1"
+                >
+                  {contentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {editingContent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {editingContent
+                        ? `Update ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`
+                        : `Create ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setContentModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Beginner 6-Month Course</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Completion %</TableHead>
+                  <TableHead>Access</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {courses
+                  .filter((course) =>
+                    course.roleAccess.includes("academy_student")
+                  )
+                  .map((course) => (
+                    <TableRow key={course.id}>
+                      <TableCell>{course.title}</TableCell>
+                      <TableCell>{course.completion || 0}%</TableCell>
+                      <TableCell>
+                        {getAccessLevelBadge(course.roleAccess)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleEditContent(course, "course")
+                          }
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleDeleteContent(course.id, "course")
+                          }
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mentorship Subscribers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users
+                  .filter((user) => user.plan === "mentorship")
+                  .map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleExtendSubscription(user.id)
+                          }
+                        >
+                          Extend
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleCancelSubscription(user.id)
+                          }
+                        >
+                          Cancel
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+
+  const renderSessions = () => (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Live Session Management</h3>
+        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="cta"
+              onClick={() => {
+                setEditingContent(null);
+                setContentType("session");
+                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Session
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Live Sessions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Assigned Plan</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sessions.map((session) => (
+                  <TableRow key={session.id}>
+                    <TableCell>{session.title}</TableCell>
+                    <TableCell>
+                      {new Date(session.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {getAccessLevelBadge(session.roleAccess)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleEditContent(session, "session")
+                        }
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDeleteContent(session.id, "session")
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+
+  const renderSignals = () => (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Signal Management</h3>
+        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="cta"
+              onClick={() => {
+                setEditingContent(null);
+                setContentType("signal");
+                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Signal
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Trading Signals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Access</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {signals.map((signal) => (
+                  <TableRow key={signal.id}>
+                    <TableCell>{signal.title}</TableCell>
+                    <TableCell>
+                      {new Date(signal.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {getAccessLevelBadge(signal.roleAccess)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleEditContent(signal, "signal")
+                        }
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDeleteContent(signal.id, "signal")
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -527,714 +1194,14 @@ export const AdminDashboard: React.FC = () => {
             Manage role requests and content for Mobsters Forex Academy.
           </p>
         </div>
-
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="sessions">Live Sessions</TabsTrigger>
-            <TabsTrigger value="signals">Signals</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Students
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {overviewStats.totalStudents}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Mentorships
-                  </CardTitle>
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {overviewStats.activeMentorships}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Revenue This Month
-                  </CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ${overviewStats.revenueThisMonth.toFixed(2)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Expiring Mentorships
-                  </CardTitle>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {overviewStats.expiringSoon.length}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Beginner Course Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="completion" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Expiring Mentorships Soon</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Subscription End</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {overviewStats.expiringSoon.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.subscriptionEnd}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleExtendSubscription(user.id)}
-                          >
-                            Extend
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>Users / Students</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{getProgramBadge(user.plan)}</TableCell>
-                        <TableCell>{getStatusBadge(user.status)}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            <Dialog open={userModalOpen} onOpenChange={setUserModalOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit User</DialogTitle>
-                </DialogHeader>
-                {editingUser && (
-                  <form onSubmit={handleUserSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="plan">Plan</Label>
-                      <Select
-                        value={editingUser.plan}
-                        onValueChange={(value) =>
-                          setEditingUser((prev) =>
-                            prev ? { ...prev, plan: value } : null
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="academy">Academy</SelectItem>
-                          <SelectItem value="mentorship">Mentorship</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select
-                        value={editingUser.status}
-                        onValueChange={(value) =>
-                          setEditingUser((prev) =>
-                            prev ? { ...prev, status: value } : null
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="expired">Expired</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        type="submit"
-                        variant="cta"
-                        disabled={contentLoading}
-                      >
-                        {contentLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Updating...
-                          </>
-                        ) : (
-                          "Update User"
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setUserModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-
-          <TabsContent value="courses">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Course Management</h3>
-              <Dialog
-                open={contentModalOpen}
-                onOpenChange={setContentModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="cta"
-                    onClick={() => {
-                      setEditingContent(null);
-                      setContentType("course");
-                      setContentForm({
-                        title: "",
-                        content: "",
-                        description: "",
-                        date: "",
-                        roleAccess: ["community_student"],
-                      });
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Course
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingContent
-                        ? `Edit ${
-                            contentType.charAt(0).toUpperCase() +
-                            contentType.slice(1)
-                          }`
-                        : `Create New ${
-                            contentType.charAt(0).toUpperCase() +
-                            contentType.slice(1)
-                          }`}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleContentSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contentType">Content Type</Label>
-                      <Select
-                        value={contentType}
-                        onValueChange={(
-                          value: "course" | "session" | "signal"
-                        ) => {
-                          setContentType(value);
-                          setContentForm({
-                            ...contentForm,
-                            title: "",
-                            content: "",
-                            description: "",
-                            date: "",
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="course">Course</SelectItem>
-                          <SelectItem value="session">Live Session</SelectItem>
-                          <SelectItem value="signal">Signal</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Title</Label>
-                      <Input
-                        id="title"
-                        value={contentForm.title}
-                        onChange={(e) =>
-                          setContentForm((prev) => ({
-                            ...prev,
-                            title: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter title"
-                        required
-                      />
-                    </div>
-
-                    {contentType !== "session" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="content">Content</Label>
-                        <Textarea
-                          id="content"
-                          value={contentForm.content}
-                          onChange={(e) =>
-                            setContentForm((prev) => ({
-                              ...prev,
-                              content: e.target.value,
-                            }))
-                          }
-                          placeholder="Enter content (markdown supported)"
-                          rows={8}
-                          required
-                        />
-                      </div>
-                    )}
-
-                    {contentType === "session" && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="description">Description</Label>
-                          <Textarea
-                            id="description"
-                            value={contentForm.description}
-                            onChange={(e) =>
-                              setContentForm((prev) => ({
-                                ...prev,
-                                description: e.target.value,
-                              }))
-                            }
-                            placeholder="Enter session description"
-                            rows={4}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="date">Date</Label>
-                          <Input
-                            id="date"
-                            type="datetime-local"
-                            value={contentForm.date}
-                            onChange={(e) =>
-                              setContentForm((prev) => ({
-                                ...prev,
-                                date: e.target.value,
-                              }))
-                            }
-                            required
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="roleAccess">Access Level</Label>
-                      <Select
-                        value={contentForm.roleAccess[0] || "community_student"}
-                        onValueChange={(value) =>
-                          setContentForm((prev) => ({
-                            ...prev,
-                            roleAccess: [value],
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="community_student">
-                            Community (Free)
-                          </SelectItem>
-                          <SelectItem value="academy_student">
-                            Academy (Premium)
-                          </SelectItem>
-                          <SelectItem value="mentorship_student">
-                            Mentorship (Elite)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        type="submit"
-                        variant="cta"
-                        disabled={contentLoading}
-                        className="flex-1"
-                      >
-                        {contentLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {editingContent ? "Updating..." : "Creating..."}
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            {editingContent
-                              ? `Update ${
-                                  contentType.charAt(0).toUpperCase() +
-                                  contentType.slice(1)
-                                }`
-                              : `Create ${
-                                  contentType.charAt(0).toUpperCase() +
-                                  contentType.slice(1)
-                                }`}
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setContentModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Beginner 6-Month Course</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Completion %</TableHead>
-                        <TableHead>Access</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {courses
-                        .filter((course) =>
-                          course.roleAccess.includes("academy_student")
-                        )
-                        .map((course) => (
-                          <TableRow key={course.id}>
-                            <TableCell>{course.title}</TableCell>
-                            <TableCell>{course.completion || 0}%</TableCell>
-                            <TableCell>
-                              {getAccessLevelBadge(course.roleAccess)}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleEditContent(course, "course")
-                                }
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleDeleteContent(course.id, "course")
-                                }
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Mentorship Subscribers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users
-                        .filter((user) => user.plan === "mentorship")
-                        .map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>{user.name}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{getStatusBadge(user.status)}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleExtendSubscription(user.id)
-                                }
-                              >
-                                Extend
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleCancelSubscription(user.id)
-                                }
-                              >
-                                Cancel
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="sessions" className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Live Session Management</h3>
-              <Dialog
-                open={contentModalOpen}
-                onOpenChange={setContentModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="cta"
-                    onClick={() => {
-                      setEditingContent(null);
-                      setContentType("session");
-                      setContentForm({
-                        title: "",
-                        content: "",
-                        description: "",
-                        date: "",
-                        roleAccess: ["community_student"],
-                      });
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Session
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upcoming Live Sessions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Assigned Plan</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell>{session.title}</TableCell>
-                          <TableCell>
-                            {new Date(session.date).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            {getAccessLevelBadge(session.roleAccess)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleEditContent(session, "session")
-                              }
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDeleteContent(session.id, "session")
-                              }
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="signals" className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Signal Management</h3>
-              <Dialog
-                open={contentModalOpen}
-                onOpenChange={setContentModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="cta"
-                    onClick={() => {
-                      setEditingContent(null);
-                      setContentType("signal");
-                      setContentForm({
-                        title: "",
-                        content: "",
-                        description: "",
-                        date: "",
-                        roleAccess: ["community_student"],
-                      });
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Signal
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Trading Signals</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Access</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {signals.map((signal) => (
-                        <TableRow key={signal.id}>
-                          <TableCell>{signal.title}</TableCell>
-                          <TableCell>
-                            {new Date(signal.createdAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            {getAccessLevelBadge(signal.roleAccess)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleEditContent(signal, "signal")
-                              }
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDeleteContent(signal.id, "signal")
-                              }
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Render by route section */}
+        <div className="space-y-6">
+          {section === "overview" && renderOverview()}
+          {section === "users" && renderUsers()}
+          {section === "courses" && renderCourses()}
+          {section === "sessions" && renderSessions()}
+          {section === "signals" && renderSignals()}
+        </div>
       </div>
     </div>
   );
