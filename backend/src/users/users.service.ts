@@ -14,7 +14,7 @@ export class UsersService {
   }
 
   async listUsers() {
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       select: {
         id: true,
         email: true,
@@ -31,6 +31,30 @@ export class UsersService {
         },
       },
     });
+
+    // Exclude admins from the users/students list and compute plan/status
+    const filtered = users
+      .filter((u) => !u.roles.some((r) => r.role?.name === 'admin'))
+      .map((u) => {
+        const roleNames = u.roles.map((r) => r.role?.name).filter(Boolean) as string[];
+        let plan: 'community' | 'academy' | 'mentorship' = 'community';
+        if (roleNames.includes('mentorship_student')) plan = 'mentorship';
+        else if (roleNames.includes('academy_student')) plan = 'academy';
+
+        // Status is not modeled; assume 'active' when user has any role
+        const status = 'active';
+
+        return {
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          plan,
+          status,
+          roles: u.roles,
+        } as any;
+      });
+
+    return filtered;
   }
 
   async assignRoles(userId: number, roleNames: string[]) {
@@ -50,6 +74,16 @@ export class UsersService {
     });
 
     return { message: 'Roles assigned successfully' };
+  }
+
+  async deleteUser(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.prisma.user.delete({ where: { id: userId } });
+    return { message: 'User deleted successfully' };
   }
 
   async getPendingRoleRequests() {

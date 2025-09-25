@@ -191,6 +191,11 @@ export const authService = {
   updateUser: async (id: number, userData: { plan: string; status: string }) =>
     (await api.put(`/admin/users/${id}`, userData)).data,
 
+  deleteUser: async (id: number) => (await api.delete(`/admin/users/${id}`)).data,
+
+  assignRoles: async (id: number, roles: string[]) =>
+    (await api.post(`/admin/users/${id}/roles`, { roles })).data,
+
   // Subscription Management
   extendSubscription: async (userId: number) =>
     (await api.post(`/admin/subscriptions/${userId}/extend`)).data,

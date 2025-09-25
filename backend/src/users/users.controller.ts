@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards, Req, Delete, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -25,6 +25,13 @@ export class UsersController {
     @Body() dto: AssignRolesDto,
   ) {
     return this.usersService.assignRoles(id, dto.roles);
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  @Delete('admin/users/:id')
+  async deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteUser(id);
   }
 
   @UseGuards(JwtGuard, RolesGuard)

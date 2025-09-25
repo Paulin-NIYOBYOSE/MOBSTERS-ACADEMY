@@ -145,6 +145,9 @@ export const AdminDashboard: React.FC = () => {
   });
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [roleEditOpen, setRoleEditOpen] = useState(false);
+  const [roleEditUserId, setRoleEditUserId] = useState<number | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   const { toast } = useToast();
   const { refreshUser } = useAuth();
@@ -480,6 +483,33 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleAssignRoles = async () => {
+    if (!roleEditUserId) return;
+    try {
+      await authService.assignRoles(roleEditUserId, selectedRoles);
+      toast({ title: "Roles Updated", description: "User roles updated successfully." });
+      setRoleEditOpen(false);
+      setRoleEditUserId(null);
+      setSelectedRoles([]);
+      await loadData();
+    } catch (error) {
+      console.error("Failed to assign roles:", error);
+      toast({ title: "Error", description: "Failed to update roles.", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm("Delete this user? This action cannot be undone.")) return;
+    try {
+      await authService.deleteUser(userId);
+      toast({ title: "User Deleted", description: "User removed successfully." });
+      await loadData();
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      toast({ title: "Error", description: "Failed to delete user.", variant: "destructive" });
+    }
+  };
+
   const getAccessLevelBadge = (roleAccess: string[]) => {
     return roleAccess.map((level) => (
       <Badge
@@ -653,6 +683,103 @@ export const AdminDashboard: React.FC = () => {
 
   const renderUsers = () => (
     <>
+      {/* Role management dialog */}
+      <Dialog open={roleEditOpen} onOpenChange={setRoleEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage Roles</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label>Assign Roles</Label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'community_student',
+                'academy_student',
+                'mentorship_student',
+                'admin',
+              ].map((role) => (
+                <Button
+                  key={role}
+                  type="button"
+                  variant={selectedRoles.includes(role) ? 'cta' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setSelectedRoles((prev) =>
+                      prev.includes(role)
+                        ? prev.filter((r) => r !== role)
+                        : [...prev, role]
+                    );
+                  }}
+                >
+                  {role}
+                </Button>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleAssignRoles} variant="cta">Save</Button>
+              <Button variant="outline" onClick={() => setRoleEditOpen(false)}>Cancel</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Pending Role Requests moved above users table */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Pending Role Requests</CardTitle>
+          <CardDescription>Approve or reject user upgrade requests</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Program</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {roleRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <span className="text-sm text-muted-foreground">No pending requests</span>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                roleRequests.map((req) => (
+                  <TableRow key={req.id}>
+                    <TableCell>{req.user?.name}</TableCell>
+                    <TableCell>{req.user?.email}</TableCell>
+                    <TableCell>{req.program}</TableCell>
+                    <TableCell>{req.status}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button
+                        size="sm"
+                        variant="cta"
+                        disabled={processingIds.has(req.id)}
+                        onClick={() => handleApproveRequest(req.id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive border-destructive"
+                        disabled={processingIds.has(req.id)}
+                        onClick={() => handleRejectRequest(req.id)}
+                      >
+                        Reject
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Users / Students</CardTitle>
@@ -676,10 +803,33 @@ export const AdminDashboard: React.FC = () => {
                   <TableCell>{getProgramBadge(user.plan)}</TableCell>
                   <TableCell>{getStatusBadge(user.status)}</TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive border-destructive"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                      <Button
+                        variant="cta"
+                        size="sm"
+                        onClick={() => {
+                          setRoleEditUserId(user.id);
+                          const roles = (user as any).roles?.map((r: any) => r.role?.name).filter(Boolean) || [];
+                          setSelectedRoles(roles);
+                          setRoleEditOpen(true);
+                        }}
+                      >
+                        Manage Roles
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -761,63 +911,6 @@ export const AdminDashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Pending Role Requests moved here */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Pending Role Requests</CardTitle>
-          <CardDescription>Approve or reject user upgrade requests</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Program</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {roleRequests.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <span className="text-sm text-muted-foreground">No pending requests</span>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                roleRequests.map((req) => (
-                  <TableRow key={req.id}>
-                    <TableCell>{req.user?.name}</TableCell>
-                    <TableCell>{req.user?.email}</TableCell>
-                    <TableCell>{req.program}</TableCell>
-                    <TableCell>{req.status}</TableCell>
-                    <TableCell className="space-x-2">
-                      <Button
-                        size="sm"
-                        variant="cta"
-                        disabled={processingIds.has(req.id)}
-                        onClick={() => handleApproveRequest(req.id)}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-destructive border-destructive"
-                        disabled={processingIds.has(req.id)}
-                        onClick={() => handleRejectRequest(req.id)}
-                      >
-                        Reject
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </>
   );
 
