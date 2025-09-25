@@ -51,14 +51,14 @@ export class UsersController {
   @UseGuards(JwtGuard)
   @Post('role-requests')
   async createRoleRequest(@Body() body: { program: 'academy' | 'mentorship' }, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId = (req.user as any).id;
     return this.usersService.createRoleRequest(userId, body.program);
   }
 
   @UseGuards(JwtGuard)
   @Get('me/role-requests')
   async getMyRoleRequests(@Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId = (req.user as any).id;
     return this.usersService.getUserRoleRequests(userId);
   }
 }

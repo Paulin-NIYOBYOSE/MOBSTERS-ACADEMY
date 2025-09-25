@@ -74,9 +74,21 @@ export class UsersService {
     const role = await this.prisma.role.findUnique({ where: { name: roleMap[request.program] } });
     if (!role) throw new BadRequestException('Invalid program');
 
-    await this.prisma.userRole.create({
-      data: { userId: request.userId, roleId: role.id },
+    // Check if user already has this role to avoid duplicates
+    const existingUserRole = await this.prisma.userRole.findUnique({
+      where: { 
+        userId_roleId: { 
+          userId: request.userId, 
+          roleId: role.id 
+        } 
+      },
     });
+
+    if (!existingUserRole) {
+      await this.prisma.userRole.create({
+        data: { userId: request.userId, roleId: role.id },
+      });
+    }
 
     await this.prisma.pendingRoleRequest.update({
       where: { id: requestId },
