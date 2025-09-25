@@ -21,6 +21,22 @@ async uploadCourse(title: string, content: string, roleAccess: string[], uploade
   });
 }
 
+async updateCourse(id: number, title: string, content: string, roleAccess: string[]) {
+  const validRoles = await this.prisma.role.findMany({ where: { name: { in: roleAccess } } });
+  if (validRoles.length !== roleAccess.length) {
+    throw new BadRequestException('Invalid roles in roleAccess');
+  }
+
+  return this.prisma.course.update({
+    where: { id },
+    data: { title, content, roleAccess },
+  });
+}
+
+async deleteCourse(id: number) {
+  return this.prisma.course.delete({ where: { id } });
+}
+
 async getCourses(userRoles: string[]) {
   return this.prisma.course.findMany({
     where: {
@@ -46,6 +62,22 @@ async uploadLiveSession(title: string, description: string, date: Date, roleAcce
       uploadedBy,
     },
   });
+}
+
+async updateLiveSession(id: number, title: string, description: string, date: Date, roleAccess: string[]) {
+  const validRoles = await this.prisma.role.findMany({ where: { name: { in: roleAccess } } });
+  if (validRoles.length !== roleAccess.length) {
+    throw new BadRequestException('Invalid roles in roleAccess');
+  }
+
+  return this.prisma.liveSession.update({
+    where: { id },
+    data: { title, description, date, roleAccess },
+  });
+}
+
+async deleteLiveSession(id: number) {
+  return this.prisma.liveSession.delete({ where: { id } });
 }
 
 async getLiveSessions(userRoles: string[]) {
@@ -74,6 +106,21 @@ async uploadSignal(title: string, content: string, roleAccess: string[], uploade
   });
 }
 
+async updateSignal(id: number, title: string, content: string, roleAccess: string[]) {
+  const validRoles = await this.prisma.role.findMany({ where: { name: { in: roleAccess } } });
+  if (validRoles.length !== roleAccess.length) {
+    throw new BadRequestException('Invalid roles in roleAccess');
+  }
+
+  return this.prisma.signal.update({
+    where: { id },
+    data: { title, content, roleAccess },
+  });
+}
+
+async deleteSignal(id: number) {
+  return this.prisma.signal.delete({ where: { id } });
+}
 async getSignals(userRoles: string[]) {
   return this.prisma.signal.findMany({
     where: {

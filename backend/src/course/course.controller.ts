@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Put, Param, ParseIntPipe, Delete } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,8 +13,25 @@ export class CourseController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
   async uploadCourse(@Body() body: { title: string; content: string; roleAccess: string[] }, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId = (req.user as any).id;
     return this.courseService.uploadCourse(body.title, body.content, body.roleAccess, userId);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async updateCourse(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { title: string; content: string; roleAccess: string[] },
+  ) {
+    return this.courseService.updateCourse(id, body.title, body.content, body.roleAccess);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async deleteCourse(@Param('id', ParseIntPipe) id: number) {
+    return this.courseService.deleteCourse(id);
   }
 
   @Get()
@@ -28,8 +45,25 @@ export class CourseController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
   async uploadLiveSession(@Body() body: { title: string; description: string; date: string; roleAccess: string[] }, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId = (req.user as any).id;
     return this.courseService.uploadLiveSession(body.title, body.description, new Date(body.date), body.roleAccess, userId);
+  }
+
+  @Put('live-session/:id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async updateLiveSession(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { title: string; description: string; date: string; roleAccess: string[] },
+  ) {
+    return this.courseService.updateLiveSession(id, body.title, body.description, new Date(body.date), body.roleAccess);
+  }
+
+  @Delete('live-session/:id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async deleteLiveSession(@Param('id', ParseIntPipe) id: number) {
+    return this.courseService.deleteLiveSession(id);
   }
 
   @Get('live-sessions')
@@ -43,8 +77,25 @@ export class CourseController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
   async uploadSignal(@Body() body: { title: string; content: string; roleAccess: string[] }, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId = (req.user as any).id;
     return this.courseService.uploadSignal(body.title, body.content, body.roleAccess, userId);
+  }
+
+  @Put('signal/:id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async updateSignal(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { title: string; content: string; roleAccess: string[] },
+  ) {
+    return this.courseService.updateSignal(id, body.title, body.content, body.roleAccess);
+  }
+
+  @Delete('signal/:id')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async deleteSignal(@Param('id', ParseIntPipe) id: number) {
+    return this.courseService.deleteSignal(id);
   }
 
   @Get('signals')
