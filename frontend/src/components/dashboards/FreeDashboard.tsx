@@ -182,12 +182,16 @@ export const FreeDashboard: React.FC = () => {
                 disabled={hasPending('academy')}
                 onClick={async () => {
                   try {
+                    console.log('Requesting academy role...');
                     await authService.requestRole('academy');
+                    console.log('Academy role request submitted');
                     toast({ title: 'Request Sent', description: 'Academy role request submitted. You will be upgraded after admin approval.' });
                     await refreshUser();
                     const reqs = await authService.getMyRoleRequests().catch(() => []);
+                    console.log('My role requests:', reqs);
                     setMyRequests(reqs || []);
                   } catch (e) {
+                    console.error('Failed to request academy role:', e);
                     toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
                   }
                 }}
@@ -199,12 +203,16 @@ export const FreeDashboard: React.FC = () => {
                 disabled={hasPending('mentorship')}
                 onClick={async () => {
                   try {
+                    console.log('Requesting mentorship role...');
                     await authService.requestRole('mentorship');
+                    console.log('Mentorship role request submitted');
                     toast({ title: 'Request Sent', description: 'Mentorship role request submitted. You will be upgraded after admin approval.' });
                     await refreshUser();
                     const reqs = await authService.getMyRoleRequests().catch(() => []);
+                    console.log('My role requests:', reqs);
                     setMyRequests(reqs || []);
                   } catch (e) {
+                    console.error('Failed to request mentorship role:', e);
                     toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
                   }
                 }}
@@ -217,7 +225,7 @@ export const FreeDashboard: React.FC = () => {
 
         {section === "overview" && (
           <div className="space-y-6">
-            {myRequests && myRequests.length > 0 && (
+            {/* {myRequests && myRequests.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Your Role Requests</CardTitle>
@@ -241,7 +249,7 @@ export const FreeDashboard: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            )}
+            )} */}
             <div className="flex flex-wrap gap-16 mx-auto mb-8 max-w-full items-center justify-center">
               <div className="flex-1 min-w-[300px] max-w-sm">
                 <Card className="relative overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-colors">

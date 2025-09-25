@@ -69,7 +69,7 @@ export class UsersService {
     const roleMap = {
       academy: 'academy_student',
       mentorship: 'mentorship_student',
-    };
+    } as Record<string, string>;
 
     const role = await this.prisma.role.findUnique({ where: { name: roleMap[request.program] } });
     if (!role) throw new BadRequestException('Invalid program');
@@ -84,5 +84,38 @@ export class UsersService {
     });
 
     return { message: 'Role assigned successfully' };
+  }
+
+  async rejectRoleRequest(requestId: number) {
+    const request = await this.prisma.pendingRoleRequest.findUnique({ where: { id: requestId } });
+    if (!request) throw new NotFoundException('Request not found');
+
+    await this.prisma.pendingRoleRequest.update({
+      where: { id: requestId },
+      data: { status: 'rejected' },
+    });
+
+    return { message: 'Request rejected' };
+  }
+
+  async createRoleRequest(userId: number, program: 'academy' | 'mentorship') {
+    const existing = await this.prisma.pendingRoleRequest.findFirst({
+      where: { userId, program, status: { in: ['pending', 'paid', 'approved'] } },
+    });
+    if (existing && existing.status !== 'rejected') {
+      return { message: 'Request already exists', requestId: existing.id, status: existing.status };
+    }
+
+    const created = await this.prisma.pendingRoleRequest.create({
+      data: { userId, program, status: 'pending' },
+    });
+    return { message: 'Request submitted', requestId: created.id, status: created.status };
+  }
+
+  async getUserRoleRequests(userId: number) {
+    return this.prisma.pendingRoleRequest.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

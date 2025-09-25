@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +20,13 @@ import ErrorBoundary from "./components/ErrorBoundary";
 const queryClient = new QueryClient();
 
 const DashboardRouter = () => {
-  const { hasRole } = useAuth();
+  const { hasRole, refreshUser } = useAuth();
+  
+  // Refresh user data when dashboard loads to ensure latest roles
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
+  
   if (hasRole("admin")) return <AdminDashboard />;
   if (hasRole("academy_student")) return <AcademyDashboard />;
   if (hasRole("mentorship_student")) return <MentorshipDashboard />;

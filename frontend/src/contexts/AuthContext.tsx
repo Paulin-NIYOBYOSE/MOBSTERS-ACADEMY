@@ -34,9 +34,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUser = async () => {
     try {
       const userData = await authService.getCurrentUser();
+      console.log('Refreshed user data:', userData);
       setUser(userData);
+      return userData;
     } catch (error) {
       console.error('Failed to refresh user:', error);
+      return null;
     }
   };
 
@@ -68,12 +71,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
     window.addEventListener('focus', onFocus);
 
-    // Periodic refresh (every 45s) to pick up role changes
+    // Periodic refresh (every 30s) to pick up role changes
     const interval = window.setInterval(() => {
       if (localStorage.getItem('accessToken')) {
         refreshUser();
       }
-    }, 45 * 1000);
+    }, 30 * 1000);
 
     return () => {
       window.removeEventListener('focus', onFocus);

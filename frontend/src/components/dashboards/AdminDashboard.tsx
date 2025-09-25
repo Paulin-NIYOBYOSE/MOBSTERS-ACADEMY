@@ -197,14 +197,18 @@ export const AdminDashboard: React.FC = () => {
   const handleApproveRequest = async (requestId: number) => {
     setProcessingIds((prev) => new Set(prev).add(requestId));
     try {
+      console.log('Approving role request:', requestId);
       await authService.approveRoleRequest(requestId);
+      console.log('Role request approved successfully');
       toast({
         title: "Request Approved",
         description: "The role request has been approved successfully.",
       });
       await loadData();
       // Ensure current session user data is fresh
+      console.log('Refreshing user data after approval...');
       await refreshUser();
+      console.log('User data refreshed');
     } catch (error) {
       console.error("Failed to approve request:", error);
       toast({
