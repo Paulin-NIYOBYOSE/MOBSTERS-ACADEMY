@@ -70,6 +70,7 @@ model Course {
   roleAccess  String[] // e.g., ['academy_student', 'community_student']
   uploadedBy  Int
   user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  videos      CourseVideo[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -95,4 +96,20 @@ model Signal {
   user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model CourseVideo {
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  videoUrl    String
+  durationSec Int?
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+  @@unique([courseId, orderIndex])
 }

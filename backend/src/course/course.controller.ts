@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Put, Param, ParseIntPipe, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Put, Param, ParseIntPipe, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { CourseService } from './course.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -39,6 +42,75 @@ export class CourseController {
   async getCourses(@Req() req: Request) {
     const userRoles = (req.user as any).roles;
     return this.courseService.getCourses(userRoles);
+  }
+
+  // Course videos (series)
+  @Get(':id/videos')
+  @UseGuards(JwtGuard)
+  async getCourseVideos(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const userRoles = (req.user as any).roles;
+    return this.courseService.getCourseVideos(id, userRoles);
+  }
+
+  @Post(':id/videos')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async addVideo(
+    @Param('id', ParseIntPipe) courseId: number,
+    @Body() body: { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number },
+  ) {
+    return this.courseService.addCourseVideo(courseId, body);
+  }
+
+  // Upload video file variant (multipart/form-data)
+  @Post(':id/videos/file')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/videos',
+        filename: (req, file, cb) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, unique + extname(file.originalname));
+        },
+      }),
+      limits: { fileSize: 1024 * 1024 * 1024 }, // up to 1GB
+    }),
+  )
+  async addVideoFile(
+    @Param('id', ParseIntPipe) courseId: number,
+    @UploadedFile() file: any,
+    @Body() body: { title: string; description?: string; orderIndex?: number },
+  ) {
+    const videoUrl = `/uploads/videos/${file.filename}`;
+    return this.courseService.addCourseVideo(courseId, {
+      title: body.title,
+      description: body.description,
+      videoUrl,
+      orderIndex: body.orderIndex,
+    });
+  }
+
+  @Put(':courseId/videos/:videoId')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async updateVideo(
+    @Param('courseId', ParseIntPipe) courseId: number,
+    @Param('videoId', ParseIntPipe) videoId: number,
+    @Body() body: { title?: string; description?: string; videoUrl?: string; durationSec?: number; orderIndex?: number },
+  ) {
+    return this.courseService.updateCourseVideo(courseId, videoId, body);
+  }
+
+  @Delete(':courseId/videos/:videoId')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
+  async deleteVideo(
+    @Param('courseId', ParseIntPipe) courseId: number,
+    @Param('videoId', ParseIntPipe) videoId: number,
+  ) {
+    return this.courseService.deleteCourseVideo(courseId, videoId);
   }
 
   @Post('live-session')

@@ -60,6 +60,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+
 import { Navigate, useLocation } from "react-router-dom";
 
 interface RoleRequest {
@@ -78,6 +79,15 @@ interface Course {
   roleAccess: string[];
   createdAt: string;
   completion?: number;
+}
+
+interface CourseVideo {
+  id: number;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  durationSec?: number;
+  orderIndex: number;
 }
 
 interface LiveSession {
@@ -148,6 +158,13 @@ export const AdminDashboard: React.FC = () => {
   const [roleEditOpen, setRoleEditOpen] = useState(false);
   const [roleEditUserId, setRoleEditUserId] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [courseVideoDrafts, setCourseVideoDrafts] = useState<
+    { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number }[]
+  >([]);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [currentCourseVideos, setCurrentCourseVideos] = useState<CourseVideo[]>([]);
+  const [currentCourseId, setCurrentCourseId] = useState<number | null>(null);
+  const [videoForm, setVideoForm] = useState<{ title: string; description: string; file?: File | null; orderIndex?: number }>({ title: '', description: '', file: null });
 
   const { toast } = useToast();
   const { refreshUser } = useAuth();
@@ -194,6 +211,53 @@ export const AdminDashboard: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openManageVideos = async (courseId: number) => {
+    try {
+      const videos = await authService.getCourseVideos(courseId);
+      setCurrentCourseId(courseId);
+      setCurrentCourseVideos(videos || []);
+      setVideoModalOpen(true);
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to load course videos', variant: 'destructive' });
+    }
+  };
+
+  const handleAddVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentCourseId) return;
+    try {
+      if (videoForm.file) {
+        const fd = new FormData();
+        fd.append('title', videoForm.title);
+        fd.append('description', videoForm.description);
+        if (videoForm.orderIndex !== undefined) fd.append('orderIndex', String(videoForm.orderIndex));
+        fd.append('file', videoForm.file);
+        await authService.addCourseVideoFile(currentCourseId, fd);
+      } else {
+        // Fallback if no file (should not happen with new UI)
+        await authService.addCourseVideo(currentCourseId, { title: videoForm.title, description: videoForm.description, videoUrl: '', orderIndex: videoForm.orderIndex });
+      }
+      const videos = await authService.getCourseVideos(currentCourseId);
+      setCurrentCourseVideos(videos || []);
+      setVideoForm({ title: '', description: '', file: null });
+      toast({ title: 'Video Added', description: 'Video added to course.' });
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to add video', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteVideo = async (videoId: number) => {
+    if (!currentCourseId) return;
+    try {
+      await authService.deleteCourseVideo(currentCourseId, videoId);
+      const videos = await authService.getCourseVideos(currentCourseId);
+      setCurrentCourseVideos(videos || []);
+      toast({ title: 'Video Deleted', description: 'Video removed.' });
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to delete video', variant: 'destructive' });
     }
   };
 
@@ -272,7 +336,7 @@ export const AdminDashboard: React.FC = () => {
             description: "The course has been updated successfully.",
           });
         } else {
-          await authService.createCourse({
+          const created = await authService.createCourse({
             title: contentForm.title,
             content: contentForm.content,
             roleAccess: contentForm.roleAccess,
@@ -281,6 +345,16 @@ export const AdminDashboard: React.FC = () => {
             title: "Course Created",
             description: "The course has been created successfully.",
           });
+          // Upload any drafted videos for this new course
+          if ((created as any)?.id && courseVideoDrafts.length > 0) {
+            for (const v of courseVideoDrafts) {
+              try {
+                await authService.addCourseVideo((created as any).id, v);
+              } catch (e) {
+                console.error('Failed to upload course video', e);
+              }
+            }
+          }
         }
       } else if (contentType === "session") {
         if (editingContent) {
@@ -342,6 +416,7 @@ export const AdminDashboard: React.FC = () => {
         date: "",
         roleAccess: ["community_student"],
       });
+      setCourseVideoDrafts([]);
       await loadData();
     } catch (error) {
       console.error("Content operation failed:", error);
@@ -1074,6 +1149,124 @@ export const AdminDashboard: React.FC = () => {
                 </Select>
               </div>
 
+              {/* Course Video Drafts (only when creating or editing a course) */}
+              {contentType === 'course' && (
+                <div className="space-y-3 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-semibold">Course Videos</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setCourseVideoDrafts((prev) => [
+                          ...prev,
+                          { title: '', videoUrl: '', description: '', durationSec: undefined, orderIndex: (prev.at(-1)?.orderIndex ?? -1) + 1 },
+                        ])
+                      }
+                    >
+                      Add Video
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {courseVideoDrafts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No videos added yet.</p>
+                    ) : (
+                      courseVideoDrafts.map((v, idx) => (
+                        <div key={idx} className="grid md:grid-cols-2 gap-3 border rounded p-3">
+                          <div className="space-y-2">
+                            <Label>Title</Label>
+                            <Input
+                              value={v.title}
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = { ...next[idx], title: e.target.value };
+                                  return next;
+                                })
+                              }
+                              placeholder="Episode title"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Video URL</Label>
+                            <Input
+                              value={v.videoUrl}
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = { ...next[idx], videoUrl: e.target.value };
+                                  return next;
+                                })
+                              }
+                              placeholder="https://..."
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label>Description</Label>
+                            <Textarea
+                              value={v.description || ''}
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = { ...next[idx], description: e.target.value };
+                                  return next;
+                                })
+                              }
+                              placeholder="Short description (optional)"
+                              rows={3}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 md:col-span-2">
+                            <div className="space-y-2">
+                              <Label>Duration (sec)</Label>
+                              <Input
+                                type="number"
+                                value={v.durationSec || ''}
+                                onChange={(e) =>
+                                  setCourseVideoDrafts((prev) => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], durationSec: Number(e.target.value) || undefined };
+                                    return next;
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Order</Label>
+                              <Input
+                                type="number"
+                                value={v.orderIndex ?? idx}
+                                onChange={(e) =>
+                                  setCourseVideoDrafts((prev) => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], orderIndex: Number(e.target.value) || undefined };
+                                    return next;
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="md:col-span-2 flex justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="text-destructive border-destructive"
+                              onClick={() =>
+                                setCourseVideoDrafts((prev) => prev.filter((_, i) => i !== idx))
+                              }
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-4">
                 <Button
                   type="submit"
@@ -1142,7 +1335,7 @@ export const AdminDashboard: React.FC = () => {
                         {getAccessLevelBadge(course.roleAccess)}
                       </TableCell>
                       <TableCell>
-                        <Button
+                      <Button
                           variant="outline"
                           size="sm"
                           onClick={() =>
@@ -1160,6 +1353,13 @@ export const AdminDashboard: React.FC = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
+                      <Button
+                        variant="cta"
+                        size="sm"
+                        onClick={() => openManageVideos(course.id)}
+                      >
+                        Manage Videos
+                      </Button>
                       </TableCell>
                     </TableRow>
                   ))}

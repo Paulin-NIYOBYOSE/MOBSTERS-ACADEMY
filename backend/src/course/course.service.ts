@@ -44,6 +44,7 @@ async getCourses(userRoles: string[]) {
         hasSome: userRoles,
       },
     },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -87,6 +88,7 @@ async getLiveSessions(userRoles: string[]) {
         hasSome: userRoles,
       },
     },
+    orderBy: { date: 'desc' },
   });
 }
 
@@ -128,6 +130,79 @@ async getSignals(userRoles: string[]) {
         hasSome: userRoles,
       },
     },
+    orderBy: { createdAt: 'desc' },
   });
+}
+
+async getCourseVideos(courseId: number, userRoles: string[]) {
+  const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+  if (!course) {
+    throw new BadRequestException('Course not found');
+  }
+  // Basic guard: ensure user has access to this course
+  const allowed = course.roleAccess.some((r) => userRoles.includes(r));
+  if (!allowed) {
+    throw new BadRequestException('Access denied');
+  }
+
+  const prismaAny = this.prisma as any;
+  return prismaAny.courseVideo.findMany({
+    where: { courseId },
+    orderBy: { orderIndex: 'asc' },
+  });
+}
+
+async addCourseVideo(courseId: number, body: { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number }) {
+  // Ensure course exists
+  const course = await this.prisma.course.findUnique({ where: { id: courseId } });
+  if (!course) throw new BadRequestException('Course not found');
+
+  // Default orderIndex to next available
+  let orderIndex = body.orderIndex ?? 0;
+  if (body.orderIndex === undefined) {
+  const prismaAny1 = this.prisma as any;
+  const maxOrder = await prismaAny1.courseVideo.aggregate({
+      where: { courseId },
+      _max: { orderIndex: true },
+    });
+    orderIndex = (maxOrder._max.orderIndex ?? -1) + 1;
+  }
+
+  const prismaAnyCreate = this.prisma as any;
+  return prismaAnyCreate.courseVideo.create({
+    data: {
+      courseId,
+      title: body.title,
+      description: body.description ?? null,
+      videoUrl: body.videoUrl,
+      durationSec: body.durationSec ?? null,
+      orderIndex,
+    },
+  });
+}
+
+async updateCourseVideo(courseId: number, videoId: number, body: { title?: string; description?: string; videoUrl?: string; durationSec?: number; orderIndex?: number }) {
+  // Ensure episode belongs to course
+  const prismaAny2 = this.prisma as any;
+  const video = await prismaAny2.courseVideo.findUnique({ where: { id: videoId } });
+  if (!video || video.courseId !== courseId) throw new BadRequestException('Video not found');
+
+  return prismaAny2.courseVideo.update({
+    where: { id: videoId },
+    data: {
+      title: body.title ?? video.title,
+      description: body.description ?? video.description,
+      videoUrl: body.videoUrl ?? video.videoUrl,
+      durationSec: body.durationSec ?? video.durationSec,
+      orderIndex: body.orderIndex ?? video.orderIndex,
+    },
+  });
+}
+
+async deleteCourseVideo(courseId: number, videoId: number) {
+  const prismaAny3 = this.prisma as any;
+  const video = await prismaAny3.courseVideo.findUnique({ where: { id: videoId } });
+  if (!video || video.courseId !== courseId) throw new BadRequestException('Video not found');
+  return prismaAny3.courseVideo.delete({ where: { id: videoId } });
 }
 }

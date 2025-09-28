@@ -123,6 +123,28 @@ export const authService = {
     (await api.get("/mentor/mentorship-content")).data,
 
   getCourses: async () => (await api.get("/courses")).data,
+  // Course videos (series)
+  getCourseVideos: async (courseId: number) =>
+    (await api.get(`/courses/${courseId}/videos`)).data,
+  addCourseVideo: async (
+    courseId: number,
+    data: { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number }
+  ) => (await api.post(`/courses/${courseId}/videos`, data)).data,
+  addCourseVideoFile: async (
+    courseId: number,
+    formData: FormData,
+  ) => (
+    await api.post(`/courses/${courseId}/videos/file`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  ).data,
+  updateCourseVideo: async (
+    courseId: number,
+    videoId: number,
+    data: { title?: string; description?: string; videoUrl?: string; durationSec?: number; orderIndex?: number }
+  ) => (await api.put(`/courses/${courseId}/videos/${videoId}`, data)).data,
+  deleteCourseVideo: async (courseId: number, videoId: number) =>
+    (await api.delete(`/courses/${courseId}/videos/${videoId}`)).data,
   createCourse: async (courseData: {
     title: string;
     content: string;
