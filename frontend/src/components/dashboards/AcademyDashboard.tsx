@@ -19,13 +19,31 @@ import {
   Award,
   TrendingUp,
   Download,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, useLocation } from "react-router-dom";
 
+interface CourseVideo {
+  id: number;
+  title: string;
+  videoUrl: string;
+  completed: boolean;
+}
+
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  progress: number;
+  completed: boolean;
+  videos: CourseVideo[];
+}
+
 interface AcademyContent {
-  courses: any[];
+  courses: Course[];
   liveSession: any;
   assignments: any[];
   tradingJournal: any;
@@ -34,11 +52,14 @@ interface AcademyContent {
 
 export const AcademyDashboard: React.FC = () => {
   const [content, setContent] = useState<AcademyContent | null>(null);
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [signals, setSignals] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
+    new Set()
+  );
   const { toast } = useToast();
   const location = useLocation();
 
@@ -61,7 +82,14 @@ export const AcademyDashboard: React.FC = () => {
           authService.getLiveSessions(),
         ]);
       setContent(contentData);
-      setCourses(coursesData);
+      // Fetch videos for each course
+      const coursesWithVideos = await Promise.all(
+        coursesData.map(async (course: any) => {
+          const videos = await authService.getCourseVideos(course.id);
+          return { ...course, videos: videos || [] };
+        })
+      );
+      setCourses(coursesWithVideos);
       setSignals(signalsData);
       setSessions(sessionsData);
     } catch (error) {
@@ -76,6 +104,18 @@ export const AcademyDashboard: React.FC = () => {
     }
   };
 
+  const toggleCourseExpansion = (courseId: number) => {
+    setExpandedCourses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(courseId)) {
+        newSet.delete(courseId);
+      } else {
+        newSet.add(courseId);
+      }
+      return newSet;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,11 +126,10 @@ export const AcademyDashboard: React.FC = () => {
 
   const overallProgress = content?.progress?.overallProgress || 0;
 
-  // Determine active section from URL: /academy/<section>
   const pathParts = location.pathname.split("/").filter(Boolean);
-  const section = pathParts[0] === "dashboard" ? (pathParts[1] || "overview") : pathParts[1];
+  const section =
+    pathParts[0] === "dashboard" ? pathParts[1] || "overview" : pathParts[1];
 
-  // Default redirect: /academy -> /dashboard
   if (pathParts[0] === "academy" && !section) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -99,7 +138,9 @@ export const AcademyDashboard: React.FC = () => {
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Completed Lessons</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Completed Lessons
+          </CardTitle>
           <CheckCircle className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
@@ -129,7 +170,9 @@ export const AcademyDashboard: React.FC = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Next Live Session</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Next Live Session
+          </CardTitle>
           <Calendar className="h-4 w-4 text-purple-500" />
         </CardHeader>
         <CardContent>
@@ -160,32 +203,84 @@ export const AcademyDashboard: React.FC = () => {
   );
 
   const renderCourses = () => (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
       {courses.length > 0 ? (
-        courses.map((course, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow">
+        courses.map((course) => (
+          <Card
+            key={course.id}
+            className="hover:shadow-lg transition-shadow bg-white dark:bg-gray-800"
+          >
             <CardHeader>
               <div className="flex items-center justify-between">
-                <Badge variant={course.completed ? "default" : "secondary"}>
-                  {course.completed ? "Completed" : "In Progress"}
-                </Badge>
-                <div className="text-sm font-medium">{course.progress}%</div>
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-6 h-6 text-blue-500" />
+                  <div>
+                    <CardTitle className="text-xl">{course.title}</CardTitle>
+                    <CardDescription className="mt-1">
+                      {course.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={course.completed ? "default" : "secondary"}>
+                    {course.completed ? "Completed" : `${course.progress}%`}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleCourseExpansion(course.id)}
+                  >
+                    {expandedCourses.has(course.id) ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </Button>
+                </div>
               </div>
-              <CardTitle className="text-lg">{course.title}</CardTitle>
-              <CardDescription>{course.description}</CardDescription>
+              <Progress value={course.progress} className="mt-4" />
             </CardHeader>
-            <CardContent>
-              <Progress value={course.progress} className="mb-4" />
-              <div className="flex gap-2">
-                <Button variant="cta" size="sm" className="flex-1">
-                  <Play className="w-4 h-4 mr-2" />
-                  {course.completed ? "Review" : "Continue"}
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
+            {expandedCourses.has(course.id) && (
+              <CardContent>
+                {course.videos.length > 0 ? (
+                  <div className="space-y-4">
+                    {course.videos.map((video: CourseVideo, index: number) => (
+                      <div
+                        key={video.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {index + 1}.
+                          </span>
+                          <span className="text-sm font-medium">
+                            {video.title}
+                          </span>
+                          {video.completed && (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          )}
+                        </div>
+                        <Button
+                          variant="cta"
+                          size="sm"
+                          onClick={() => {
+                            // Implement video playback logic here
+                            console.log(`Play video: ${video.title}`);
+                          }}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          {video.completed ? "Replay" : "Watch"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No videos available for this course.
+                  </p>
+                )}
+              </CardContent>
+            )}
           </Card>
         ))
       ) : (
@@ -216,7 +311,8 @@ export const AcademyDashboard: React.FC = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Scheduled {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString()}
+                  Scheduled {new Date(session.date).toLocaleDateString()} at{" "}
+                  {new Date(session.date).toLocaleTimeString()}
                 </p>
                 <Button variant="cta">
                   <Users className="w-4 h-4 mr-2" />
@@ -230,7 +326,9 @@ export const AcademyDashboard: React.FC = () => {
         <Card>
           <CardContent className="text-center py-8">
             <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Live session schedule will appear here.</p>
+            <p className="text-muted-foreground">
+              Live session schedule will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -257,7 +355,9 @@ export const AcademyDashboard: React.FC = () => {
                   Due: {new Date(assignment.dueDate).toLocaleDateString()}
                 </div>
                 <Button variant={assignment.submitted ? "outline" : "cta"}>
-                  {assignment.submitted ? "View Submission" : "Submit Assignment"}
+                  {assignment.submitted
+                    ? "View Submission"
+                    : "Submit Assignment"}
                 </Button>
               </div>
             </CardContent>
@@ -267,7 +367,9 @@ export const AcademyDashboard: React.FC = () => {
         <Card>
           <CardContent className="text-center py-8">
             <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Assignments will appear here.</p>
+            <p className="text-muted-foreground">
+              Assignments will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -281,12 +383,16 @@ export const AcademyDashboard: React.FC = () => {
           <TrendingUp className="w-5 h-5 text-green-500" />
           Trading Journal
         </CardTitle>
-        <CardDescription>Track your trades and analyze your performance.</CardDescription>
+        <CardDescription>
+          Track your trades and analyze your performance.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="text-center py-8">
           <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Trading journal interface will appear here.</p>
+          <p className="text-muted-foreground">
+            Trading journal interface will appear here.
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -352,7 +458,6 @@ export const AcademyDashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Render by route section */}
         <div className="space-y-6">
           {section === "overview" && renderOverview()}
           {section === "courses" && renderCourses()}

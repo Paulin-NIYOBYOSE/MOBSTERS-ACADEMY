@@ -60,7 +60,6 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-
 import { Navigate, useLocation } from "react-router-dom";
 
 interface RoleRequest {
@@ -76,6 +75,7 @@ interface Course {
   id: number;
   title: string;
   content: string;
+  description: string;
   roleAccess: string[];
   createdAt: string;
   completion?: number;
@@ -84,10 +84,7 @@ interface Course {
 interface CourseVideo {
   id: number;
   title: string;
-  description?: string;
   videoUrl: string;
-  durationSec?: number;
-  orderIndex: number;
 }
 
 interface LiveSession {
@@ -159,12 +156,17 @@ export const AdminDashboard: React.FC = () => {
   const [roleEditUserId, setRoleEditUserId] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [courseVideoDrafts, setCourseVideoDrafts] = useState<
-    { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number }[]
+    { title: string; file?: File | null }[]
   >([]);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [currentCourseVideos, setCurrentCourseVideos] = useState<CourseVideo[]>([]);
+  const [currentCourseVideos, setCurrentCourseVideos] = useState<CourseVideo[]>(
+    []
+  );
   const [currentCourseId, setCurrentCourseId] = useState<number | null>(null);
-  const [videoForm, setVideoForm] = useState<{ title: string; description: string; file?: File | null; orderIndex?: number }>({ title: '', description: '', file: null });
+  const [videoForm, setVideoForm] = useState<{
+    title: string;
+    file?: File | null;
+  }>({ title: "", file: null });
 
   const { toast } = useToast();
   const { refreshUser } = useAuth();
@@ -221,7 +223,11 @@ export const AdminDashboard: React.FC = () => {
       setCurrentCourseVideos(videos || []);
       setVideoModalOpen(true);
     } catch (e) {
-      toast({ title: 'Error', description: 'Failed to load course videos', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to load course videos",
+        variant: "destructive",
+      });
     }
   };
 
@@ -231,21 +237,26 @@ export const AdminDashboard: React.FC = () => {
     try {
       if (videoForm.file) {
         const fd = new FormData();
-        fd.append('title', videoForm.title);
-        fd.append('description', videoForm.description);
-        if (videoForm.orderIndex !== undefined) fd.append('orderIndex', String(videoForm.orderIndex));
-        fd.append('file', videoForm.file);
+        fd.append("title", videoForm.title);
+        fd.append("file", videoForm.file);
         await authService.addCourseVideoFile(currentCourseId, fd);
+        const videos = await authService.getCourseVideos(currentCourseId);
+        setCurrentCourseVideos(videos || []);
+        setVideoForm({ title: "", file: null });
+        toast({ title: "Video Added", description: "Video added to course." });
       } else {
-        // Fallback if no file (should not happen with new UI)
-        await authService.addCourseVideo(currentCourseId, { title: videoForm.title, description: videoForm.description, videoUrl: '', orderIndex: videoForm.orderIndex });
+        toast({
+          title: "Error",
+          description: "Please select a video file",
+          variant: "destructive",
+        });
       }
-      const videos = await authService.getCourseVideos(currentCourseId);
-      setCurrentCourseVideos(videos || []);
-      setVideoForm({ title: '', description: '', file: null });
-      toast({ title: 'Video Added', description: 'Video added to course.' });
     } catch (e) {
-      toast({ title: 'Error', description: 'Failed to add video', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to add video",
+        variant: "destructive",
+      });
     }
   };
 
@@ -255,27 +266,26 @@ export const AdminDashboard: React.FC = () => {
       await authService.deleteCourseVideo(currentCourseId, videoId);
       const videos = await authService.getCourseVideos(currentCourseId);
       setCurrentCourseVideos(videos || []);
-      toast({ title: 'Video Deleted', description: 'Video removed.' });
+      toast({ title: "Video Deleted", description: "Video removed." });
     } catch (e) {
-      toast({ title: 'Error', description: 'Failed to delete video', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to delete video",
+        variant: "destructive",
+      });
     }
   };
 
   const handleApproveRequest = async (requestId: number) => {
     setProcessingIds((prev) => new Set(prev).add(requestId));
     try {
-      console.log('Approving role request:', requestId);
       await authService.approveRoleRequest(requestId);
-      console.log('Role request approved successfully');
       toast({
         title: "Request Approved",
         description: "The role request has been approved successfully.",
       });
       await loadData();
-      // Ensure current session user data is fresh
-      console.log('Refreshing user data after approval...');
       await refreshUser();
-      console.log('User data refreshed');
     } catch (error) {
       console.error("Failed to approve request:", error);
       toast({
@@ -301,7 +311,6 @@ export const AdminDashboard: React.FC = () => {
         description: "The role request has been rejected.",
       });
       await loadData();
-      // Ensure current session user data is fresh
       await refreshUser();
     } catch (error) {
       console.error("Failed to reject request:", error);
@@ -329,6 +338,7 @@ export const AdminDashboard: React.FC = () => {
           await authService.updateCourse((editingContent as Course).id, {
             title: contentForm.title,
             content: contentForm.content,
+            // description: contentForm.description,
             roleAccess: contentForm.roleAccess,
           });
           toast({
@@ -339,19 +349,22 @@ export const AdminDashboard: React.FC = () => {
           const created = await authService.createCourse({
             title: contentForm.title,
             content: contentForm.content,
+            // description: contentForm.description,
             roleAccess: contentForm.roleAccess,
           });
           toast({
             title: "Course Created",
             description: "The course has been created successfully.",
           });
-          // Upload any drafted videos for this new course
           if ((created as any)?.id && courseVideoDrafts.length > 0) {
             for (const v of courseVideoDrafts) {
               try {
-                await authService.addCourseVideo((created as any).id, v);
+                const fd = new FormData();
+                fd.append("title", v.title);
+                if (v.file) fd.append("file", v.file);
+                await authService.addCourseVideoFile((created as any).id, fd);
               } catch (e) {
-                console.error('Failed to upload course video', e);
+                console.error("Failed to upload course video", e);
               }
             }
           }
@@ -562,14 +575,21 @@ export const AdminDashboard: React.FC = () => {
     if (!roleEditUserId) return;
     try {
       await authService.assignRoles(roleEditUserId, selectedRoles);
-      toast({ title: "Roles Updated", description: "User roles updated successfully." });
+      toast({
+        title: "Roles Updated",
+        description: "User roles updated successfully.",
+      });
       setRoleEditOpen(false);
       setRoleEditUserId(null);
       setSelectedRoles([]);
       await loadData();
     } catch (error) {
       console.error("Failed to assign roles:", error);
-      toast({ title: "Error", description: "Failed to update roles.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to update roles.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -577,11 +597,18 @@ export const AdminDashboard: React.FC = () => {
     if (!confirm("Delete this user? This action cannot be undone.")) return;
     try {
       await authService.deleteUser(userId);
-      toast({ title: "User Deleted", description: "User removed successfully." });
+      toast({
+        title: "User Deleted",
+        description: "User removed successfully.",
+      });
       await loadData();
     } catch (error) {
       console.error("Failed to delete user:", error);
-      toast({ title: "Error", description: "Failed to delete user.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to delete user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -611,7 +638,7 @@ export const AdminDashboard: React.FC = () => {
     setContentForm({
       title: content.title,
       content: (content as Course | Signal).content || "",
-      description: (content as LiveSession).description || "",
+      description: (content as Course | LiveSession).description || "",
       date: (content as LiveSession).date || "",
       roleAccess: content.roleAccess,
     });
@@ -660,9 +687,9 @@ export const AdminDashboard: React.FC = () => {
     completion: course.completion || 0,
   }));
 
-  // Determine active section from URL: /admin/<section>
   const pathParts = location.pathname.split("/").filter(Boolean);
-  const section = pathParts[0] === "dashboard" ? (pathParts[1] || "overview") : pathParts[1];
+  const section =
+    pathParts[0] === "dashboard" ? pathParts[1] || "overview" : pathParts[1];
   if (pathParts[0] === "admin" && !section) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -672,38 +699,54 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Students
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.totalStudents}</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.totalStudents}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Mentorships</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Mentorships
+            </CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.activeMentorships}</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.activeMentorships}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue This Month</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Revenue This Month
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${overviewStats.revenueThisMonth.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${overviewStats.revenueThisMonth.toFixed(2)}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Mentorships</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Expiring Mentorships
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.expiringSoon.length}</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.expiringSoon.length}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -743,7 +786,11 @@ export const AdminDashboard: React.FC = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.subscriptionEnd}</TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleExtendSubscription(user.id)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExtendSubscription(user.id)}
+                    >
                       Extend
                     </Button>
                   </TableCell>
@@ -758,9 +805,8 @@ export const AdminDashboard: React.FC = () => {
 
   const renderUsers = () => (
     <>
-      {/* Role management dialog */}
       <Dialog open={roleEditOpen} onOpenChange={setRoleEditOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Manage Roles</DialogTitle>
           </DialogHeader>
@@ -768,15 +814,15 @@ export const AdminDashboard: React.FC = () => {
             <Label>Assign Roles</Label>
             <div className="flex flex-wrap gap-2">
               {[
-                'community_student',
-                'academy_student',
-                'mentorship_student',
-                'admin',
+                "community_student",
+                "academy_student",
+                "mentorship_student",
+                "admin",
               ].map((role) => (
                 <Button
                   key={role}
                   type="button"
-                  variant={selectedRoles.includes(role) ? 'cta' : 'outline'}
+                  variant={selectedRoles.includes(role) ? "cta" : "outline"}
                   size="sm"
                   onClick={() => {
                     setSelectedRoles((prev) =>
@@ -791,17 +837,22 @@ export const AdminDashboard: React.FC = () => {
               ))}
             </div>
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleAssignRoles} variant="cta">Save</Button>
-              <Button variant="outline" onClick={() => setRoleEditOpen(false)}>Cancel</Button>
+              <Button onClick={handleAssignRoles} variant="cta">
+                Save
+              </Button>
+              <Button variant="outline" onClick={() => setRoleEditOpen(false)}>
+                Cancel
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      {/* Pending Role Requests moved above users table */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Pending Role Requests</CardTitle>
-          <CardDescription>Approve or reject user upgrade requests</CardDescription>
+          <CardDescription>
+            Approve or reject user upgrade requests
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -818,7 +869,9 @@ export const AdminDashboard: React.FC = () => {
               {roleRequests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5}>
-                    <span className="text-sm text-muted-foreground">No pending requests</span>
+                    <span className="text-sm text-muted-foreground">
+                      No pending requests
+                    </span>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -879,7 +932,11 @@ export const AdminDashboard: React.FC = () => {
                   <TableCell>{getStatusBadge(user.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditUser(user)}
+                      >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
@@ -897,7 +954,10 @@ export const AdminDashboard: React.FC = () => {
                         size="sm"
                         onClick={() => {
                           setRoleEditUserId(user.id);
-                          const roles = (user as any).roles?.map((r: any) => r.role?.name).filter(Boolean) || [];
+                          const roles =
+                            (user as any).roles
+                              ?.map((r: any) => r.role?.name)
+                              .filter(Boolean) || [];
                           setSelectedRoles(roles);
                           setRoleEditOpen(true);
                         }}
@@ -912,9 +972,8 @@ export const AdminDashboard: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
-      {/* Edit user dialog remains unchanged */}
       <Dialog open={userModalOpen} onOpenChange={setUserModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
@@ -959,11 +1018,7 @@ export const AdminDashboard: React.FC = () => {
                 </Select>
               </div>
               <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  variant="cta"
-                  disabled={contentLoading}
-                >
+                <Button type="submit" variant="cta" disabled={contentLoading}>
                   {contentLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -985,7 +1040,6 @@ export const AdminDashboard: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
     </>
   );
 
@@ -1000,24 +1054,28 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => {
                 setEditingContent(null);
                 setContentType("course");
-                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
+                setContentForm({
+                  title: "",
+                  content: "",
+                  description: "",
+                  date: "",
+                  roleAccess: ["community_student"],
+                });
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Course
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingContent
                   ? `Edit ${
-                      contentType.charAt(0).toUpperCase() +
-                      contentType.slice(1)
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
                     }`
                   : `Create New ${
-                      contentType.charAt(0).toUpperCase() +
-                      contentType.slice(1)
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
                     }`}
               </DialogTitle>
             </DialogHeader>
@@ -1026,9 +1084,506 @@ export const AdminDashboard: React.FC = () => {
                 <Label htmlFor="contentType">Content Type</Label>
                 <Select
                   value={contentType}
-                  onValueChange={(
-                    value: "course" | "session" | "signal"
-                  ) => {
+                  onValueChange={(value: "course" | "session" | "signal") => {
+                    setContentType(value);
+                    setContentForm({
+                      ...contentForm,
+                      title: "",
+                      content: "",
+                      description: "",
+                      date: "",
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">Course</SelectItem>
+                    <SelectItem value="session">Live Session</SelectItem>
+                    <SelectItem value="signal">Signal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={contentForm.title}
+                  onChange={(e) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter title"
+                  required
+                />
+              </div>
+
+              {contentType === "course" && (
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={contentForm.description}
+                    onChange={(e) =>
+                      setContentForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter course description"
+                    rows={4}
+                    required
+                  />
+                </div>
+              )}
+
+              {contentType !== "session" && (
+                <div className="space-y-2">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    value={contentForm.content}
+                    onChange={(e) =>
+                      setContentForm((prev) => ({
+                        ...prev,
+                        content: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter content (markdown supported)"
+                    rows={8}
+                    required
+                  />
+                </div>
+              )}
+
+              {contentType === "session" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={contentForm.description}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter session description"
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="datetime-local"
+                      value={contentForm.date}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          date: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="roleAccess">Access Level</Label>
+                <Select
+                  value={contentForm.roleAccess[0] || "community_student"}
+                  onValueChange={(value) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      roleAccess: [value],
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="community_student">
+                      Community (Free)
+                    </SelectItem>
+                    <SelectItem value="academy_student">
+                      Academy (Premium)
+                    </SelectItem>
+                    <SelectItem value="mentorship_student">
+                      Mentorship (Elite)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {contentType === "course" && (
+                <div className="space-y-3 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-semibold">Course Videos</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setCourseVideoDrafts((prev) => [
+                          ...prev,
+                          { title: "", file: null },
+                        ])
+                      }
+                    >
+                      Add Video
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {courseVideoDrafts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No videos added yet.
+                      </p>
+                    ) : (
+                      courseVideoDrafts.map((v, idx) => (
+                        <div
+                          key={idx}
+                          className="grid md:grid-cols-2 gap-3 border rounded p-3"
+                        >
+                          <div className="space-y-2">
+                            <Label>Title</Label>
+                            <Input
+                              value={v.title}
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = {
+                                    ...next[idx],
+                                    title: e.target.value,
+                                  };
+                                  return next;
+                                })
+                              }
+                              placeholder="Episode title"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Video File</Label>
+                            <Input
+                              type="file"
+                              accept="video/*"
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = {
+                                    ...next[idx],
+                                    file: e.target.files?.[0] || null,
+                                  };
+                                  return next;
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="md:col-span-2 flex justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="text-destructive border-destructive"
+                              onClick={() =>
+                                setCourseVideoDrafts((prev) =>
+                                  prev.filter((_, i) => i !== idx)
+                                )
+                              }
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  variant="cta"
+                  disabled={contentLoading}
+                  className="flex-1"
+                >
+                  {contentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {editingContent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {editingContent
+                        ? `Update ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`
+                        : `Create ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setContentModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Beginner 6-Month Course</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Completion %</TableHead>
+                  <TableHead>Access</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {courses
+                  .filter((course) =>
+                    course.roleAccess.includes("academy_student")
+                  )
+                  .map((course) => (
+                    <TableRow key={course.id}>
+                      <TableCell>{course.title}</TableCell>
+                      <TableCell>{course.description || ""}</TableCell>
+                      <TableCell>{course.completion || 0}%</TableCell>
+                      <TableCell>
+                        {getAccessLevelBadge(course.roleAccess)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditContent(course, "course")}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleDeleteContent(course.id, "course")
+                          }
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="cta"
+                          size="sm"
+                          onClick={() => openManageVideos(course.id)}
+                        >
+                          Manage Videos
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mentorship Subscribers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users
+                  .filter((user) => user.plan === "mentorship")
+                  .map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExtendSubscription(user.id)}
+                        >
+                          Extend
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancelSubscription(user.id)}
+                        >
+                          Cancel
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Course Videos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <form onSubmit={handleAddVideo} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="videoTitle">Video Title</Label>
+                <Input
+                  id="videoTitle"
+                  value={videoForm.title}
+                  onChange={(e) =>
+                    setVideoForm((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  placeholder="Enter video title"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="videoFile">Video File</Label>
+                <Input
+                  id="videoFile"
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) =>
+                    setVideoForm((prev) => ({
+                      ...prev,
+                      file: e.target.files?.[0] || null,
+                    }))
+                  }
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" variant="cta">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Add Video
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setVideoModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+            <div className="mt-6">
+              <h4 className="text-sm font-medium mb-2">Existing Videos</h4>
+              {currentCourseVideos.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No videos added yet.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentCourseVideos.map((video) => (
+                      <TableRow key={video.id}>
+                        <TableCell>{video.title}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive border-destructive"
+                            onClick={() => handleDeleteVideo(video.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
+  const renderSessions = () => (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Live Session Management</h3>
+        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="cta"
+              onClick={() => {
+                setEditingContent(null);
+                setContentType("session");
+                setContentForm({
+                  title: "",
+                  content: "",
+                  description: "",
+                  date: "",
+                  roleAccess: ["community_student"],
+                });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Session
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingContent
+                  ? `Edit ${
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
+                    }`
+                  : `Create New ${
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
+                    }`}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleContentSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="contentType">Content Type</Label>
+                <Select
+                  value={contentType}
+                  onValueChange={(value: "course" | "session" | "signal") => {
                     setContentType(value);
                     setContentForm({
                       ...contentForm,
@@ -1149,123 +1704,272 @@ export const AdminDashboard: React.FC = () => {
                 </Select>
               </div>
 
-              {/* Course Video Drafts (only when creating or editing a course) */}
-              {contentType === 'course' && (
-                <div className="space-y-3 border rounded-md p-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-semibold">Course Videos</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        setCourseVideoDrafts((prev) => [
-                          ...prev,
-                          { title: '', videoUrl: '', description: '', durationSec: undefined, orderIndex: (prev.at(-1)?.orderIndex ?? -1) + 1 },
-                        ])
-                      }
-                    >
-                      Add Video
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {courseVideoDrafts.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No videos added yet.</p>
-                    ) : (
-                      courseVideoDrafts.map((v, idx) => (
-                        <div key={idx} className="grid md:grid-cols-2 gap-3 border rounded p-3">
-                          <div className="space-y-2">
-                            <Label>Title</Label>
-                            <Input
-                              value={v.title}
-                              onChange={(e) =>
-                                setCourseVideoDrafts((prev) => {
-                                  const next = [...prev];
-                                  next[idx] = { ...next[idx], title: e.target.value };
-                                  return next;
-                                })
-                              }
-                              placeholder="Episode title"
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Video URL</Label>
-                            <Input
-                              value={v.videoUrl}
-                              onChange={(e) =>
-                                setCourseVideoDrafts((prev) => {
-                                  const next = [...prev];
-                                  next[idx] = { ...next[idx], videoUrl: e.target.value };
-                                  return next;
-                                })
-                              }
-                              placeholder="https://..."
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2 md:col-span-2">
-                            <Label>Description</Label>
-                            <Textarea
-                              value={v.description || ''}
-                              onChange={(e) =>
-                                setCourseVideoDrafts((prev) => {
-                                  const next = [...prev];
-                                  next[idx] = { ...next[idx], description: e.target.value };
-                                  return next;
-                                })
-                              }
-                              placeholder="Short description (optional)"
-                              rows={3}
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 md:col-span-2">
-                            <div className="space-y-2">
-                              <Label>Duration (sec)</Label>
-                              <Input
-                                type="number"
-                                value={v.durationSec || ''}
-                                onChange={(e) =>
-                                  setCourseVideoDrafts((prev) => {
-                                    const next = [...prev];
-                                    next[idx] = { ...next[idx], durationSec: Number(e.target.value) || undefined };
-                                    return next;
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Order</Label>
-                              <Input
-                                type="number"
-                                value={v.orderIndex ?? idx}
-                                onChange={(e) =>
-                                  setCourseVideoDrafts((prev) => {
-                                    const next = [...prev];
-                                    next[idx] = { ...next[idx], orderIndex: Number(e.target.value) || undefined };
-                                    return next;
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div className="md:col-span-2 flex justify-end">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="text-destructive border-destructive"
-                              onClick={() =>
-                                setCourseVideoDrafts((prev) => prev.filter((_, i) => i !== idx))
-                              }
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  variant="cta"
+                  disabled={contentLoading}
+                  className="flex-1"
+                >
+                  {contentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {editingContent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {editingContent
+                        ? `Update ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`
+                        : `Create ${
+                            contentType.charAt(0).toUpperCase() +
+                            contentType.slice(1)
+                          }`}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setContentModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Sessions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Access</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sessions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <span className="text-sm text-muted-foreground">
+                        No live sessions available
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell>{session.title}</TableCell>
+                      <TableCell>{session.description}</TableCell>
+                      <TableCell>
+                        {new Date(session.date).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {getAccessLevelBadge(session.roleAccess)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditContent(session, "session")}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleDeleteContent(session.id, "session")
+                          }
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+
+  const renderSignals = () => (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Trading Signal Management</h3>
+        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="cta"
+              onClick={() => {
+                setEditingContent(null);
+                setContentType("signal");
+                setContentForm({
+                  title: "",
+                  content: "",
+                  description: "",
+                  date: "",
+                  roleAccess: ["community_student"],
+                });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Signal
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingContent
+                  ? `Edit ${
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
+                    }`
+                  : `Create New ${
+                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
+                    }`}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleContentSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="contentType">Content Type</Label>
+                <Select
+                  value={contentType}
+                  onValueChange={(value: "course" | "session" | "signal") => {
+                    setContentType(value);
+                    setContentForm({
+                      ...contentForm,
+                      title: "",
+                      content: "",
+                      description: "",
+                      date: "",
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">Course</SelectItem>
+                    <SelectItem value="session">Live Session</SelectItem>
+                    <SelectItem value="signal">Signal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={contentForm.title}
+                  onChange={(e) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter title"
+                  required
+                />
+              </div>
+
+              {contentType !== "session" && (
+                <div className="space-y-2">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    value={contentForm.content}
+                    onChange={(e) =>
+                      setContentForm((prev) => ({
+                        ...prev,
+                        content: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter content (markdown supported)"
+                    rows={8}
+                    required
+                  />
                 </div>
               )}
+
+              {contentType === "session" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={contentForm.description}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter session description"
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="datetime-local"
+                      value={contentForm.date}
+                      onChange={(e) =>
+                        setContentForm((prev) => ({
+                          ...prev,
+                          date: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="roleAccess">Access Level</Label>
+                <Select
+                  value={contentForm.roleAccess[0] || "community_student"}
+                  onValueChange={(value) =>
+                    setContentForm((prev) => ({
+                      ...prev,
+                      roleAccess: [value],
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="community_student">
+                      Community (Free)
+                    </SelectItem>
+                    <SelectItem value="academy_student">
+                      Academy (Premium)
+                    </SelectItem>
+                    <SelectItem value="mentorship_student">
+                      Mentorship (Elite)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="flex gap-2 pt-4">
                 <Button
@@ -1310,215 +2014,6 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Beginner 6-Month Course</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Completion %</TableHead>
-                  <TableHead>Access</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {courses
-                  .filter((course) =>
-                    course.roleAccess.includes("academy_student")
-                  )
-                  .map((course) => (
-                    <TableRow key={course.id}>
-                      <TableCell>{course.title}</TableCell>
-                      <TableCell>{course.completion || 0}%</TableCell>
-                      <TableCell>
-                        {getAccessLevelBadge(course.roleAccess)}
-                      </TableCell>
-                      <TableCell>
-                      <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleEditContent(course, "course")
-                          }
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleDeleteContent(course.id, "course")
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      <Button
-                        variant="cta"
-                        size="sm"
-                        onClick={() => openManageVideos(course.id)}
-                      >
-                        Manage Videos
-                      </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Mentorship Subscribers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users
-                  .filter((user) => user.plan === "mentorship")
-                  .map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleExtendSubscription(user.id)
-                          }
-                        >
-                          Extend
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleCancelSubscription(user.id)
-                          }
-                        >
-                          Cancel
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    </>
-  );
-
-  const renderSessions = () => (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Live Session Management</h3>
-        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="cta"
-              onClick={() => {
-                setEditingContent(null);
-                setContentType("session");
-                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Session
-            </Button>
-          </DialogTrigger>
-        </Dialog>
-      </div>
-
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Live Sessions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Assigned Plan</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.map((session) => (
-                  <TableRow key={session.id}>
-                    <TableCell>{session.title}</TableCell>
-                    <TableCell>
-                      {new Date(session.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {getAccessLevelBadge(session.roleAccess)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleEditContent(session, "session")
-                        }
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleDeleteContent(session.id, "session")
-                        }
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    </>
-  );
-
-  const renderSignals = () => (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Signal Management</h3>
-        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="cta"
-              onClick={() => {
-                setEditingContent(null);
-                setContentType("signal");
-                setContentForm({ title: "", content: "", description: "", date: "", roleAccess: ["community_student"] });
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Signal
-            </Button>
-          </DialogTrigger>
-        </Dialog>
-      </div>
-
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
             <CardTitle>Trading Signals</CardTitle>
           </CardHeader>
           <CardContent>
@@ -1532,37 +2027,45 @@ export const AdminDashboard: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {signals.map((signal) => (
-                  <TableRow key={signal.id}>
-                    <TableCell>{signal.title}</TableCell>
-                    <TableCell>
-                      {new Date(signal.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {getAccessLevelBadge(signal.roleAccess)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleEditContent(signal, "signal")
-                        }
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleDeleteContent(signal.id, "signal")
-                        }
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                {signals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <span className="text-sm text-muted-foreground">
+                        No signals available
+                      </span>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  signals.map((signal) => (
+                    <TableRow key={signal.id}>
+                      <TableCell>{signal.title}</TableCell>
+                      <TableCell>
+                        {new Date(signal.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {getAccessLevelBadge(signal.roleAccess)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditContent(signal, "signal")}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleDeleteContent(signal.id, "signal")
+                          }
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -1580,7 +2083,6 @@ export const AdminDashboard: React.FC = () => {
             Manage role requests and content for Mobsters Forex Academy.
           </p>
         </div>
-        {/* Render by route section */}
         <div className="space-y-6">
           {section === "overview" && renderOverview()}
           {section === "users" && renderUsers()}
