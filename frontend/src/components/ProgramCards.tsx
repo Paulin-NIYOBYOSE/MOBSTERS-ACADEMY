@@ -1,8 +1,19 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Award, Users, MessageSquare, CheckCircle, Star, Zap, TrendingUp, Gift, Clock } from "lucide-react"
+"use client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Award,
+  Users,
+  MessageSquare,
+  CheckCircle,
+  Star,
+  Zap,
+  TrendingUp,
+  Gift,
+  Clock,
+} from "lucide-react";
+import { link } from "fs";
 
 export const ProgramCards = () => {
   const programs = [
@@ -46,23 +57,29 @@ export const ProgramCards = () => {
       subtitle: "Daily Signals & Support",
       price: "Free",
       badge: "Get Started",
-      keyFeatures: ["Daily forex signals", "Market analysis & tips", "Community discussions", "Beginner resources"],
+      keyFeatures: [
+        "Daily forex signals",
+        "Market analysis & tips",
+        "Community discussions",
+        "Beginner resources",
+      ],
       highlight: "No commitment required",
       icon: MessageSquare,
       popular: false,
     },
-  ]
+  ];
 
   const handleEnrollClick = (programId: string) => {
-    if (programId === "community") {
-      alert("Redirecting to community signup...")
-    } else {
-      alert(`Enrolling in ${programId}... Payment integration coming soon!`)
-    }
-  }
+    window.location.href = "/register";
+    // if (programId === "community") {
+    //   alert("Redirecting to community signup...")
+    // } else {
+    //   alert(`Enrolling in ${programId}... Payment integration coming soon!`)
+    // }
+  };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+    <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto" id="programs">
       {programs.map((program) => (
         <Card
           key={program.id}
@@ -76,7 +93,9 @@ export const ProgramCards = () => {
             <div className="absolute top-1 right-4">
               <Badge
                 variant={program.popular ? "default" : "secondary"}
-                className={program.popular ? "bg-primary text-primary-foreground" : ""}
+                className={
+                  program.popular ? "bg-primary text-primary-foreground" : ""
+                }
               >
                 {program.badge}
               </Badge>
@@ -85,23 +104,37 @@ export const ProgramCards = () => {
 
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-lg ${program.popular ? "bg-primary/10" : "bg-muted"}`}>
-                <program.icon className={`w-6 h-6 ${program.popular ? "text-primary" : "text-muted-foreground"}`} />
+              <div
+                className={`p-3 rounded-lg ${
+                  program.popular ? "bg-primary/10" : "bg-muted"
+                }`}
+              >
+                <program.icon
+                  className={`w-6 h-6 ${
+                    program.popular ? "text-primary" : "text-muted-foreground"
+                  }`}
+                />
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold text-foreground">
                   {program.price}
                   {program.priceUnit && (
-                    <span className="text-lg font-normal text-muted-foreground">{program.priceUnit}</span>
+                    <span className="text-lg font-normal text-muted-foreground">
+                      {program.priceUnit}
+                    </span>
                   )}
                 </div>
                 {program.originalPrice && (
-                  <div className="text-sm line-through text-red-500">{program.originalPrice}</div>
+                  <div className="text-sm line-through text-red-500">
+                    {program.originalPrice}
+                  </div>
                 )}
               </div>
             </div>
 
-            <CardTitle className="text-xl font-bold text-foreground mb-1">{program.title}</CardTitle>
+            <CardTitle className="text-xl font-bold text-foreground mb-1">
+              {program.title}
+            </CardTitle>
             <p className="text-muted-foreground text-sm">{program.subtitle}</p>
           </CardHeader>
 
@@ -110,7 +143,9 @@ export const ProgramCards = () => {
               {program.keyFeatures.map((feature, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-card-foreground leading-relaxed">{feature}</span>
+                  <span className="text-sm text-card-foreground leading-relaxed">
+                    {feature}
+                  </span>
                 </div>
               ))}
             </div>
@@ -135,7 +170,7 @@ export const ProgramCards = () => {
                     variant="outline"
                     size="lg"
                     className="w-full border-primary text-primary hover:bg-primary/5 bg-transparent"
-                    onClick={() => alert("Joining waitlist...")}
+                    onClick={() => (window.location.href = "/register")}
                   >
                     <Clock className="mr-2 w-4 h-4" />
                     Join Waitlist
@@ -170,5 +205,5 @@ export const ProgramCards = () => {
         </Card>
       ))}
     </div>
-  )
-}
+  );
+};

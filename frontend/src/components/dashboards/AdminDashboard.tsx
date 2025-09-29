@@ -48,6 +48,8 @@ import {
   Loader2,
   DollarSign,
   GraduationCap,
+  Eye,
+  Download,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
@@ -78,13 +80,22 @@ interface Course {
   description: string;
   roleAccess: string[];
   createdAt: string;
+  updatedAt: string;
   completion?: number;
+  category?: string;
+  duration?: number;
+  level?: "beginner" | "intermediate" | "advanced";
+  isPublished?: boolean;
+  thumbnailUrl?: string;
 }
 
 interface CourseVideo {
   id: number;
   title: string;
   videoUrl: string;
+  duration?: number;
+  order?: number;
+  createdAt: string;
 }
 
 interface LiveSession {
@@ -149,6 +160,11 @@ export const AdminDashboard: React.FC = () => {
     description: "",
     date: "",
     roleAccess: ["community_student"] as string[],
+    category: "",
+    duration: 0,
+    level: "beginner" as "beginner" | "intermediate" | "advanced",
+    isPublished: true,
+    thumbnailFile: null as File | null,
   });
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -156,7 +172,7 @@ export const AdminDashboard: React.FC = () => {
   const [roleEditUserId, setRoleEditUserId] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [courseVideoDrafts, setCourseVideoDrafts] = useState<
-    { title: string; file?: File | null }[]
+    { title: string; file?: File | null; order?: number }[]
   >([]);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [currentCourseVideos, setCurrentCourseVideos] = useState<CourseVideo[]>(
@@ -166,7 +182,10 @@ export const AdminDashboard: React.FC = () => {
   const [videoForm, setVideoForm] = useState<{
     title: string;
     file?: File | null;
-  }>({ title: "", file: null });
+    order?: number;
+  }>({ title: "", file: null, order: 0 });
+  const [coursePreviewOpen, setCoursePreviewOpen] = useState(false);
+  const [previewCourse, setPreviewCourse] = useState<Course | null>(null);
 
   const { toast } = useToast();
   const { refreshUser } = useAuth();
@@ -239,10 +258,17 @@ export const AdminDashboard: React.FC = () => {
         const fd = new FormData();
         fd.append("title", videoForm.title);
         fd.append("file", videoForm.file);
+        if (videoForm.order) {
+          fd.append("order", videoForm.order.toString());
+        }
         await authService.addCourseVideoFile(currentCourseId, fd);
         const videos = await authService.getCourseVideos(currentCourseId);
         setCurrentCourseVideos(videos || []);
-        setVideoForm({ title: "", file: null });
+        setVideoForm({
+          title: "",
+          file: null,
+          order: (videoForm.order || 0) + 1,
+        });
         toast({ title: "Video Added", description: "Video added to course." });
       } else {
         toast({
@@ -334,34 +360,54 @@ export const AdminDashboard: React.FC = () => {
 
     try {
       if (contentType === "course") {
+        const courseData = {
+          title: contentForm.title,
+          content: contentForm.content,
+          description: contentForm.description,
+          roleAccess: contentForm.roleAccess,
+          category: contentForm.category,
+          duration: contentForm.duration,
+          level: contentForm.level,
+          isPublished: contentForm.isPublished,
+        };
+
         if (editingContent) {
-          await authService.updateCourse((editingContent as Course).id, {
-            title: contentForm.title,
-            content: contentForm.content,
-            // description: contentForm.description,
-            roleAccess: contentForm.roleAccess,
-          });
+          // Update existing course
+          await authService.updateCourse(
+            (editingContent as Course).id,
+            courseData
+          );
           toast({
             title: "Course Updated",
             description: "The course has been updated successfully.",
           });
         } else {
-          const created = await authService.createCourse({
-            title: contentForm.title,
-            content: contentForm.content,
-            // description: contentForm.description,
-            roleAccess: contentForm.roleAccess,
-          });
+          // Create new course
+          const created = await authService.createCourse(courseData);
           toast({
             title: "Course Created",
             description: "The course has been created successfully.",
           });
+
+          // Upload thumbnail if provided
+          if (contentForm.thumbnailFile && (created as any)?.id) {
+            try {
+              const fd = new FormData();
+              fd.append("thumbnail", contentForm.thumbnailFile);
+              await authService.uploadCourseThumbnail((created as any).id, fd);
+            } catch (e) {
+              console.error("Failed to upload thumbnail", e);
+            }
+          }
+
+          // Upload videos if any
           if ((created as any)?.id && courseVideoDrafts.length > 0) {
             for (const v of courseVideoDrafts) {
               try {
                 const fd = new FormData();
                 fd.append("title", v.title);
                 if (v.file) fd.append("file", v.file);
+                if (v.order) fd.append("order", v.order.toString());
                 await authService.addCourseVideoFile((created as any).id, fd);
               } catch (e) {
                 console.error("Failed to upload course video", e);
@@ -428,6 +474,11 @@ export const AdminDashboard: React.FC = () => {
         description: "",
         date: "",
         roleAccess: ["community_student"],
+        category: "",
+        duration: 0,
+        level: "beginner",
+        isPublished: true,
+        thumbnailFile: null,
       });
       setCourseVideoDrafts([]);
       await loadData();
@@ -505,6 +556,93 @@ export const AdminDashboard: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleCoursePublish = async (
+    courseId: number,
+    currentStatus: boolean
+  ) => {
+    try {
+      await authService.updateCourse(courseId, { isPublished: !currentStatus });
+      toast({
+        title: "Course Updated",
+        description: `Course ${
+          !currentStatus ? "published" : "unpublished"
+        } successfully.`,
+      });
+      await loadData();
+    } catch (error) {
+      console.error("Failed to toggle course publish status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update course status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDuplicateCourse = async (courseId: number) => {
+    try {
+      const courseToDuplicate = courses.find((c) => c.id === courseId);
+      if (!courseToDuplicate) return;
+
+      const duplicatedCourse = {
+        ...courseToDuplicate,
+        title: `${courseToDuplicate.title} (Copy)`,
+        id: undefined,
+      };
+
+      await authService.createCourse(duplicatedCourse);
+      toast({
+        title: "Course Duplicated",
+        description: "Course duplicated successfully.",
+      });
+      await loadData();
+    } catch (error) {
+      console.error("Failed to duplicate course:", error);
+      toast({
+        title: "Error",
+        description: "Failed to duplicate course.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportCourseData = async (courseId: number) => {
+    try {
+      const course = courses.find((c) => c.id === courseId);
+      if (!course) return;
+
+      const courseData = {
+        ...course,
+        videos: currentCourseVideos,
+      };
+
+      const dataStr = JSON.stringify(courseData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `course-${course.title}-${
+        new Date().toISOString().split("T")[0]
+      }.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Data Exported",
+        description: "Course data exported successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to export course data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to export course data.",
         variant: "destructive",
       });
     }
@@ -593,23 +731,41 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
-    if (!confirm("Delete this user? This action cannot be undone.")) return;
-    try {
-      await authService.deleteUser(userId);
-      toast({
-        title: "User Deleted",
-        description: "User removed successfully.",
-      });
-      await loadData();
-    } catch (error) {
-      console.error("Failed to delete user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete user.",
-        variant: "destructive",
-      });
-    }
+  const handleDeleteUser = (userId: number) => {
+    toast({
+      title: "Are you sure you want to delete this user?",
+      description: "This action can't be undone.",
+      action: (
+        <div className="flex flex-col gap-3 mt-3">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              try {
+                await authService.deleteUser(userId);
+                toast({
+                  title: "User Deleted",
+                  description: "User removed successfully.",
+                });
+                await loadData();
+              } catch (error) {
+                console.error("Failed to delete user:", error);
+                toast({
+                  title: "Error",
+                  description: "Failed to delete user.",
+                  variant: "destructive",
+                });
+              }
+            }}
+          >
+            ✅ Yes, Delete
+          </Button>
+          <Button variant="outline" size="sm">
+            ❌ Cancel
+          </Button>
+        </div>
+      ),
+    });
   };
 
   const getAccessLevelBadge = (roleAccess: string[]) => {
@@ -629,18 +785,45 @@ export const AdminDashboard: React.FC = () => {
     ));
   };
 
+  const getLevelBadge = (level: string) => {
+    switch (level) {
+      case "beginner":
+        return <Badge variant="secondary">Beginner</Badge>;
+      case "intermediate":
+        return <Badge variant="default">Intermediate</Badge>;
+      case "advanced":
+        return <Badge variant="destructive">Advanced</Badge>;
+      default:
+        return <Badge variant="outline">{level}</Badge>;
+    }
+  };
+
+  const getPublishStatusBadge = (isPublished: boolean) => {
+    return isPublished ? (
+      <Badge variant="default">Published</Badge>
+    ) : (
+      <Badge variant="outline">Draft</Badge>
+    );
+  };
+
   const handleEditContent = (
     content: Course | LiveSession | Signal,
     type: "course" | "session" | "signal"
   ) => {
     setEditingContent(content);
     setContentType(type);
+    const courseContent = content as Course;
     setContentForm({
       title: content.title,
       content: (content as Course | Signal).content || "",
       description: (content as Course | LiveSession).description || "",
       date: (content as LiveSession).date || "",
       roleAccess: content.roleAccess,
+      category: courseContent.category || "",
+      duration: courseContent.duration || 0,
+      level: courseContent.level || "beginner",
+      isPublished: courseContent.isPublished !== false,
+      thumbnailFile: null,
     });
     setContentModalOpen(true);
   };
@@ -674,6 +857,11 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handlePreviewCourse = (course: Course) => {
+    setPreviewCourse(course);
+    setCoursePreviewOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -693,6 +881,96 @@ export const AdminDashboard: React.FC = () => {
   if (pathParts[0] === "admin" && !section) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  // Enhanced course form with additional fields
+  const renderCourseForm = () => (
+    <>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Category</Label>
+          <Input
+            id="category"
+            value={contentForm.category}
+            onChange={(e) =>
+              setContentForm((prev) => ({
+                ...prev,
+                category: e.target.value,
+              }))
+            }
+            placeholder="e.g., Technical Analysis"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="duration">Duration (minutes)</Label>
+          <Input
+            id="duration"
+            type="number"
+            value={contentForm.duration}
+            onChange={(e) =>
+              setContentForm((prev) => ({
+                ...prev,
+                duration: parseInt(e.target.value) || 0,
+              }))
+            }
+            placeholder="120"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="level">Difficulty Level</Label>
+        <Select
+          value={contentForm.level}
+          onValueChange={(value: "beginner" | "intermediate" | "advanced") =>
+            setContentForm((prev) => ({
+              ...prev,
+              level: value,
+            }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="beginner">Beginner</SelectItem>
+            <SelectItem value="intermediate">Intermediate</SelectItem>
+            <SelectItem value="advanced">Advanced</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="thumbnail">Thumbnail Image</Label>
+        <Input
+          id="thumbnail"
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setContentForm((prev) => ({
+              ...prev,
+              thumbnailFile: e.target.files?.[0] || null,
+            }))
+          }
+        />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="isPublished"
+          checked={contentForm.isPublished}
+          onChange={(e) =>
+            setContentForm((prev) => ({
+              ...prev,
+              isPublished: e.target.checked,
+            }))
+          }
+          className="rounded border-gray-300"
+        />
+        <Label htmlFor="isPublished">Publish immediately</Label>
+      </div>
+    </>
+  );
 
   const renderOverview = () => (
     <>
@@ -752,7 +1030,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Beginner Course Progress</CardTitle>
+          <CardTitle>Course Progress Overview</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -1045,6 +1323,47 @@ export const AdminDashboard: React.FC = () => {
 
   const renderCourses = () => (
     <>
+      <Dialog open={coursePreviewOpen} onOpenChange={setCoursePreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Course Preview: {previewCourse?.title}</DialogTitle>
+          </DialogHeader>
+          {previewCourse && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong>Description:</strong>
+                  <p className="mt-1">{previewCourse.description}</p>
+                </div>
+                <div>
+                  <strong>Content:</strong>
+                  <div className="mt-1 prose prose-sm max-w-none">
+                    {previewCourse.content}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <strong>Category:</strong> {previewCourse.category}
+                </div>
+                <div>
+                  <strong>Duration:</strong> {previewCourse.duration} min
+                </div>
+                <div>
+                  <strong>Level:</strong> {previewCourse.level}
+                </div>
+              </div>
+              <div className="text-sm">
+                <strong>Access Levels:</strong>
+                <div className="mt-1 flex gap-1">
+                  {getAccessLevelBadge(previewCourse.roleAccess)}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Course Management</h3>
         <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
@@ -1060,6 +1379,11 @@ export const AdminDashboard: React.FC = () => {
                   description: "",
                   date: "",
                   roleAccess: ["community_student"],
+                  category: "",
+                  duration: 0,
+                  level: "beginner",
+                  isPublished: true,
+                  thumbnailFile: null,
                 });
               }}
             >
@@ -1067,7 +1391,7 @@ export const AdminDashboard: React.FC = () => {
               Add Course
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingContent
@@ -1196,6 +1520,8 @@ export const AdminDashboard: React.FC = () => {
                 </>
               )}
 
+              {contentType === "course" && renderCourseForm()}
+
               <div className="space-y-2">
                 <Label htmlFor="roleAccess">Access Level</Label>
                 <Select
@@ -1234,7 +1560,7 @@ export const AdminDashboard: React.FC = () => {
                       onClick={() =>
                         setCourseVideoDrafts((prev) => [
                           ...prev,
-                          { title: "", file: null },
+                          { title: "", file: null, order: prev.length },
                         ])
                       }
                     >
@@ -1250,7 +1576,7 @@ export const AdminDashboard: React.FC = () => {
                       courseVideoDrafts.map((v, idx) => (
                         <div
                           key={idx}
-                          className="grid md:grid-cols-2 gap-3 border rounded p-3"
+                          className="grid md:grid-cols-3 gap-3 border rounded p-3"
                         >
                           <div className="space-y-2">
                             <Label>Title</Label>
@@ -1271,6 +1597,23 @@ export const AdminDashboard: React.FC = () => {
                             />
                           </div>
                           <div className="space-y-2">
+                            <Label>Order</Label>
+                            <Input
+                              type="number"
+                              value={v.order || idx}
+                              onChange={(e) =>
+                                setCourseVideoDrafts((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = {
+                                    ...next[idx],
+                                    order: parseInt(e.target.value) || idx,
+                                  };
+                                  return next;
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
                             <Label>Video File</Label>
                             <Input
                               type="file"
@@ -1287,7 +1630,7 @@ export const AdminDashboard: React.FC = () => {
                               }
                             />
                           </div>
-                          <div className="md:col-span-2 flex justify-end">
+                          <div className="md:col-span-3 flex justify-end">
                             <Button
                               type="button"
                               variant="outline"
@@ -1351,105 +1694,156 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Beginner 6-Month Course</CardTitle>
+            <CardTitle>All Courses</CardTitle>
+            <CardDescription>Manage all courses in the system</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Completion %</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Level</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Access</TableHead>
+                  <TableHead>Created</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {courses
-                  .filter((course) =>
-                    course.roleAccess.includes("academy_student")
-                  )
-                  .map((course) => (
+                {courses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8}>
+                      <span className="text-sm text-muted-foreground">
+                        No courses available
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  courses.map((course) => (
                     <TableRow key={course.id}>
-                      <TableCell>{course.title}</TableCell>
-                      <TableCell>{course.description || ""}</TableCell>
-                      <TableCell>{course.completion || 0}%</TableCell>
+                      <TableCell className="font-medium">
+                        {course.title}
+                      </TableCell>
+                      <TableCell>{course.category || "-"}</TableCell>
+                      <TableCell>
+                        {getLevelBadge(course.level || "beginner")}
+                      </TableCell>
+                      <TableCell>{course.duration || 0} min</TableCell>
+                      <TableCell>
+                        {getPublishStatusBadge(course.isPublished !== false)}
+                      </TableCell>
                       <TableCell>
                         {getAccessLevelBadge(course.roleAccess)}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditContent(course, "course")}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleDeleteContent(course.id, "course")
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="cta"
-                          size="sm"
-                          onClick={() => openManageVideos(course.id)}
-                        >
-                          Manage Videos
-                        </Button>
+                        {new Date(course.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePreviewCourse(course)}
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditContent(course, "course")}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openManageVideos(course.id)}
+                          >
+                            <Video className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleToggleCoursePublish(
+                                course.id,
+                                course.isPublished !== false
+                              )
+                            }
+                          >
+                            {course.isPublished !== false
+                              ? "Unpublish"
+                              : "Publish"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDuplicateCourse(course.id)}
+                          >
+                            Duplicate
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleExportCourseData(course.id)}
+                          >
+                            <Download className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive border-destructive"
+                            onClick={() =>
+                              handleDeleteContent(course.id, "course")
+                            }
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Mentorship Subscribers</CardTitle>
+            <CardTitle>Course Statistics</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users
-                  .filter((user) => user.plan === "mentorship")
-                  .map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExtendSubscription(user.id)}
-                        >
-                          Extend
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCancelSubscription(user.id)}
-                        >
-                          Cancel
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+            <div className="grid grid-cols-4 gap-4 text-center">
+              <div className="space-y-2">
+                <div className="text-2xl font-bold">{courses.length}</div>
+                <div className="text-sm text-muted-foreground">
+                  Total Courses
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold">
+                  {courses.filter((c) => c.isPublished !== false).length}
+                </div>
+                <div className="text-sm text-muted-foreground">Published</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold">
+                  {courses.filter((c) => c.level === "beginner").length}
+                </div>
+                <div className="text-sm text-muted-foreground">Beginner</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold">
+                  {courses.reduce((acc, c) => acc + (c.duration || 0), 0)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Total Minutes
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -1471,6 +1865,20 @@ export const AdminDashboard: React.FC = () => {
                   }
                   placeholder="Enter video title"
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="videoOrder">Order</Label>
+                <Input
+                  id="videoOrder"
+                  type="number"
+                  value={videoForm.order || 0}
+                  onChange={(e) =>
+                    setVideoForm((prev) => ({
+                      ...prev,
+                      order: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -1512,26 +1920,36 @@ export const AdminDashboard: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Order</TableHead>
                       <TableHead>Title</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Created</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentCourseVideos.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell>{video.title}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive border-destructive"
-                            onClick={() => handleDeleteVideo(video.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {currentCourseVideos
+                      .sort((a, b) => (a.order || 0) - (b.order || 0))
+                      .map((video) => (
+                        <TableRow key={video.id}>
+                          <TableCell>{video.order || 0}</TableCell>
+                          <TableCell>{video.title}</TableCell>
+                          <TableCell>{video.duration || "N/A"}</TableCell>
+                          <TableCell>
+                            {new Date(video.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-destructive border-destructive"
+                              onClick={() => handleDeleteVideo(video.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               )}
@@ -1559,6 +1977,11 @@ export const AdminDashboard: React.FC = () => {
                   description: "",
                   date: "",
                   roleAccess: ["community_student"],
+                  category: "",
+                  duration: 0,
+                  level: "beginner",
+                  isPublished: true,
+                  thumbnailFile: null,
                 });
               }}
             >
@@ -1826,6 +2249,11 @@ export const AdminDashboard: React.FC = () => {
                   description: "",
                   date: "",
                   roleAccess: ["community_student"],
+                  category: "",
+                  duration: 0,
+                  level: "beginner",
+                  isPublished: true,
+                  thumbnailFile: null,
                 });
               }}
             >
