@@ -49,8 +49,10 @@ export const FreeDashboard: React.FC = () => {
   const { toast } = useToast();
   const location = useLocation();
   const { refreshUser } = useAuth();
-  const hasPending = (program: 'academy' | 'mentorship') =>
-    (myRequests || []).some((r: any) => r.program === program && r.status === 'pending');
+  const hasPending = (program: "academy" | "mentorship") =>
+    (myRequests || []).some(
+      (r: any) => r.program === program && r.status === "pending"
+    );
 
   useEffect(() => {
     loadCommunityContent();
@@ -68,7 +70,7 @@ export const FreeDashboard: React.FC = () => {
         const reqs = await authService.getMyRoleRequests().catch(() => []);
         setMyRequests(reqs || []);
         // If any request approved, refresh user to switch dashboard
-        if ((reqs || []).some((r: any) => r.status === 'approved')) {
+        if ((reqs || []).some((r: any) => r.status === "approved")) {
           await refreshUser();
         }
       } catch {}
@@ -78,12 +80,14 @@ export const FreeDashboard: React.FC = () => {
 
   const loadCommunityContent = async () => {
     try {
-      const [coursesData, signalsData, sessionsData, myReq] = await Promise.all([
-        authService.getCourses(),
-        authService.getSignals(),
-        authService.getLiveSessions(),
-        authService.getMyRoleRequests().catch(() => []),
-      ]);
+      const [coursesData, signalsData, sessionsData, myReq] = await Promise.all(
+        [
+          authService.getCourses(),
+          authService.getSignals(),
+          authService.getLiveSessions(),
+          authService.getMyRoleRequests().catch(() => []),
+        ]
+      );
       setCourses(coursesData);
       setSignals(signalsData);
       setSessions(sessionsData);
@@ -133,7 +137,8 @@ export const FreeDashboard: React.FC = () => {
 
   // Determine section from URL: /dashboard/<section>
   const pathParts = location.pathname.split("/").filter(Boolean);
-  const section = pathParts[0] === "dashboard" && !pathParts[1] ? "overview" : pathParts[1];
+  const section =
+    pathParts[0] === "dashboard" && !pathParts[1] ? "overview" : pathParts[1];
 
   return (
     <div className="p-6">
@@ -174,25 +179,38 @@ export const FreeDashboard: React.FC = () => {
           <Card className="mb-6 border-dashed">
             <CardHeader>
               <CardTitle>Request Program Access (Testing)</CardTitle>
-              <CardDescription>Submit a role request for Academy or Mentorship without payment. Admin can approve in Users panel.</CardDescription>
+              <CardDescription>
+                Submit a role request for Academy or Mentorship without payment.
+                Admin can approve in Users panel.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
               <Button
                 variant="outline"
-                disabled={hasPending('academy')}
+                disabled={hasPending("academy")}
                 onClick={async () => {
                   try {
-                    console.log('Requesting academy role...');
-                    await authService.requestRole('academy');
-                    console.log('Academy role request submitted');
-                    toast({ title: 'Request Sent', description: 'Academy role request submitted. You will be upgraded after admin approval.' });
+                    console.log("Requesting academy role...");
+                    await authService.requestRole("academy");
+                    console.log("Academy role request submitted");
+                    toast({
+                      title: "Request Sent",
+                      description:
+                        "Academy role request submitted. You will be upgraded after admin approval.",
+                    });
                     await refreshUser();
-                    const reqs = await authService.getMyRoleRequests().catch(() => []);
-                    console.log('My role requests:', reqs);
+                    const reqs = await authService
+                      .getMyRoleRequests()
+                      .catch(() => []);
+                    console.log("My role requests:", reqs);
                     setMyRequests(reqs || []);
                   } catch (e) {
-                    console.error('Failed to request academy role:', e);
-                    toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
+                    console.error("Failed to request academy role:", e);
+                    toast({
+                      title: "Error",
+                      description: "Failed to submit request.",
+                      variant: "destructive",
+                    });
                   }
                 }}
               >
@@ -200,20 +218,30 @@ export const FreeDashboard: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
-                disabled={hasPending('mentorship')}
+                disabled={hasPending("mentorship")}
                 onClick={async () => {
                   try {
-                    console.log('Requesting mentorship role...');
-                    await authService.requestRole('mentorship');
-                    console.log('Mentorship role request submitted');
-                    toast({ title: 'Request Sent', description: 'Mentorship role request submitted. You will be upgraded after admin approval.' });
+                    console.log("Requesting mentorship role...");
+                    await authService.requestRole("mentorship");
+                    console.log("Mentorship role request submitted");
+                    toast({
+                      title: "Request Sent",
+                      description:
+                        "Mentorship role request submitted. You will be upgraded after admin approval.",
+                    });
                     await refreshUser();
-                    const reqs = await authService.getMyRoleRequests().catch(() => []);
-                    console.log('My role requests:', reqs);
+                    const reqs = await authService
+                      .getMyRoleRequests()
+                      .catch(() => []);
+                    console.log("My role requests:", reqs);
                     setMyRequests(reqs || []);
                   } catch (e) {
-                    console.error('Failed to request mentorship role:', e);
-                    toast({ title: 'Error', description: 'Failed to submit request.', variant: 'destructive' });
+                    console.error("Failed to request mentorship role:", e);
+                    toast({
+                      title: "Error",
+                      description: "Failed to submit request.",
+                      variant: "destructive",
+                    });
                   }
                 }}
               >
@@ -411,123 +439,121 @@ export const FreeDashboard: React.FC = () => {
         )}
 
         {section === "courses" && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {content?.freeCourses?.map((course, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary">Free</Badge>
-                      <div className="text-sm font-medium">0:45</div>
-                    </div>
-                    <CardTitle className="text-lg">{course.title}</CardTitle>
-                    <CardDescription>{course.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full">
-                      Watch Now
-                    </Button>
-                  </CardContent>
-                </Card>
-              )) || (
-                <Card className="col-span-full">
-                  <CardContent className="text-center py-8">
-                    <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">
-                      Free courses will appear here once available.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {content?.freeCourses?.map((course, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary">Free</Badge>
+                    <div className="text-sm font-medium">0:45</div>
+                  </div>
+                  <CardTitle className="text-lg">{course.title}</CardTitle>
+                  <CardDescription>{course.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full">
+                    Watch Now
+                  </Button>
+                </CardContent>
+              </Card>
+            )) || (
+              <Card className="col-span-full">
+                <CardContent className="text-center py-8">
+                  <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Free courses will appear here once available.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {section === "signals" && (
-            <div className="space-y-4">
-              {content?.dailySignals?.map((signal, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{signal.pair}</CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={
-                            signal.direction === "BUY"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }
-                        >
-                          {signal.direction}
-                        </Badge>
-                        <Badge variant="outline">{signal.status}</Badge>
-                      </div>
+          <div className="space-y-4">
+            {content?.dailySignals?.map((signal, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{signal.pair}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        className={
+                          signal.direction === "BUY"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }
+                      >
+                        {signal.direction}
+                      </Badge>
+                      <Badge variant="outline">{signal.status}</Badge>
                     </div>
-                    <CardDescription>
-                      Sent {new Date(signal.timestamp).toLocaleDateString()}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Entry: </span>
-                        <span className="font-medium">{signal.entry}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">
-                          Take Profit:{" "}
-                        </span>
-                        <span className="font-medium text-green-500">
-                          {signal.takeProfit}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">
-                          Stop Loss:{" "}
-                        </span>
-                        <span className="font-medium text-red-500">
-                          {signal.stopLoss}
-                        </span>
-                      </div>
+                  </div>
+                  <CardDescription>
+                    Sent {new Date(signal.timestamp).toLocaleDateString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Entry: </span>
+                      <span className="font-medium">{signal.entry}</span>
                     </div>
-                    {signal.analysis && (
-                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm">{signal.analysis}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )) || (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">
-                      Daily signals will appear here.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        Take Profit:{" "}
+                      </span>
+                      <span className="font-medium text-green-500">
+                        {signal.takeProfit}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Stop Loss: </span>
+                      <span className="font-medium text-red-500">
+                        {signal.stopLoss}
+                      </span>
+                    </div>
+                  </div>
+                  {signal.analysis && (
+                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm">{signal.analysis}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )) || (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Daily signals will appear here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {section === "community" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
-                  Join Our Trading Community
-                </CardTitle>
-                <CardDescription>
-                  Connect with fellow traders and get exclusive updates.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full">
-                  Join Telegram Community
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Join Discord Server
-                </Button>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                Join Our Trading Community
+              </CardTitle>
+              <CardDescription>
+                Connect with fellow traders and get exclusive updates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button variant="outline" className="w-full">
+                Join Telegram Community
+              </Button>
+              <Button variant="outline" className="w-full">
+                Join Discord Server
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
