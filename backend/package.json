@@ -31,7 +31,7 @@
     "dotenv": "^17.2.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "reflect-metadata": "^0.2.2",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "stripe": "^16.9.0"
   },
