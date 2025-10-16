@@ -38,6 +38,14 @@ async deleteCourse(id: number) {
 }
 
 async getCourses(userRoles: string[]) {
+  // If user is admin, return all courses
+  if (userRoles.includes('admin')) {
+    return this.prisma.course.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  
+  // For non-admin users, filter by role access
   return this.prisma.course.findMany({
     where: {
       roleAccess: {
@@ -82,6 +90,14 @@ async deleteLiveSession(id: number) {
 }
 
 async getLiveSessions(userRoles: string[]) {
+  // If user is admin, return all live sessions
+  if (userRoles.includes('admin')) {
+    return this.prisma.liveSession.findMany({
+      orderBy: { date: 'desc' },
+    });
+  }
+  
+  // For non-admin users, filter by role access
   return this.prisma.liveSession.findMany({
     where: {
       roleAccess: {
@@ -124,6 +140,14 @@ async deleteSignal(id: number) {
   return this.prisma.signal.delete({ where: { id } });
 }
 async getSignals(userRoles: string[]) {
+  // If user is admin, return all signals
+  if (userRoles.includes('admin')) {
+    return this.prisma.signal.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  
+  // For non-admin users, filter by role access
   return this.prisma.signal.findMany({
     where: {
       roleAccess: {

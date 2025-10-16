@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, LogIn } from 'lucide-react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   fallback 
 }) => {
   const { isAuthenticated, hasRole, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -26,27 +28,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <Card className="w-full max-w-md shadow-medium">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Lock className="h-8 w-8 text-primary" />
-            </div>
-            <CardTitle className="text-2xl font-bold">Access Restricted</CardTitle>
-            <CardDescription>
-              You need to be signed in to access this page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button variant="cta" className="w-full">
-              <LogIn className="mr-2 h-4 w-4" />
-              Sign In to Continue
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    // Redirect to login with the current location as state for redirect after login
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (requiredRoles.length > 0 && !requiredRoles.some(role => hasRole(role))) {

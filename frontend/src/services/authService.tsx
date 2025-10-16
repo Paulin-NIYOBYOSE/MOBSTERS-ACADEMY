@@ -272,6 +272,7 @@ export const authService = {
     (await api.get("/mentor/mentorship-content")).data,
 
   getCourses: async () => (await api.get("/courses")).data,
+  getAllCourses: async () => (await api.get("/courses")).data, // For admins, use same endpoint as it filters by role
   // Course videos (series)
   getCourseVideos: async (courseId: number) =>
     (await api.get(`/courses/${courseId}/videos`)).data,

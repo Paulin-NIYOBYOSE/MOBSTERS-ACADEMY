@@ -14,6 +14,8 @@ import { Eye, EyeOff, Loader2, AlertCircle, Lock, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { authService, AuthError, AuthErrorCode } from "@/services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getDashboardRoute } from "@/utils/dashboardUtils";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -28,8 +30,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
   const [error, setError] = useState<AuthError | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -62,22 +66,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
     setLoading(true);
 
     try {
-      await authService.login(email.trim().toLowerCase(), password);
+      // Use context login method which returns user data
+      const loggedInUser = await login(email.trim().toLowerCase(), password);
       
-      toast({
-        title: "Welcome back!",
-        description: "You've been signed in successfully.",
-      });
-      
-      // Refresh user context
-      await login(email, password);
-      
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
+      if (loggedInUser) {
+        toast({
+          title: "Welcome back!",
+          description: "You've been signed in successfully.",
+        });
+        
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Check if user was trying to access a specific page before login
+          const from = (location.state as any)?.from?.pathname;
+          
+          if (from && from !== '/login') {
+            // Redirect to the intended destination
+            navigate(from, { replace: true });
+          } else {
+            // Determine appropriate dashboard based on user roles
+            const dashboardRoute = getDashboardRoute(loggedInUser);
+            navigate(dashboardRoute, { replace: true });
+          }
+        }
       }
     } catch (err) {
       if (err instanceof AuthError) {

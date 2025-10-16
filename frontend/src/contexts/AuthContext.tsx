@@ -5,12 +5,12 @@ import Cookies from 'js-cookie';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<User | null>;
   register: (email: string, name: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,7 +34,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUser = async () => {
     try {
       const userData = await authService.getCurrentUser();
-      console.log('Refreshed user data:', userData);
       setUser(userData);
       return userData;
     } catch (error) {
@@ -85,14 +84,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<User | null> => {
     try {
       await authService.login(email, password);
-      await refreshUser();
-      return true;
+      const userData = await refreshUser();
+      return userData;
     } catch (error) {
       console.error('Login failed:', error);
-      return false;
+      return null;
     }
   };
 
