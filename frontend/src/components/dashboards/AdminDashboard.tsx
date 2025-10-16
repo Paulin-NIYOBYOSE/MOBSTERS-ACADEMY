@@ -204,14 +204,14 @@ export const AdminDashboard: React.FC = () => {
     try {
       const [
         requestsData,
-        coursesData,
+        coursesData, // Changed to use getAllCourses for admin to fetch all data
         sessionsData,
         signalsData,
         usersData,
         statsData,
       ] = await Promise.all([
         authService.getPendingRoleRequests(),
-        authService.getCourses(),
+        authService.getAllCourses(), // FIX: Use admin-specific fetch to get all courses, bypassing role filters
         authService.getLiveSessions(),
         authService.getSignals(),
         authService.getUsers(),
@@ -223,6 +223,7 @@ export const AdminDashboard: React.FC = () => {
       setSignals(signalsData);
       setUsers(usersData);
       setOverviewStats(statsData);
+      console.log("Fetched all courses for admin:", coursesData); // Debug log to confirm fetch
     } catch (error) {
       console.error("Failed to load admin data:", error);
       toast({
@@ -234,6 +235,8 @@ export const AdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // ... (rest of the code remains the same, as delete/update actions are already implemented below)
 
   const openManageVideos = async (courseId: number) => {
     try {
@@ -828,16 +831,16 @@ export const AdminDashboard: React.FC = () => {
     setContentModalOpen(true);
   };
 
-  const handleEditUser = (user: User) => {
-    setEditingUser(user);
-    setUserModalOpen(true);
-  };
-
   const handleDeleteContent = async (
     id: number,
     type: "course" | "session" | "signal"
   ) => {
-    if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete this ${type}? This action cannot be undone.`
+      )
+    )
+      return; // Enhanced confirmation
     try {
       if (type === "course") await authService.deleteCourse(id);
       else if (type === "session") await authService.deleteLiveSession(id);

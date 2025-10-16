@@ -14,6 +14,7 @@ import { FreeDashboard } from "./components/dashboards/FreeDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 import { AcademyDashboard } from "./components/dashboards/AcademyDashboard";
 import { MentorshipDashboard } from "./components/dashboards/MentorshipDashboard";
+import { PaymentPage } from "./pages/PaymentPage";
 import { useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -98,6 +99,16 @@ const App = () => (
                   <DashboardLayout>
                     <MentorshipDashboard />
                   </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Payment Page */}
+            <Route
+              path="/payment"
+              element={
+                <ProtectedRoute>
+                  <PaymentPage />
                 </ProtectedRoute>
               }
             />

@@ -10,45 +10,117 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, AlertCircle, Lock, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { authService, AuthError, AuthErrorCode } from "@/services/authService";
 
-export const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  onSuccess?: () => void;
+  onSwitchToRegister?: () => void;
+}
+
+export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AuthError | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const { login } = useAuth();
   const { toast } = useToast();
 
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    if (!password.trim()) {
+      errors.password = 'Password is required';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setValidationErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
-    setError("");
 
-    const success = await login(email, password);
-
-    if (success) {
+    try {
+      await authService.login(email.trim().toLowerCase(), password);
+      
       toast({
         title: "Welcome back!",
         description: "You've been signed in successfully.",
       });
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1000);
-    } else {
-      setError("Invalid email or password. Please try again.");
-      toast({
-        title: "Sign in failed",
-        description: "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      
+      // Refresh user context
+      await login(email, password);
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1000);
+      }
+    } catch (err) {
+      if (err instanceof AuthError) {
+        setError(err);
+        
+        // Show specific toast messages for different error types
+        let toastTitle = "Sign in failed";
+        let toastDescription = err.getUserFriendlyMessage();
+        
+        switch (err.code) {
+          case AuthErrorCode.ACCOUNT_LOCKED:
+            toastTitle = "Account Locked";
+            break;
+          case AuthErrorCode.ACCOUNT_DISABLED:
+            toastTitle = "Account Disabled";
+            break;
+          case AuthErrorCode.TOO_MANY_ATTEMPTS:
+            toastTitle = "Too Many Attempts";
+            break;
+          case AuthErrorCode.USER_NOT_FOUND:
+            toastTitle = "Account Not Found";
+            break;
+          case AuthErrorCode.INVALID_PASSWORD:
+            toastTitle = "Incorrect Password";
+            break;
+        }
+        
+        toast({
+          title: toastTitle,
+          description: toastDescription,
+          variant: "destructive",
+        });
+      } else {
+        setError(new AuthError(AuthErrorCode.SERVER_ERROR, 'An unexpected error occurred'));
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -65,7 +137,30 @@ export const LoginForm: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <div className="flex items-center space-x-2">
+                {error.code === AuthErrorCode.ACCOUNT_LOCKED ? (
+                  <Lock className="h-4 w-4" />
+                ) : error.code === AuthErrorCode.TOO_MANY_ATTEMPTS ? (
+                  <Clock className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                <div>
+                  <AlertDescription className="font-medium">
+                    {error.getUserFriendlyMessage()}
+                  </AlertDescription>
+                  {error.code === AuthErrorCode.WEAK_PASSWORD && error.details?.requirements && (
+                    <div className="mt-2 text-sm">
+                      <p className="font-medium">Password requirements:</p>
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        {error.details.requirements.map((req: string, index: number) => (
+                          <li key={index}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
             </Alert>
           )}
 
@@ -75,11 +170,19 @@ export const LoginForm: React.FC = () => {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (validationErrors.email) {
+                  setValidationErrors(prev => ({ ...prev, email: '' }));
+                }
+              }}
               placeholder="Enter your email"
-              required
               disabled={loading}
+              className={validationErrors.email ? 'border-red-500' : ''}
             />
+            {validationErrors.email && (
+              <p className="text-sm text-red-500">{validationErrors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -89,16 +192,21 @@ export const LoginForm: React.FC = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (validationErrors.password) {
+                    setValidationErrors(prev => ({ ...prev, password: '' }));
+                  }
+                }}
                 placeholder="Enter your password"
-                required
                 disabled={loading}
-                className="pr-10"
+                className={`pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                disabled={loading}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -107,6 +215,9 @@ export const LoginForm: React.FC = () => {
                 )}
               </button>
             </div>
+            {validationErrors.password && (
+              <p className="text-sm text-red-500">{validationErrors.password}</p>
+            )}
           </div>
 
           <Button
@@ -129,12 +240,22 @@ export const LoginForm: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium text-primary hover:text-primary-dark transition-colors"
-            >
-              Create one here
-            </a>
+            {onSwitchToRegister ? (
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="font-medium text-primary hover:text-primary-dark transition-colors underline"
+              >
+                Create one here
+              </button>
+            ) : (
+              <a
+                href="/register"
+                className="font-medium text-primary hover:text-primary-dark transition-colors"
+              >
+                Create one here
+              </a>
+            )}
           </p>
         </div>
       </CardContent>

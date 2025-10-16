@@ -1,5 +1,118 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosError } from "axios";
 import Cookies from "js-cookie";
+
+// Auth error types matching backend
+export enum AuthErrorCode {
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  INVALID_PASSWORD = 'INVALID_PASSWORD',
+  EMAIL_ALREADY_EXISTS = 'EMAIL_ALREADY_EXISTS',
+  INVALID_EMAIL_FORMAT = 'INVALID_EMAIL_FORMAT',
+  WEAK_PASSWORD = 'WEAK_PASSWORD',
+  ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
+  ACCOUNT_DISABLED = 'ACCOUNT_DISABLED',
+  EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
+  INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  TOO_MANY_ATTEMPTS = 'TOO_MANY_ATTEMPTS',
+  SERVER_ERROR = 'SERVER_ERROR',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+}
+
+export interface AuthErrorResponse {
+  error: {
+    code: AuthErrorCode;
+    message: string;
+    details?: any;
+    timestamp: string;
+    path?: string;
+  };
+}
+
+export class AuthError extends Error {
+  constructor(
+    public code: AuthErrorCode,
+    message: string,
+    public details?: any,
+    public status?: number
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+
+  static fromResponse(error: AxiosError): AuthError {
+    if (error.response?.data && typeof error.response.data === 'object') {
+      const errorData = error.response.data as any;
+      
+      // Handle new structured error format
+      if (errorData.error && errorData.error.code) {
+        return new AuthError(
+          errorData.error.code,
+          errorData.error.message,
+          errorData.error.details,
+          error.response.status
+        );
+      }
+      
+      // Handle validation errors
+      if (errorData.message && Array.isArray(errorData.message)) {
+        return new AuthError(
+          AuthErrorCode.VALIDATION_ERROR,
+          'Validation failed',
+          { validationErrors: errorData.message },
+          error.response.status
+        );
+      }
+      
+      // Handle simple message format
+      if (errorData.message) {
+        return new AuthError(
+          AuthErrorCode.SERVER_ERROR,
+          errorData.message,
+          undefined,
+          error.response.status
+        );
+      }
+    }
+    
+    // Default error handling
+    return new AuthError(
+      AuthErrorCode.SERVER_ERROR,
+      error.message || 'An unexpected error occurred',
+      undefined,
+      error.response?.status
+    );
+  }
+
+  getUserFriendlyMessage(): string {
+    switch (this.code) {
+      case AuthErrorCode.USER_NOT_FOUND:
+        return 'No account found with this email address. Please check your email or sign up.';
+      case AuthErrorCode.INVALID_PASSWORD:
+        return 'The password you entered is incorrect. Please try again.';
+      case AuthErrorCode.EMAIL_ALREADY_EXISTS:
+        return 'An account with this email already exists. Please sign in instead.';
+      case AuthErrorCode.WEAK_PASSWORD:
+        return `Password is too weak. ${this.details?.requirements ? 'Requirements: ' + this.details.requirements.join(', ') : ''}`;
+      case AuthErrorCode.ACCOUNT_LOCKED:
+        return 'Your account is temporarily locked due to multiple failed login attempts. Please try again later.';
+      case AuthErrorCode.ACCOUNT_DISABLED:
+        return 'Your account has been disabled. Please contact support for assistance.';
+      case AuthErrorCode.TOO_MANY_ATTEMPTS:
+        return 'Too many login attempts. Please wait before trying again.';
+      case AuthErrorCode.VALIDATION_ERROR:
+        if (this.details?.validationErrors && Array.isArray(this.details.validationErrors)) {
+          return this.details.validationErrors.join('. ');
+        }
+        return 'Please check your input and try again.';
+      case AuthErrorCode.INVALID_REFRESH_TOKEN:
+      case AuthErrorCode.TOKEN_EXPIRED:
+        return 'Your session has expired. Please sign in again.';
+      default:
+        return this.message || 'An error occurred. Please try again.';
+    }
+  }
+}
 
 export interface User {
   avatarUrl?: string;
@@ -43,37 +156,54 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Refresh token interceptor
+// Refresh token interceptor with better error handling
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // Handle 401 errors with token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      
       try {
         const refreshToken = Cookies.get("refreshToken");
-        if (!refreshToken) throw new Error("No refresh token");
+        if (!refreshToken) {
+          throw new AuthError(AuthErrorCode.INVALID_REFRESH_TOKEN, "No refresh token available");
+        }
+        
         const { data } = await axios.post<Tokens>(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/refresh`,
           { refreshToken }
         );
+        
         localStorage.setItem("accessToken", data.accessToken);
         Cookies.set("refreshToken", data.refreshToken, {
           expires: 7,
           secure: true,
           sameSite: "strict",
         });
+        
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         }
+        
         return api(originalRequest);
       } catch (refreshError) {
+        // Clear tokens and redirect to login
         localStorage.removeItem("accessToken");
         Cookies.remove("refreshToken");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        
+        // Only redirect if we're not already on the login page
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+          window.location.href = "/login";
+        }
+        
+        return Promise.reject(AuthError.fromResponse(refreshError as AxiosError));
       }
     }
+    
+    // For non-auth endpoints, return the original error
     return Promise.reject(error);
   }
 );
@@ -84,34 +214,53 @@ export const authService = {
     name: string,
     password: string
   ): Promise<RegisterResponse> => {
-    const { data } = await api.post<RegisterResponse>("/auth/register", {
-      email,
-      name,
-      password,
-    });
-    return data;
+    try {
+      const { data } = await api.post<RegisterResponse>("/auth/register", {
+        email,
+        name,
+        password,
+      });
+      return data;
+    } catch (error) {
+      throw AuthError.fromResponse(error as AxiosError);
+    }
   },
 
   login: async (email: string, password: string): Promise<Tokens> => {
-    const { data } = await api.post<Tokens>("/auth/login", { email, password });
-    localStorage.setItem("accessToken", data.accessToken);
-    Cookies.set("refreshToken", data.refreshToken, {
-      expires: 7,
-      secure: true,
-      sameSite: "strict",
-    });
-    return data;
+    try {
+      const { data } = await api.post<Tokens>("/auth/login", { email, password });
+      localStorage.setItem("accessToken", data.accessToken);
+      Cookies.set("refreshToken", data.refreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
+      return data;
+    } catch (error) {
+      throw AuthError.fromResponse(error as AxiosError);
+    }
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const { data } = await api.get<User>("/auth/me");
-    return data;
+    try {
+      const { data } = await api.get<User>("/auth/me");
+      return data;
+    } catch (error) {
+      throw AuthError.fromResponse(error as AxiosError);
+    }
   },
 
   logout: async (): Promise<void> => {
-    await api.post("/auth/logout");
-    localStorage.removeItem("accessToken");
-    Cookies.remove("refreshToken");
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      // Don't throw on logout errors, just log them
+      console.warn('Logout request failed:', error);
+    } finally {
+      // Always clear local storage
+      localStorage.removeItem("accessToken");
+      Cookies.remove("refreshToken");
+    }
   },
 
   getAccessToken: (): string | null => localStorage.getItem("accessToken"),
@@ -246,7 +395,24 @@ export const authService = {
   },
 
   // Payments
-  createPaymentIntent: async (amount: number, id: number, program: string) =>
-    (await api.post("/payment/create-payment-intent", { amount, program }))
-      .data,
+  createPaymentIntent: async (amount: number, id: number, program: string) => {
+    try {
+      return (await api.post("/payment/create-payment-intent", { amount, program })).data;
+    } catch (error) {
+      throw AuthError.fromResponse(error as AxiosError);
+    }
+  },
+
+  // Error handling helper
+  isAuthError: (error: any): error is AuthError => {
+    return error instanceof AuthError;
+  },
+
+  // Get user-friendly error message
+  getErrorMessage: (error: any): string => {
+    if (error instanceof AuthError) {
+      return error.getUserFriendlyMessage();
+    }
+    return error?.message || 'An unexpected error occurred';
+  },
 };
