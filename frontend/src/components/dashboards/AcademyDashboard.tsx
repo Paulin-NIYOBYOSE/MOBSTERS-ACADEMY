@@ -64,7 +64,7 @@ export const AcademyDashboard: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const { toast } = useToast();
   const location = useLocation();
-  const baseUrl = "http://yourdomain.com"; // Replace with your actual server URL
+  const baseUrl = "http://localhost:3000"; // Backend server URL
 
   useEffect(() => {
     loadAcademyContent();
@@ -285,9 +285,21 @@ export const AcademyDashboard: React.FC = () => {
                         <Button
                           variant="cta"
                           size="sm"
-                          onClick={() =>
-                            setSelectedVideo(`${baseUrl}${video.videoUrl}`)
-                          }
+                          onClick={() => {
+                            // Handle different URL formats
+                            let videoUrl = video.videoUrl;
+                            if (!videoUrl.startsWith('http')) {
+                              // Remove /uploads prefix if present since static assets are served from uploads root
+                              if (videoUrl.startsWith('/uploads/')) {
+                                videoUrl = videoUrl.replace('/uploads/', '/');
+                              }
+                              // If it's a relative path, prepend the base URL
+                              videoUrl = `${baseUrl}${videoUrl.startsWith('/') ? '' : '/'}${videoUrl}`;
+                            }
+                            console.log("Playing video:", videoUrl, "Original videoUrl:", video.videoUrl);
+                            console.log("Video object:", video);
+                            setSelectedVideo(videoUrl);
+                          }}
                           className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
                         >
                           <Play className="w-4 h-4 mr-2" />
@@ -297,22 +309,34 @@ export const AcademyDashboard: React.FC = () => {
                     ))}
                     {selectedVideo && (
                       <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-inner">
-                        <ReactPlayer
-                          url={selectedVideo}
-                          controls
-                          width="100%"
-                          height="auto"
-                          className="rounded-lg overflow-hidden"
-                          onError={(e) => {
-                            console.error("Video playback error:", e);
-                            toast({
-                              title: "Error",
-                              description:
-                                "Failed to play video. Please check the URL or try again.",
-                              variant: "destructive",
-                            });
-                          }}
-                        />
+                        <div className="relative">
+                          <div className="mb-2 text-xs text-gray-500 break-all">
+                            Video URL: {selectedVideo}
+                          </div>
+                          <video
+                            src={selectedVideo}
+                            controls
+                            className="w-full h-auto rounded-lg"
+                            style={{ maxHeight: "400px" }}
+                            onError={(e) => {
+                              console.error("Video playback error:", e);
+                              console.error("Failed video URL:", selectedVideo);
+                              toast({
+                                title: "Video Error",
+                                description: `Failed to load video. URL: ${selectedVideo}`,
+                                variant: "destructive",
+                              });
+                            }}
+                            onLoadStart={() => {
+                              console.log("Video loading started:", selectedVideo);
+                            }}
+                            onCanPlay={() => {
+                              console.log("Video can play:", selectedVideo);
+                            }}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        </div>
                       </div>
                     )}
                   </div>

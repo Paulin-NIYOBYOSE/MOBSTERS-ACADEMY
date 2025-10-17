@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   Play,
@@ -21,10 +22,13 @@ import {
   MessageCircle,
   Award,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import ReactPlayer from "react-player";
 
 interface CommunityContent {
   freeCourses: any[];
@@ -44,7 +48,10 @@ export const FreeDashboard: React.FC = () => {
     amount: number;
   } | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(new Set());
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const { toast } = useToast();
+  const baseUrl = "http://localhost:3000"; // Backend server URL
   const location = useLocation();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
@@ -87,7 +94,21 @@ export const FreeDashboard: React.FC = () => {
           authService.getMyRoleRequests().catch(() => []),
         ]
       );
-      setCourses(coursesData);
+      
+      // Fetch videos for each course
+      const coursesWithVideos = await Promise.all(
+        coursesData.map(async (course: any) => {
+          try {
+            const videos = await authService.getCourseVideos(course.id);
+            return { ...course, videos: videos || [] };
+          } catch (error) {
+            console.error(`Failed to load videos for course ${course.id}:`, error);
+            return { ...course, videos: [] };
+          }
+        })
+      );
+      
+      setCourses(coursesWithVideos);
       setSignals(signalsData);
       setSessions(sessionsData);
       setMyRequests(myReq || []);
@@ -110,6 +131,18 @@ export const FreeDashboard: React.FC = () => {
       program: program,
     });
     navigate(`/payment?${params.toString()}`);
+  };
+
+  const toggleCourseExpansion = (courseId: number) => {
+    setExpandedCourses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(courseId)) {
+        newSet.delete(courseId);
+      } else {
+        newSet.add(courseId);
+      }
+      return newSet;
+    });
   };
 
   // Compose content object from state
@@ -457,30 +490,144 @@ export const FreeDashboard: React.FC = () => {
         )}
 
         {section === "courses" && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {content?.freeCourses?.map((course, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">Free</Badge>
-                    <div className="text-sm font-medium">0:45</div>
-                  </div>
-                  <CardTitle className="text-lg">{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    Watch Now
-                  </Button>
-                </CardContent>
-              </Card>
-            )) || (
-              <Card className="col-span-full">
-                <CardContent className="text-center py-8">
-                  <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
+          <div className="space-y-8">
+            {courses.length > 0 ? (
+              courses.map((course) => (
+                <Card
+                  key={course.id}
+                  className="relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 bg-white dark:bg-gray-900 rounded-xl"
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-blue-500" />
+                  <CardHeader className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
+                          <BookOpen className="w-6 h-6 text-green-500 dark:text-green-300" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {course.title}
+                          </CardTitle>
+                          <CardDescription className="mt-2 text-base text-gray-600 dark:text-gray-300">
+                            {course.description}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Badge className="px-3 py-1 text-sm font-semibold bg-green-500 text-white">
+                          Free
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleCourseExpansion(course.id)}
+                          className="text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-300 transition-colors duration-200"
+                        >
+                          {expandedCourses.has(course.id) ? (
+                            <ChevronUp className="w-6 h-6" />
+                          ) : (
+                            <ChevronDown className="w-6 h-6" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    {course.videos && course.videos.length > 0 && (
+                      <Progress
+                        value={0}
+                        className="mt-4 h-2 bg-gray-200 dark:bg-gray-700 rounded-full"
+                      />
+                    )}
+                  </CardHeader>
+                  {expandedCourses.has(course.id) && (
+                    <CardContent className="p-6 pt-0">
+                      {course.videos && course.videos.length > 0 ? (
+                        <div className="space-y-4">
+                          {course.videos.map((video: any, index: number) => (
+                            <div
+                              key={video.id}
+                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                            >
+                              <div className="flex items-center gap-4">
+                                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                  {index + 1}.
+                                </span>
+                                <span className="text-base font-medium text-gray-900 dark:text-white">
+                                  {video.title}
+                                </span>
+                              </div>
+                              <Button
+                                variant="cta"
+                                size="sm"
+                                onClick={() => {
+                                  // Handle different URL formats
+                                  let videoUrl = video.videoUrl;
+                                  if (!videoUrl.startsWith('http')) {
+                                    // Remove /uploads prefix if present since static assets are served from uploads root
+                                    if (videoUrl.startsWith('/uploads/')) {
+                                      videoUrl = videoUrl.replace('/uploads/', '/');
+                                    }
+                                    // If it's a relative path, prepend the base URL
+                                    videoUrl = `${baseUrl}${videoUrl.startsWith('/') ? '' : '/'}${videoUrl}`;
+                                  }
+                                  console.log("Playing video:", videoUrl, "Original videoUrl:", video.videoUrl);
+                                  console.log("Video object:", video);
+                                  setSelectedVideo(videoUrl);
+                                }}
+                                className="bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 transition-all duration-200"
+                              >
+                                <Play className="w-4 h-4 mr-2" />
+                                Watch
+                              </Button>
+                            </div>
+                          ))}
+                          {selectedVideo && (
+                            <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-inner">
+                              <video
+                                src={selectedVideo}
+                                controls
+                                className="w-full h-auto rounded-lg"
+                                style={{ maxHeight: "400px" }}
+                                onError={(e) => {
+                                  console.error("Video playback error:", e);
+                                  toast({
+                                    title: "Error",
+                                    description:
+                                      "Failed to play video. Please check the URL or try again.",
+                                    variant: "destructive",
+                                  });
+                                }}
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <BookOpen className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            No videos available for this course yet.
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  )}
+                </Card>
+              ))
+            ) : (
+              <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
+                <CardContent className="text-center py-12">
+                  <BookOpen className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
                     Free courses will appear here once available.
                   </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
+                    onClick={loadCommunityContent}
+                  >
+                    Refresh Courses
+                  </Button>
                 </CardContent>
               </Card>
             )}

@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users,
@@ -19,10 +20,16 @@ import {
   BarChart3,
   Star,
   Crown,
+  Play,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, useLocation } from "react-router-dom";
+import ReactPlayer from "react-player";
 
 interface MentorshipContent {
   mentorshipSessions: any[];
@@ -39,8 +46,11 @@ export const MentorshipDashboard: React.FC = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(new Set());
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const { toast } = useToast();
   const location = useLocation();
+  const baseUrl = "http://localhost:3000"; // Backend server URL
 
   useEffect(() => {
     loadMentorshipContent();
@@ -60,8 +70,22 @@ export const MentorshipDashboard: React.FC = () => {
           authService.getSignals(),
           authService.getLiveSessions(),
         ]);
+      
+      // Fetch videos for each course
+      const coursesWithVideos = await Promise.all(
+        coursesData.map(async (course: any) => {
+          try {
+            const videos = await authService.getCourseVideos(course.id);
+            return { ...course, videos: videos || [] };
+          } catch (error) {
+            console.error(`Failed to load videos for course ${course.id}:`, error);
+            return { ...course, videos: [] };
+          }
+        })
+      );
+      
       setContent(contentData);
-      setCourses(coursesData);
+      setCourses(coursesWithVideos);
       setSignals(signalsData);
       setSessions(sessionsData);
     } catch (error) {
@@ -74,6 +98,18 @@ export const MentorshipDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleCourseExpansion = (courseId: number) => {
+    setExpandedCourses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(courseId)) {
+        newSet.delete(courseId);
+      } else {
+        newSet.add(courseId);
+      }
+      return newSet;
+    });
   };
 
   if (loading) {

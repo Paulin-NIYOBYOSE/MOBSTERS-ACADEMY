@@ -48,8 +48,6 @@ import {
   Loader2,
   DollarSign,
   GraduationCap,
-  Eye,
-  Download,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
@@ -564,92 +562,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleToggleCoursePublish = async (
-    courseId: number,
-    currentStatus: boolean
-  ) => {
-    try {
-      await authService.updateCourse(courseId, { isPublished: !currentStatus });
-      toast({
-        title: "Course Updated",
-        description: `Course ${
-          !currentStatus ? "published" : "unpublished"
-        } successfully.`,
-      });
-      await loadData();
-    } catch (error) {
-      console.error("Failed to toggle course publish status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update course status.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDuplicateCourse = async (courseId: number) => {
-    try {
-      const courseToDuplicate = courses.find((c) => c.id === courseId);
-      if (!courseToDuplicate) return;
-
-      const duplicatedCourse = {
-        ...courseToDuplicate,
-        title: `${courseToDuplicate.title} (Copy)`,
-        id: undefined,
-      };
-
-      await authService.createCourse(duplicatedCourse);
-      toast({
-        title: "Course Duplicated",
-        description: "Course duplicated successfully.",
-      });
-      await loadData();
-    } catch (error) {
-      console.error("Failed to duplicate course:", error);
-      toast({
-        title: "Error",
-        description: "Failed to duplicate course.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleExportCourseData = async (courseId: number) => {
-    try {
-      const course = courses.find((c) => c.id === courseId);
-      if (!course) return;
-
-      const courseData = {
-        ...course,
-        videos: currentCourseVideos,
-      };
-
-      const dataStr = JSON.stringify(courseData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `course-${course.title}-${
-        new Date().toISOString().split("T")[0]
-      }.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "Data Exported",
-        description: "Course data exported successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to export course data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to export course data.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -860,10 +772,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handlePreviewCourse = (course: Course) => {
-    setPreviewCourse(course);
-    setCoursePreviewOpen(true);
-  };
 
   if (loading) {
     return (
@@ -1744,65 +1652,35 @@ export const AdminDashboard: React.FC = () => {
                         {new Date(course.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePreviewCourse(course)}
-                          >
-                            <Eye className="w-3 h-3" />
-                          </Button>
+                        <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditContent(course, "course")}
+                            className="hover:bg-blue-50"
                           >
-                            <Edit className="w-3 h-3" />
+                            <Edit className="w-3 h-3 mr-1" />
+                            Edit
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => openManageVideos(course.id)}
+                            className="hover:bg-purple-50"
                           >
-                            <Video className="w-3 h-3" />
+                            <Video className="w-3 h-3 mr-1" />
+                            Videos
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              handleToggleCoursePublish(
-                                course.id,
-                                course.isPublished !== false
-                              )
-                            }
-                          >
-                            {course.isPublished !== false
-                              ? "Unpublish"
-                              : "Publish"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDuplicateCourse(course.id)}
-                          >
-                            Duplicate
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleExportCourseData(course.id)}
-                          >
-                            <Download className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive border-destructive"
+                            className="text-destructive border-destructive hover:bg-red-50"
                             onClick={() =>
                               handleDeleteContent(course.id, "course")
                             }
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </TableCell>
