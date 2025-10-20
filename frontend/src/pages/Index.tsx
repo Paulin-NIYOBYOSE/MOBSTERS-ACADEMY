@@ -1,30 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TrendingUp, Users, CheckCircle, BarChart3, MessageSquare, Target } from 'lucide-react';
 import { Header } from '@/components/Header';
-import { ProgramCards } from '@/components/ProgramCards';
 import { Testimonials } from '@/components/Testimonials';
 import { FAQ } from '@/components/FAQ';
 import { Footer } from '@/components/Footer';
-import { 
-  BookOpen, 
-  Users, 
-  TrendingUp, 
-  Calendar, 
-  MessageSquare, 
-  Award,
-  CheckCircle,
-  Star,
-  Target,
-  BarChart3,
-  Clock,
-  Zap,
-  Shield
-} from 'lucide-react';
+import { ProgramCards } from '@/components/ProgramCards';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Award, BookOpen, Star, Clock, Shield, Zap } from 'lucide-react';
 import heroImage from '@/assets/hero-forex-academy.jpg';
 
 const Index = () => {
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate');
+        }
+      });
+    }, observerOptions);
+
+    // Observe all scroll animation elements
+    const scrollElements = document.querySelectorAll('.scroll-fade-in, .scroll-slide-left, .scroll-slide-right, .scroll-scale-up');
+    scrollElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      scrollElements.forEach((el) => observer.unobserve(el));
+    };
+  }, []);
+
   const handleEnrollClick = () => {
     // Scroll to programs section
     document.getElementById('programs')?.scrollIntoView({ behavior: 'smooth' });
@@ -46,31 +56,50 @@ const Index = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 dark:from-slate-900/70 via-background/70 dark:via-slate-900/50 to-transparent"></div>
         
-        {/* Animated background elements */}
+        {/* Enhanced animated background elements with lighting effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl floating-animation"></div>
-          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-success/10 rounded-full blur-2xl floating-animation" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute bottom-1/4 left-1/2 w-20 h-20 bg-primary/5 rounded-full blur-xl floating-animation" style={{ animationDelay: '4s' }}></div>
+          {/* Primary lighting orbs */}
+          <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-gradient-to-r from-green-400/20 via-emerald-500/30 to-green-600/20 rounded-full blur-3xl floating-animation"></div>
+          <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-gradient-to-r from-emerald-400/25 via-green-500/35 to-emerald-600/25 rounded-full blur-2xl floating-animation" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-1/4 left-1/2 w-28 h-28 bg-gradient-to-r from-green-300/15 via-emerald-400/25 to-green-500/15 rounded-full blur-xl floating-animation" style={{ animationDelay: '4s' }}></div>
+          
+          {/* Additional accent lights */}
+          <div className="absolute top-1/3 right-1/3 w-20 h-20 bg-gradient-to-r from-yellow-400/20 to-amber-500/20 rounded-full blur-2xl floating-animation" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-gradient-to-r from-blue-400/15 to-cyan-500/15 rounded-full blur-xl floating-animation" style={{ animationDelay: '3s' }}></div>
+          
+          {/* Subtle rim lighting */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400/30 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent"></div>
+          
+          {/* Enhanced crossing light beams */}
+          <div className="absolute top-0 left-1/4 w-2 h-full beam-vertical transform rotate-12 slow-drift" style={{ ['--rotation' as any]: '12deg' }}></div>
+          <div className="absolute top-0 right-1/4 w-2 h-full beam-vertical transform -rotate-12 slow-drift-reverse" style={{ ['--rotation' as any]: '-12deg' }}></div>
+          <div className="absolute left-0 top-1/3 w-full h-2 beam-horizontal transform rotate-1 slow-horizontal-drift" style={{ ['--rotation' as any]: '1deg' }}></div>
+          <div className="absolute right-0 bottom-1/3 w-full h-2 beam-horizontal transform -rotate-1 slow-horizontal-drift-reverse" style={{ ['--rotation' as any]: '-1deg' }}></div>
+          
+          {/* Traveling beam effects */}
+          <div className="absolute top-0 left-1/3 w-1 h-full bg-gradient-to-b from-transparent via-green-400/30 to-transparent transform rotate-8" style={{ animation: 'beam-travel 15s linear infinite', animationDelay: '0s' }}></div>
+          <div className="absolute top-0 right-1/3 w-1 h-full bg-gradient-to-b from-transparent via-emerald-400/25 to-transparent transform -rotate-8" style={{ animation: 'beam-travel 18s linear infinite', animationDelay: '5s' }}></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <Badge className="mb-6 bg-primary/20 text-primary-dark border-primary/30 hover-lift">
+            <Badge className="mb-6 bg-primary/20 text-primary-dark border-primary/30 hover-lift shimmer-effect glow-pulse scroll-fade-in">
               🎯 Limited Cohort Opening - December 2024
             </Badge>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground dark:text-white mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground dark:text-white mb-6 leading-tight scroll-slide-left">
               Master Forex Trading with
               <span className="gradient-text block mt-2"> Mobsters Academy</span>
             </h1>
             
-            <p className="text-xl text-foreground/90 dark:text-white/90 mb-8 leading-relaxed">
+            <p className="text-xl text-foreground/90 dark:text-white/90 mb-8 leading-relaxed scroll-slide-right">
               Transform from beginner to professional trader with our comprehensive 6-month program. 
               Join thousands of successful traders who've mastered the markets.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Button variant="cta" size="xl" onClick={handleEnrollClick} className="hover-lift">
+            <div className="flex flex-col sm:flex-row gap-4 mb-12 scroll-scale-up">
+              <Button variant="cta" size="xl" onClick={handleEnrollClick} className="hover-lift light-sweep">
                 <TrendingUp className="mr-2" />
                 Enroll in Academy
               </Button>
@@ -80,7 +109,7 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="flex flex-wrap gap-8 text-foreground/90 dark:text-white/90">
+            <div className="flex flex-wrap gap-8 text-foreground/90 dark:text-white/90 scroll-fade-in">
               <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>6-Month Structured Program</span>
@@ -100,35 +129,50 @@ const Index = () => {
 
       {/* Stats Section */}
       <section className="py-20 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative overflow-hidden">
-        {/* Background decorative elements */}
+        {/* Enhanced background lighting elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-green-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl"></div>
+          {/* Main lighting orbs */}
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-gradient-to-br from-green-400/15 via-emerald-500/25 to-green-600/15 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-gradient-to-br from-emerald-400/20 via-green-500/30 to-emerald-600/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          
+          {/* Accent lighting */}
+          <div className="absolute top-1/2 left-1/6 w-24 h-24 bg-gradient-to-r from-yellow-300/10 to-amber-400/15 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-1/3 right-1/6 w-28 h-28 bg-gradient-to-r from-blue-300/10 to-cyan-400/15 rounded-full blur-xl animate-pulse" style={{ animationDelay: '3s' }}></div>
+          
+          {/* Directional light rays */}
+          <div className="absolute top-0 left-1/2 w-1 h-32 bg-gradient-to-b from-green-400/20 to-transparent transform -translate-x-1/2"></div>
+          <div className="absolute bottom-0 right-1/3 w-1 h-24 bg-gradient-to-t from-emerald-400/15 to-transparent"></div>
+          
+          {/* Crossing light beams */}
+          <div className="absolute top-0 left-1/5 w-1 h-full bg-gradient-to-b from-green-300/15 via-transparent to-emerald-300/10 transform rotate-8 slow-drift"></div>
+          <div className="absolute top-0 right-1/5 w-1 h-full bg-gradient-to-b from-emerald-300/15 via-transparent to-green-300/10 transform -rotate-8 slow-drift-reverse"></div>
+          <div className="absolute left-0 top-1/4 w-full h-1 bg-gradient-to-r from-green-200/8 via-emerald-300/15 to-transparent transform rotate-2 slow-horizontal-drift"></div>
+          <div className="absolute right-0 bottom-1/4 w-full h-1 bg-gradient-to-l from-emerald-200/8 via-green-300/12 to-transparent transform -rotate-2 slow-horizontal-drift-reverse"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all">2,500+</div>
+            <div className="text-center group scroll-fade-in">
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">2,500+</div>
                 <div className="text-muted-foreground font-medium">Students Trained</div>
               </div>
             </div>
-            <div className="text-center group">
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all">89%</div>
+            <div className="text-center group scroll-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">89%</div>
                 <div className="text-muted-foreground font-medium">Success Rate</div>
               </div>
             </div>
-            <div className="text-center group">
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all">24/7</div>
+            <div className="text-center group scroll-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">24/7</div>
                 <div className="text-muted-foreground font-medium">Support Available</div>
               </div>
             </div>
-            <div className="text-center group">
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all">5★</div>
+            <div className="text-center group scroll-fade-in" style={{ animationDelay: '0.6s' }}>
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">5★</div>
                 <div className="text-muted-foreground font-medium">Average Rating</div>
               </div>
             </div>
@@ -138,10 +182,30 @@ const Index = () => {
 
       {/* From Learner To Market Leader Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
-        {/* Background decorative elements */}
+        {/* Enhanced background lighting elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl"></div>
+          {/* Primary dramatic lighting */}
+          <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-green-400/10 via-emerald-500/20 to-green-600/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-emerald-400/15 via-green-500/25 to-emerald-600/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          
+          {/* Spotlight effects */}
+          <div className="absolute top-0 left-1/3 w-2 h-40 bg-gradient-to-b from-green-400/30 via-green-400/10 to-transparent transform rotate-12"></div>
+          <div className="absolute top-0 right-1/3 w-2 h-32 bg-gradient-to-b from-emerald-400/25 via-emerald-400/8 to-transparent transform -rotate-12"></div>
+          
+          {/* Ambient glow */}
+          <div className="absolute top-1/2 left-0 w-32 h-32 bg-gradient-to-r from-yellow-400/8 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute bottom-1/2 right-0 w-40 h-40 bg-gradient-to-l from-blue-400/6 to-transparent rounded-full blur-2xl"></div>
+          
+          {/* Edge lighting */}
+          <div className="absolute left-0 top-1/2 w-1 h-48 bg-gradient-to-b from-transparent via-green-400/20 to-transparent transform -translate-y-1/2"></div>
+          <div className="absolute right-0 top-1/3 w-1 h-32 bg-gradient-to-b from-transparent via-emerald-400/15 to-transparent"></div>
+          
+          {/* Crossing light beams */}
+          <div className="absolute top-0 left-1/6 w-1 h-full bg-gradient-to-b from-green-400/25 via-transparent to-emerald-400/20 transform rotate-15 slow-drift"></div>
+          <div className="absolute top-0 right-1/6 w-1 h-full bg-gradient-to-b from-emerald-400/25 via-transparent to-green-400/20 transform -rotate-15 slow-drift-reverse"></div>
+          <div className="absolute left-0 top-1/5 w-full h-1 bg-gradient-to-r from-green-300/12 via-emerald-400/25 to-transparent transform rotate-3 slow-horizontal-drift"></div>
+          <div className="absolute right-0 bottom-1/5 w-full h-1 bg-gradient-to-l from-emerald-300/12 via-green-400/20 to-transparent transform -rotate-3 slow-horizontal-drift-reverse"></div>
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-yellow-300/8 via-amber-400/15 to-transparent transform rotate-1 slow-horizontal-drift" style={{ animationDelay: '2s' }}></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto">
@@ -149,14 +213,14 @@ const Index = () => {
             {/* Left Content */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight scroll-slide-left">
                   From Learner To Market
                   <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
                     Leader
                   </span>
                 </h2>
                 
-                <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+                <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8 scroll-slide-right">
                   <span className="text-yellow-600 dark:text-yellow-400 font-semibold">MobstersFX</span> has transformed knowledge into proven results. His journey is a 
                   testament that with the right mentorship, dedication, and discipline, 
                   financial independence is achievable.
@@ -164,7 +228,7 @@ const Index = () => {
               </div>
               
               {/* Achievement Badges */}
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 scroll-fade-in">
                 <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                   <span className="text-yellow-400 font-medium text-sm">$250K+ in Payouts</span>
@@ -273,6 +337,12 @@ const Index = () => {
           <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-500/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl"></div>
           <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
+          
+          {/* Crossing light beams */}
+          <div className="absolute top-0 left-1/3 w-1 h-full bg-gradient-to-b from-green-300/12 via-transparent to-emerald-300/8 transform rotate-10 slow-drift"></div>
+          <div className="absolute top-0 right-1/3 w-1 h-full bg-gradient-to-b from-emerald-300/12 via-transparent to-green-300/8 transform -rotate-10 slow-drift-reverse"></div>
+          <div className="absolute left-0 top-1/3 w-full h-1 bg-gradient-to-r from-green-200/6 via-emerald-300/12 to-transparent transform rotate-1 slow-horizontal-drift"></div>
+          <div className="absolute right-0 bottom-1/3 w-full h-1 bg-gradient-to-l from-emerald-200/6 via-green-300/10 to-transparent transform -rotate-1 slow-horizontal-drift-reverse"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto">
@@ -296,6 +366,12 @@ const Index = () => {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-green-500/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+          
+          {/* Crossing light beams */}
+          <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-green-300/10 via-transparent to-emerald-300/6 transform rotate-6 slow-drift"></div>
+          <div className="absolute top-0 right-1/4 w-1 h-full bg-gradient-to-b from-emerald-300/10 via-transparent to-green-300/6 transform -rotate-6 slow-drift-reverse"></div>
+          <div className="absolute left-0 top-1/4 w-full h-1 bg-gradient-to-r from-green-200/5 via-emerald-300/10 to-transparent transform rotate-0.5 slow-horizontal-drift"></div>
+          <div className="absolute right-0 bottom-1/4 w-full h-1 bg-gradient-to-l from-emerald-200/5 via-green-300/8 to-transparent transform -rotate-0.5 slow-horizontal-drift-reverse"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto">
@@ -365,11 +441,22 @@ const Index = () => {
 
       {/* CTA Section */}
     <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50">
-      {/* Background decorative elements */}
+      {/* Enhanced background lighting elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-56 h-56 bg-green-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl"></div>
-        <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
+        {/* Central dramatic lighting */}
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-br from-green-400/15 via-emerald-500/25 to-green-600/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-56 h-56 bg-gradient-to-br from-emerald-400/20 via-green-500/30 to-emerald-600/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-gradient-to-br from-green-300/10 via-emerald-400/20 to-green-500/10 rounded-full blur-xl animate-pulse transform -translate-x-1/2 -translate-y-1/2" style={{ animationDelay: '3s' }}></div>
+        
+        {/* Radial light beams */}
+        <div className="absolute top-1/2 left-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-1 bg-gradient-to-r from-transparent via-emerald-400/15 to-transparent transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+        
+        {/* Corner accent lights */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-yellow-400/10 to-transparent rounded-full blur-xl"></div>
+        <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-blue-400/8 to-transparent rounded-full blur-xl"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/6 to-transparent rounded-full blur-xl"></div>
+        <div className="absolute bottom-0 right-0 w-36 h-36 bg-gradient-to-tl from-pink-400/8 to-transparent rounded-full blur-xl"></div>
       </div>
 
       <div className="relative max-w-4xl mx-auto text-center">

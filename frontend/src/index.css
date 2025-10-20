@@ -195,11 +195,263 @@ All colors MUST be HSL.
   .card-glow {
     @apply transition-all duration-300 hover:shadow-glow;
   }
+  
+  /* Lighting effect utilities */
+  .glow-pulse {
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+  
+  .aurora-effect {
+    animation: aurora 8s ease-in-out infinite;
+  }
+  
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  .light-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .light-sweep::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+    animation: light-sweep 6s ease-in-out infinite;
+  }
+  
+  /* Slow drift utilities for crossing beams */
+  .slow-drift {
+    animation: slow-drift 8s ease-in-out infinite;
+  }
+  
+  .slow-drift-reverse {
+    animation: slow-drift-reverse 10s ease-in-out infinite;
+  }
+  
+  .slow-horizontal-drift {
+    animation: slow-horizontal-drift 12s ease-in-out infinite;
+  }
+  
+  .slow-horizontal-drift-reverse {
+    animation: slow-horizontal-drift-reverse 14s ease-in-out infinite;
+  }
+  
+  /* Enhanced crossing beam styles */
+  .beam-vertical {
+    background: linear-gradient(to bottom, 
+      transparent 0%, 
+      rgba(34, 197, 94, 0.15) 20%, 
+      rgba(16, 185, 129, 0.25) 50%, 
+      rgba(34, 197, 94, 0.15) 80%, 
+      transparent 100%
+    );
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  }
+  
+  .beam-horizontal {
+    background: linear-gradient(to right, 
+      transparent 0%, 
+      rgba(34, 197, 94, 0.12) 20%, 
+      rgba(16, 185, 129, 0.2) 50%, 
+      rgba(34, 197, 94, 0.12) 80%, 
+      transparent 100%
+    );
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.25);
+  }
+  
+  /* Scroll-triggered animations */
+  .scroll-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-fade-in.animate {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .scroll-slide-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-slide-left.animate {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .scroll-slide-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-slide-right.animate {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .scroll-scale-up {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-scale-up.animate {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
+}
+
+/* Enhanced lighting animations */
+@keyframes glow-pulse {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes light-sweep {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100vw) rotate(45deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes aurora {
+  0%, 100% { 
+    opacity: 0.2;
+    transform: translateX(0%) scale(1);
+  }
+  25% { 
+    opacity: 0.6;
+    transform: translateX(10%) scale(1.05);
+  }
+  50% { 
+    opacity: 0.4;
+    transform: translateX(-5%) scale(0.95);
+  }
+  75% { 
+    opacity: 0.7;
+    transform: translateX(15%) scale(1.1);
+  }
+}
+
+/* Slow drift animations for crossing light beams */
+@keyframes slow-drift {
+  0%, 100% { 
+    transform: translateX(-2px) translateY(-2px) rotate(var(--rotation, 0deg));
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateX(2px) translateY(2px) rotate(var(--rotation, 0deg));
+    opacity: 0.8;
+  }
+}
+
+@keyframes slow-drift-reverse {
+  0%, 100% { 
+    transform: translateX(2px) translateY(-2px) rotate(var(--rotation, 0deg));
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateX(-2px) translateY(2px) rotate(var(--rotation, 0deg));
+    opacity: 0.8;
+  }
+}
+
+@keyframes slow-horizontal-drift {
+  0%, 100% { 
+    transform: translateX(-3px) rotate(var(--rotation, 0deg));
+    opacity: 0.2;
+  }
+  50% { 
+    transform: translateX(3px) rotate(var(--rotation, 0deg));
+    opacity: 0.6;
+  }
+}
+
+@keyframes slow-horizontal-drift-reverse {
+  0%, 100% { 
+    transform: translateX(3px) rotate(var(--rotation, 0deg));
+    opacity: 0.2;
+  }
+  50% { 
+    transform: translateX(-3px) rotate(var(--rotation, 0deg));
+    opacity: 0.6;
+  }
+}
+
+/* Enhanced beam animations */
+@keyframes beam-pulse {
+  0%, 100% { 
+    opacity: 0.3;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+  }
+  50% { 
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+  }
+}
+
+@keyframes beam-travel {
+  0% { 
+    transform: translateY(-100%) rotate(var(--rotation, 0deg));
+    opacity: 0;
+  }
+  10%, 90% { 
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translateY(100vh) rotate(var(--rotation, 0deg));
+    opacity: 0;
+  }
+}
+
+@keyframes beam-horizontal-travel {
+  0% { 
+    transform: translateX(-100%) rotate(var(--rotation, 0deg));
+    opacity: 0;
+  }
+  10%, 90% { 
+    opacity: 0.4;
+  }
+  100% { 
+    transform: translateX(100vw) rotate(var(--rotation, 0deg));
+    opacity: 0;
+  }
 }
 
 /* Enhanced focus states for accessibility */
