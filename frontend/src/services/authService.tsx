@@ -305,6 +305,10 @@ export const authService = {
     courseData: { title: string; content: string; roleAccess: string[] }
   ) => (await api.put(`/courses/${id}`, courseData)).data,
   deleteCourse: async (id: number) => await api.delete(`/courses/${id}`),
+  uploadCourseThumbnail: async (courseId: number, formData: FormData) => 
+    (await api.post(`/courses/${courseId}/thumbnail`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data,
 
   // Live sessions
   createLiveSession: async (data: {

@@ -167,23 +167,35 @@ export const FreeDashboard: React.FC = () => {
     pathParts[0] === "dashboard" && !pathParts[1] ? "overview" : pathParts[1];
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">
-                Welcome to{" "}
-                <span className="text-primary">Mobsters Forex Academy</span>
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Start your forex trading journey with our free community content
-                and explore our premium programs.
-              </p>
+    <div className="p-6 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
+      </div>
+      
+      <div className="relative max-w-7xl mx-auto">
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-3 text-gray-900 dark:text-white">
+                  Welcome to{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">Mobsters Forex Academy</span>
+                </h1>
+                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                  Start your forex trading journey with our free community content
+                  and explore our premium programs.
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <Button
-                variant="outline"
+                className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
                 size="sm"
                 onClick={() => {
                   loadCommunityContent();
@@ -193,7 +205,7 @@ export const FreeDashboard: React.FC = () => {
               >
                 {loading ? "Refreshing..." : "Refresh"}
               </Button>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
                 Last updated: {lastRefresh.toLocaleTimeString()}
               </div>
             </div>
@@ -202,16 +214,22 @@ export const FreeDashboard: React.FC = () => {
 
         {/* Testing: Request Roles without Payment */}
         {section === "overview" && (
-          <Card className="mb-6 border-dashed">
+          <Card className="mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-2 border-dashed border-green-300/60 dark:border-green-700/60 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group">
             <CardHeader>
-              <CardTitle>Request Program Access (Testing)</CardTitle>
-              <CardDescription>
+              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300">
+                  <Zap className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                Request Program Access (Testing)
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Submit a role request for Academy or Mentorship without payment.
                 Admin can approve in Users panel.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
+            <CardContent className="flex flex-wrap gap-4">
               <Button
+                className="border-green-600 dark:border-slate-600 text-green-700 dark:text-white hover:bg-green-50 dark:hover:bg-slate-800/50 backdrop-blur-sm transition-all duration-300 disabled:opacity-50"
                 variant="outline"
                 disabled={hasPending("academy")}
                 onClick={async () => {
@@ -243,6 +261,7 @@ export const FreeDashboard: React.FC = () => {
                 Request Academy Role
               </Button>
               <Button
+                className="border-green-600 dark:border-slate-600 text-green-700 dark:text-white hover:bg-green-50 dark:hover:bg-slate-800/50 backdrop-blur-sm transition-all duration-300 disabled:opacity-50"
                 variant="outline"
                 disabled={hasPending("mentorship")}
                 onClick={async () => {
@@ -304,155 +323,252 @@ export const FreeDashboard: React.FC = () => {
                 </CardContent>
               </Card>
             )} */}
-            <div className="grid lg:grid-cols-2 gap-8 mx-auto mb-12 max-w-6xl">
+            <div className="grid lg:grid-cols-3 gap-8 mx-auto mb-16 max-w-7xl">
+              {/* Free Community Card */}
               <div className="w-full">
-                <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-gray-900/95 backdrop-blur-sm border-2 border-green-500 dark:border-green-400 shadow-xl dark:shadow-2xl dark:shadow-green-500/20">
-                  <div className="absolute -top-3 right-4">
-                    <Badge className="mt-4 px-3 py-1 shadow-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Most Popular
-                    </Badge>
-                  </div>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-green-500 to-emerald-500 dark:from-green-400 dark:to-emerald-400">
-                        <Award className="w-7 h-7 text-white" />
+                <Card className="relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 shadow-lg rounded-2xl group">
+                  
+                  {/* Decorative background elements */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600"></div>
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
+                  
+                  <CardHeader className="pb-6 pt-8 px-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-4 rounded-2xl shadow-xl bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                        <MessageCircle className="w-8 h-8 text-white" />
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
-                          $50
+                        <div className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 bg-clip-text text-transparent">
+                          Free
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          Forever
                         </div>
                       </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-2">
-                      6-Month Academy Program
+                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                      Free Community
                     </CardTitle>
-                    <CardDescription className="text-slate-600 dark:text-gray-300 text-base">
-                      Complete beginner-to-advanced forex trading education with
-                      structured lessons and mentorship.
+                    <CardDescription className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                      Join our vibrant trading community with daily signals and beginner-friendly resources.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-3 mb-6">
+                  
+                  <CardContent className="px-8 pb-8">
+                    <div className="space-y-4 mb-8">
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
-                          6 months of structured video lessons
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Daily forex signals & market analysis
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
-                          Weekly live Zoom calls
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Access to community discussions
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
-                          Hands-on trading exercises
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Beginner trading resources
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
-                          Final project & certification
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Weekly market recaps
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 font-medium mb-6 text-green-600 dark:text-green-400">
+                    
+                    <div className="flex items-center gap-2 font-medium mb-8 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-lg">
                       <Star className="w-4 h-4" />
-                      <span className="text-sm">
-                        Limited to 50 students per cohort
-                      </span>
+                      <span className="text-sm">No commitment required</span>
                     </div>
-                    <Button
-                      className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                      onClick={() => handleUpgrade("academy", 5000)}
-                    >
-                      <Zap className="w-5 h-5 mr-2" />
-                      Upgrade to Academy - $50
+                    
+                    <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl" disabled>
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Current Plan - Active
                     </Button>
                   </CardContent>
                 </Card>
               </div>
 
+              {/* Academy Program Card */}
               <div className="w-full">
-                <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-green-400 dark:hover:border-green-500 hover:shadow-lg dark:hover:shadow-xl">
-                  <div className="absolute -top-3 right-4">
-                    <Badge className="mt-3 px-3 py-1 shadow-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-                      <Star className="w-3 h-3 mr-1" />
-                      Ongoing Support
-                    </Badge>
-                  </div>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-green-500 to-emerald-500 dark:from-green-400 dark:to-emerald-400">
-                        <Users className="w-7 h-7 text-white" />
+                <Card className="relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border-2 border-green-400/60 dark:border-green-500/60 hover:border-green-500/80 dark:hover:border-green-400/80 shadow-xl rounded-2xl group scale-105 z-10">
+                  
+                  {/* Decorative background elements */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600"></div>
+                  <div className="absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-green-400/30 to-emerald-500/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-green-500/20 rounded-full blur-xl group-hover:scale-110 transition-transform duration-700"></div>
+                  
+                  <CardHeader className="pb-6 pt-8 px-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-4 rounded-2xl shadow-xl bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                        <Award className="w-8 h-8 text-white" />
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl font-bold text-slate-900 dark:text-gray-100">
-                          $100
-                          <span className="text-lg font-normal text-slate-600 dark:text-gray-400">
-                            /month
-                          </span>
+                        <div className="text-4xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                          $50
+                        </div>
+                        <div className="text-sm line-through text-red-500 dark:text-red-400 font-medium">
+                          $97
                         </div>
                       </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-2">
-                      Monthly Mentorship Program
+                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                      6-Month Academy
                     </CardTitle>
-                    <CardDescription className="text-slate-600 dark:text-gray-300 text-base">
-                      Personalized 1:1 coaching, VIP signals, and exclusive
-                      trading room access.
+                    <CardDescription className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                      Complete beginner-to-advanced forex education with structured lessons and mentorship.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-3 mb-6">
+                  
+                  <CardContent className="px-8 pb-8">
+                    <div className="space-y-4 mb-8">
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          6 months of structured video lessons
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Weekly live Zoom calls
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Hands-on trading exercises
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                          Final project & certification
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 font-medium mb-8 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-lg">
+                      <Star className="w-4 h-4" />
+                      <span className="text-sm">Limited to 50 students per cohort</span>
+                    </div>
+                    
+                    <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl" onClick={() => handleUpgrade("academy", 5000)}>
+                      <Zap className="w-5 h-5 mr-2" />
+                      Upgrade to Academy
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Mentorship Program Card */}
+              <div className="w-full">
+                <Card className="relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 shadow-lg rounded-2xl group">
+                  
+                  {/* Decorative background elements */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600"></div>
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
+                  
+                  <CardHeader className="pb-6 pt-8 px-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-4 rounded-2xl shadow-xl bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                        <Users className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="text-right">
+                        <div className="text-4xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 bg-clip-text text-transparent">
+                          $100
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          /month
+                        </div>
+                      </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                      Monthly Mentorship
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                      Personalized 1:1 coaching, VIP signals, and exclusive trading room access.
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="px-8 pb-8">
+                    <div className="space-y-4 mb-8">
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                           1:1 weekly mentorship calls
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                           VIP trading signals
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                           Private mentorship group
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                           Custom trading plan
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 font-medium mb-6 text-green-600 dark:text-green-400">
+                    
+                    <div className="flex items-center gap-2 font-medium mb-8 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-lg">
                       <Star className="w-4 h-4" />
                       <span className="text-sm">Cancel anytime</span>
                     </div>
-                    <Button
-                      className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                      onClick={() => handleUpgrade("mentorship", 10000)}
-                    >
+                    
+                    <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl" onClick={() => handleUpgrade("mentorship", 10000)}>
                       <Star className="w-5 h-5 mr-2" />
-                      Join Mentorship - $100
+                      Join Mentorship
                     </Button>
                   </CardContent>
                 </Card>
               </div>
             </div>
 
-            <Card>
+            <Card className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Play className="w-5 h-5 text-primary" />
+                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+                    <Play className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
                   Free Content Available
                 </CardTitle>
                 <CardDescription>
@@ -461,28 +577,34 @@ export const FreeDashboard: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <BookOpen className="w-8 h-8 text-primary mx-auto mb-2" />
-                    <h4 className="font-semibold mb-1">Basic Courses</h4>
-                    <p className="text-sm text-muted-foreground">
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Card className="text-center p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 w-fit mx-auto mb-4 group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
+                      <BookOpen className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h4 className="font-bold mb-2 text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Basic Courses</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       Introduction to forex trading
                     </p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <TrendingUp className="w-8 h-8 text-primary mx-auto mb-2" />
-                    <h4 className="font-semibold mb-1">Market Signals</h4>
-                    <p className="text-sm text-muted-foreground">
+                  </Card>
+                  <Card className="text-center p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 w-fit mx-auto mb-4 group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
+                      <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h4 className="font-bold mb-2 text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Market Signals</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       Daily market analysis
                     </p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-                    <h4 className="font-semibold mb-1">Community</h4>
-                    <p className="text-sm text-muted-foreground">
+                  </Card>
+                  <Card className="text-center p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 w-fit mx-auto mb-4 group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
+                      <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h4 className="font-bold mb-2 text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Community</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       Connect with other traders
                     </p>
-                  </div>
+                  </Card>
                 </div>
               </CardContent>
             </Card>
@@ -495,17 +617,17 @@ export const FreeDashboard: React.FC = () => {
               courses.map((course) => (
                 <Card
                   key={course.id}
-                  className="relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 bg-white dark:bg-gray-900 rounded-xl"
+                  className="relative overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl"
                 >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-blue-500" />
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
                   <CardHeader className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                          <BookOpen className="w-6 h-6 text-green-500 dark:text-green-300" />
+                        <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-xl shadow-lg">
+                          <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
-                          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                             {course.title}
                           </CardTitle>
                           <CardDescription className="mt-2 text-base text-gray-600 dark:text-gray-300">
@@ -514,14 +636,14 @@ export const FreeDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge className="px-3 py-1 text-sm font-semibold bg-green-500 text-white">
+                        <Badge className="px-3 py-1 text-sm font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg">
                           Free
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleCourseExpansion(course.id)}
-                          className="text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-300 transition-colors duration-200"
+                          className="text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-300 transition-all duration-200 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
                         >
                           {expandedCourses.has(course.id) ? (
                             <ChevronUp className="w-6 h-6" />
@@ -534,7 +656,7 @@ export const FreeDashboard: React.FC = () => {
                     {course.videos && course.videos.length > 0 && (
                       <Progress
                         value={0}
-                        className="mt-4 h-2 bg-gray-200 dark:bg-gray-700 rounded-full"
+                        className="mt-4 h-2 bg-green-100 dark:bg-green-900 rounded-full"
                       />
                     )}
                   </CardHeader>
@@ -545,12 +667,12 @@ export const FreeDashboard: React.FC = () => {
                           {course.videos.map((video: any, index: number) => (
                             <div
                               key={video.id}
-                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                              className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-green-100 dark:border-green-800"
                             >
                               <div className="flex items-center gap-4">
-                                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                  {index + 1}.
-                                </span>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-semibold">
+                                  {index + 1}
+                                </div>
                                 <span className="text-base font-medium text-gray-900 dark:text-white">
                                   {video.title}
                                 </span>
@@ -573,7 +695,7 @@ export const FreeDashboard: React.FC = () => {
                                   console.log("Video object:", video);
                                   setSelectedVideo(videoUrl);
                                 }}
-                                className="bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 transition-all duration-200"
+                                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                               >
                                 <Play className="w-4 h-4 mr-2" />
                                 Watch
@@ -581,11 +703,11 @@ export const FreeDashboard: React.FC = () => {
                             </div>
                           ))}
                           {selectedVideo && (
-                            <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-inner">
+                            <div className="mt-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg shadow-inner border border-green-200 dark:border-green-800">
                               <video
                                 src={selectedVideo}
                                 controls
-                                className="w-full h-auto rounded-lg"
+                                className="w-full h-auto rounded-lg shadow-lg"
                                 style={{ maxHeight: "400px" }}
                                 onError={(e) => {
                                   console.error("Video playback error:", e);
@@ -604,7 +726,9 @@ export const FreeDashboard: React.FC = () => {
                         </div>
                       ) : (
                         <div className="text-center py-8">
-                          <BookOpen className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                          <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
+                            <BookOpen className="w-12 h-12 text-green-500 dark:text-green-400" />
+                          </div>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             No videos available for this course yet.
                           </p>
@@ -615,15 +739,17 @@ export const FreeDashboard: React.FC = () => {
                 </Card>
               ))
             ) : (
-              <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
+              <Card className="shadow-soft hover:shadow-medium transition-all duration-300 bg-white dark:bg-gray-900 rounded-xl border-green-200 dark:border-green-800 card-glow">
                 <CardContent className="text-center py-12">
-                  <BookOpen className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                  <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
+                    <BookOpen className="w-16 h-16 text-green-500 dark:text-green-400" />
+                  </div>
                   <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
                     Free courses will appear here once available.
                   </p>
                   <Button
                     variant="outline"
-                    className="mt-4 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
+                    className="mt-4 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300 border-green-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
                     onClick={loadCommunityContent}
                   >
                     Refresh Courses
@@ -637,21 +763,26 @@ export const FreeDashboard: React.FC = () => {
         {section === "signals" && (
           <div className="space-y-4">
             {content?.dailySignals?.map((signal, index) => (
-              <Card key={index}>
+              <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow hover-lift hover:-translate-y-1">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{signal.pair}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+                        <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      {signal.pair}
+                    </CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge
                         className={
                           signal.direction === "BUY"
-                            ? "bg-green-500"
-                            : "bg-red-500"
+                            ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                            : "bg-gradient-to-r from-red-500 to-red-600 text-white"
                         }
                       >
                         {signal.direction}
                       </Badge>
-                      <Badge variant="outline">{signal.status}</Badge>
+                      <Badge variant="outline" className="border-green-200 text-green-600 dark:border-green-700 dark:text-green-400">{signal.status}</Badge>
                     </div>
                   </div>
                   <CardDescription>
@@ -660,36 +791,38 @@ export const FreeDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div>
+                    <div className="p-3 rounded-lg bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100 dark:border-green-800">
                       <span className="text-muted-foreground">Entry: </span>
-                      <span className="font-medium">{signal.entry}</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">{signal.entry}</span>
                     </div>
-                    <div>
+                    <div className="p-3 rounded-lg bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100 dark:border-green-800">
                       <span className="text-muted-foreground">
                         Take Profit:{" "}
                       </span>
-                      <span className="font-medium text-green-500">
+                      <span className="font-medium text-green-600 dark:text-green-400">
                         {signal.takeProfit}
                       </span>
                     </div>
-                    <div>
+                    <div className="p-3 rounded-lg bg-gradient-to-r from-red-50/50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/20 border border-red-100 dark:border-red-800">
                       <span className="text-muted-foreground">Stop Loss: </span>
-                      <span className="font-medium text-red-500">
+                      <span className="font-medium text-red-600 dark:text-red-400">
                         {signal.stopLoss}
                       </span>
                     </div>
                   </div>
                   {signal.analysis && (
-                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <div className="mt-4 p-3 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-100 dark:border-green-800">
                       <p className="text-sm">{signal.analysis}</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
             )) || (
-              <Card>
+              <Card className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow">
                 <CardContent className="text-center py-8">
-                  <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
+                    <MessageCircle className="w-16 h-16 text-green-500 dark:text-green-400" />
+                  </div>
                   <p className="text-muted-foreground">
                     Daily signals will appear here.
                   </p>
@@ -700,10 +833,12 @@ export const FreeDashboard: React.FC = () => {
         )}
 
         {section === "community" && (
-          <Card>
+          <Card className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+                  <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
                 Join Our Trading Community
               </CardTitle>
               <CardDescription>
@@ -711,10 +846,10 @@ export const FreeDashboard: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20">
                 Join Telegram Community
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20">
                 Join Discord Server
               </Button>
             </CardContent>

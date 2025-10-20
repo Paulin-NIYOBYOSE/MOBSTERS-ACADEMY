@@ -683,6 +683,11 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setUserModalOpen(true);
+  };
+
   const getAccessLevelBadge = (roleAccess: string[]) => {
     return roleAccess.map((level) => (
       <Badge
