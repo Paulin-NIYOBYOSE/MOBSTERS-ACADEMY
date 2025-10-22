@@ -167,7 +167,7 @@ export const FreeDashboard: React.FC = () => {
     pathParts[0] === "dashboard" && !pathParts[1] ? "overview" : pathParts[1];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
+    <div className="p-4 sm:p-6 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
@@ -177,23 +177,23 @@ export const FreeDashboard: React.FC = () => {
       
       <div className="relative max-w-7xl mx-auto">
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <BookOpen className="w-8 h-8 text-white" />
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
               </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-3 text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
                   Welcome to{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">Mobsters Forex Academy</span>
                 </h1>
-                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
                   Start your forex trading journey with our free community content
                   and explore our premium programs.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <Button
                 className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
                 size="sm"
@@ -205,7 +205,7 @@ export const FreeDashboard: React.FC = () => {
               >
                 {loading ? "Refreshing..." : "Refresh"}
               </Button>
-              <div className="text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
                 Last updated: {lastRefresh.toLocaleTimeString()}
               </div>
             </div>
@@ -612,151 +612,325 @@ export const FreeDashboard: React.FC = () => {
         )}
 
         {section === "courses" && (
-          <div className="space-y-8">
-            {courses.length > 0 ? (
-              courses.map((course) => (
-                <Card
-                  key={course.id}
-                  className="relative overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl"
-                >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
-                  <CardHeader className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-xl shadow-lg">
-                          <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <div className="space-y-12">
+            {/* Free Courses Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Free Courses</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {courses.length > 0 ? (
+                  courses.map((course) => (
+                    <Card
+                      key={course.id}
+                      className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group"
+                    >
+                      {/* Course Thumbnail */}
+                      <div className="relative h-48 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-700 dark:to-slate-600 rounded-t-2xl overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-green-500 text-white px-3 py-1 text-sm font-medium">
+                            Free
+                          </Badge>
                         </div>
-                        <div>
-                          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                            {course.title}
-                          </CardTitle>
-                          <CardDescription className="mt-2 text-base text-gray-600 dark:text-gray-300">
-                            {course.description}
-                          </CardDescription>
+                        <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                          3m
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Badge className="px-3 py-1 text-sm font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg">
-                          Free
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleCourseExpansion(course.id)}
-                          className="text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-300 transition-all duration-200 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
-                        >
-                          {expandedCourses.has(course.id) ? (
-                            <ChevronUp className="w-6 h-6" />
-                          ) : (
-                            <ChevronDown className="w-6 h-6" />
-                          )}
-                        </Button>
+
+                      {/* Course Content */}
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                          {course.title}
+                        </h3>
+                        <p className="text-gray-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                          {course.description}
+                        </p>
+
+                        {/* Course Tags */}
+                        <div className="flex gap-2 mb-6">
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Beginner
+                          </Badge>
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Course
+                          </Badge>
+                          <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                            Free
+                          </Badge>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3">
+                          <Button 
+                            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold border-2 border-green-400 hover:border-green-300 transition-all duration-200"
+                            onClick={() => toggleCourseExpansion(course.id)}
+                          >
+                            Start Learning
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-green-100 dark:hover:bg-green-700/20 hover:text-green-700 dark:hover:text-green-300 hover:border-green-500 transition-all duration-200"
+                          >
+                            Details
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    {course.videos && course.videos.length > 0 && (
-                      <Progress
-                        value={0}
-                        className="mt-4 h-2 bg-green-100 dark:bg-green-900 rounded-full"
-                      />
-                    )}
-                  </CardHeader>
-                  {expandedCourses.has(course.id) && (
-                    <CardContent className="p-6 pt-0">
-                      {course.videos && course.videos.length > 0 ? (
-                        <div className="space-y-4">
-                          {course.videos.map((video: any, index: number) => (
-                            <div
-                              key={video.id}
-                              className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-green-100 dark:border-green-800"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-semibold">
-                                  {index + 1}
+
+                      {/* Expanded Content */}
+                      {expandedCourses.has(course.id) && (
+                        <div className="border-t border-gray-200 dark:border-slate-700 p-6">
+                          {course.videos && course.videos.length > 0 ? (
+                            <div className="space-y-4">
+                              {course.videos.map((video: any, index: number) => (
+                                <div
+                                  key={video.id}
+                                  className="flex items-center justify-between p-4 bg-gray-100 dark:bg-slate-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-200"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-semibold">
+                                      {index + 1}
+                                    </div>
+                                    <span className="text-base font-medium text-gray-900 dark:text-white">
+                                      {video.title}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    variant="cta"
+                                    size="sm"
+                                    onClick={() => {
+                                      let videoUrl = video.videoUrl;
+                                      if (!videoUrl.startsWith('http')) {
+                                        if (videoUrl.startsWith('/uploads/')) {
+                                          videoUrl = videoUrl.replace('/uploads/', '/');
+                                        }
+                                        videoUrl = `${baseUrl}${videoUrl.startsWith('/') ? '' : '/'}${videoUrl}`;
+                                      }
+                                      setSelectedVideo(videoUrl);
+                                    }}
+                                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+                                  >
+                                    <Play className="w-4 h-4 mr-2" />
+                                    Watch
+                                  </Button>
                                 </div>
-                                <span className="text-base font-medium text-gray-900 dark:text-white">
-                                  {video.title}
-                                </span>
-                              </div>
-                              <Button
-                                variant="cta"
-                                size="sm"
-                                onClick={() => {
-                                  // Handle different URL formats
-                                  let videoUrl = video.videoUrl;
-                                  if (!videoUrl.startsWith('http')) {
-                                    // Remove /uploads prefix if present since static assets are served from uploads root
-                                    if (videoUrl.startsWith('/uploads/')) {
-                                      videoUrl = videoUrl.replace('/uploads/', '/');
-                                    }
-                                    // If it's a relative path, prepend the base URL
-                                    videoUrl = `${baseUrl}${videoUrl.startsWith('/') ? '' : '/'}${videoUrl}`;
-                                  }
-                                  console.log("Playing video:", videoUrl, "Original videoUrl:", video.videoUrl);
-                                  console.log("Video object:", video);
-                                  setSelectedVideo(videoUrl);
-                                }}
-                                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-                              >
-                                <Play className="w-4 h-4 mr-2" />
-                                Watch
-                              </Button>
+                              ))}
+                              {selectedVideo && (
+                                <div className="mt-6 p-4 bg-slate-700/30 rounded-lg">
+                                  <video
+                                    src={selectedVideo}
+                                    controls
+                                    className="w-full h-auto rounded-lg"
+                                    style={{ maxHeight: "400px" }}
+                                    onError={(e) => {
+                                      console.error("Video playback error:", e);
+                                      toast({
+                                        title: "Error",
+                                        description: "Failed to play video. Please check the URL or try again.",
+                                        variant: "destructive",
+                                      });
+                                    }}
+                                  >
+                                    Your browser does not support the video tag.
+                                  </video>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                          {selectedVideo && (
-                            <div className="mt-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg shadow-inner border border-green-200 dark:border-green-800">
-                              <video
-                                src={selectedVideo}
-                                controls
-                                className="w-full h-auto rounded-lg shadow-lg"
-                                style={{ maxHeight: "400px" }}
-                                onError={(e) => {
-                                  console.error("Video playback error:", e);
-                                  toast({
-                                    title: "Error",
-                                    description:
-                                      "Failed to play video. Please check the URL or try again.",
-                                    variant: "destructive",
-                                  });
-                                }}
-                              >
-                                Your browser does not support the video tag.
-                              </video>
+                          ) : (
+                            <div className="text-center py-8">
+                              <BookOpen className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+                              <p className="text-sm text-slate-400">
+                                No videos available for this course yet.
+                              </p>
                             </div>
                           )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
-                            <BookOpen className="w-12 h-12 text-green-500 dark:text-green-400" />
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            No videos available for this course yet.
-                          </p>
                         </div>
                       )}
-                    </CardContent>
-                  )}
-                </Card>
-              ))
-            ) : (
-              <Card className="shadow-soft hover:shadow-medium transition-all duration-300 bg-white dark:bg-gray-900 rounded-xl border-green-200 dark:border-green-800 card-glow">
-                <CardContent className="text-center py-12">
-                  <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
-                    <BookOpen className="w-16 h-16 text-green-500 dark:text-green-400" />
+                    </Card>
+                  ))
+                ) : (
+                  <>
+                    {/* Sample Free Course 1 */}
+                    <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                      <div className="relative h-48 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-700 dark:to-slate-600 rounded-t-2xl overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-green-500 text-white px-3 py-1 text-sm font-medium">
+                            Free
+                          </Badge>
+                        </div>
+                        <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                          3m
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                          Free Beginner Trading Course
+                        </h3>
+                        <p className="text-gray-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                          A step-by-step introduction to markets, risk and execution.
+                        </p>
+                        <div className="flex gap-2 mb-6">
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Beginner
+                          </Badge>
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Course
+                          </Badge>
+                          <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                            Free
+                          </Badge>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold border-2 border-green-400 hover:border-green-300 transition-all duration-200">
+                            Start Learning
+                          </Button>
+                          <Button variant="outline" className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-green-100 dark:hover:bg-green-700/20 hover:text-green-700 dark:hover:text-green-300 hover:border-green-500 transition-all duration-200">
+                            Details
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Sample Free Course 2 */}
+                    <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                      <div className="relative h-48 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-700 dark:to-slate-600 rounded-t-2xl overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-green-500 text-white px-3 py-1 text-sm font-medium">
+                            Free
+                          </Badge>
+                        </div>
+                        <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                          2m
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                          Free Prop Firm Series
+                        </h3>
+                        <p className="text-gray-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                          Navigate challenges, risk rules and evaluation tactics.
+                        </p>
+                        <div className="flex gap-2 mb-6">
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Beginner
+                          </Badge>
+                          <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                            Course
+                          </Badge>
+                          <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                            Free
+                          </Badge>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold border-2 border-green-400 hover:border-green-300 transition-all duration-200">
+                            Start Series
+                          </Button>
+                          <Button variant="outline" className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-green-100 dark:hover:bg-green-700/20 hover:text-green-700 dark:hover:text-green-300 hover:border-green-500 transition-all duration-200">
+                            Details
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Paid Mentorships Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Paid Mentorships</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Standard Mentorship */}
+                <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 hover:border-green-500/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                  <div className="relative h-48 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-700 dark:to-slate-600 rounded-t-2xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-emerald-500 text-white px-3 py-1 text-sm font-medium">
+                        Premium
+                      </Badge>
+                    </div>
+                    <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                      4m
+                    </div>
                   </div>
-                  <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
-                    Free courses will appear here once available.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300 border-green-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    onClick={loadCommunityContent}
-                  >
-                    Refresh Courses
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-3 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                      STANDARD MENTORSHIP
+                    </h3>
+                    <p className="text-gray-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                      Foundations, scalping mastery, weekly zooms & support.
+                    </p>
+                    <div className="flex gap-2 mb-6">
+                      <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                        Intermediate
+                      </Badge>
+                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                        Mentorship
+                      </Badge>
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        $ 149
+                      </Badge>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold border-2 border-green-400 hover:border-green-300 transition-all duration-200"
+                        onClick={() => handleUpgrade("mentorship", 14900)}
+                      >
+                        Enroll Now
+                      </Button>
+                      <Button variant="outline" className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-green-100 dark:hover:bg-green-700/20 hover:text-green-700 dark:hover:text-green-300 hover:border-green-500 transition-all duration-200">
+                        Details
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Premium Mentorship */}
+                <Card className="relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 hover:border-green-400/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl group">
+                  <div className="relative h-48 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-slate-700 dark:to-slate-600 rounded-t-2xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-green-600 text-white px-3 py-1 text-sm font-medium">
+                        Premium
+                      </Badge>
+                    </div>
+                    <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                      4m
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-3 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                      PREMIUM MENTORSHIP
+                    </h3>
+                    <p className="text-gray-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                      Full stack mentorship + live teaching & community.
+                    </p>
+                    <div className="flex gap-2 mb-6">
+                      <Badge variant="secondary" className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600">
+                        Advanced
+                      </Badge>
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        Mentorship
+                      </Badge>
+                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                        $ 499
+                      </Badge>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold border-2 border-green-500 hover:border-green-400 transition-all duration-200"
+                        onClick={() => handleUpgrade("premium-mentorship", 49900)}
+                      >
+                        Enroll Now
+                      </Button>
+                      <Button variant="outline" className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:bg-green-100 dark:hover:bg-green-700/20 hover:text-green-700 dark:hover:text-green-300 hover:border-green-500 transition-all duration-200">
+                        Details
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
           </div>
         )}
 

@@ -31,13 +31,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Header Actions */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="sm" className="relative hidden sm:flex">
                 <Search className="w-4 h-4" />
               </Button>
 
               <DashboardNotifications />
 
-              <ThemeToggle />
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
               <UserMenu />
             </div>
           </header>

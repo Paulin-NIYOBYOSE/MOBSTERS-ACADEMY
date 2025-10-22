@@ -86,7 +86,8 @@ export const Header = () => {
             </div>
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* Desktop Actions - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-3">
             <div className="p-2 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80 hover:bg-green-200/80 dark:hover:bg-slate-700/80 transition-all duration-200">
               <ThemeToggle />
             </div>
@@ -130,7 +131,8 @@ export const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-green-200/80 dark:border-slate-600/80">
-            <nav className="flex flex-col gap-3 pt-4">
+            <nav className="flex flex-col gap-4 pt-4">
+              {/* Navigation Links */}
               <div className="bg-green-50/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-2 border-2 border-green-300/80 dark:border-slate-600/80 shadow-xl">
                 <button
                   onClick={() => scrollToSection("programs")}
@@ -158,33 +160,43 @@ export const Header = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 mt-2">
-                <div className="p-2 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80">
+              {/* Theme Toggle */}
+              <div className="flex justify-center">
+                <div className="p-3 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80 hover:bg-green-200/80 dark:hover:bg-slate-700/80 transition-all duration-200">
                   <ThemeToggle />
                 </div>
-
-                {isAuthenticated ? (
-                  <UserMenu />
-                ) : (
-                  <div className="flex gap-2 flex-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openAuthModal("login")}
-                      className="flex-1 border-green-300 dark:border-slate-500 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-50 dark:hover:bg-slate-700/60 hover:border-green-400 dark:hover:border-slate-400 backdrop-blur-sm"
-                    >
-                      Login
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => openAuthModal("register")}
-                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-                    >
-                      Get Started
-                    </Button>
-                  </div>
-                )}
               </div>
+
+              {/* Authentication Buttons */}
+              {isAuthenticated ? (
+                <div className="flex justify-center">
+                  <UserMenu />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      openAuthModal("login");
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full border-green-300 dark:border-slate-500 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-50 dark:hover:bg-slate-700/60 hover:border-green-400 dark:hover:border-slate-400 backdrop-blur-sm"
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => {
+                      openAuthModal("register");
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         )}
