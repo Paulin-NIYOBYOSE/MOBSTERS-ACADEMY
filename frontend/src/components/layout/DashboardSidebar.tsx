@@ -115,25 +115,75 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
 
   const visibleItems = navigationItems(hasRole);
 
+  // Determine dashboard theme colors based on user role
+  const getDashboardTheme = () => {
+    if (hasRole("admin")) {
+      return {
+        gradient: "from-purple-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
+        accent: "from-purple-500 to-blue-500",
+        border: "border-purple-200/50 dark:border-slate-700/50",
+        bg: "bg-white/80 dark:bg-slate-900/80",
+        sidebarBg: "bg-gradient-to-b from-purple-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
+      };
+    }
+    if (hasRole("academy_student")) {
+      return {
+        gradient: "from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
+        accent: "from-blue-500 to-purple-500",
+        border: "border-blue-200/50 dark:border-slate-700/50",
+        bg: "bg-white/80 dark:bg-slate-900/80",
+        sidebarBg: "bg-gradient-to-b from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
+      };
+    }
+    if (hasRole("mentorship_student")) {
+      return {
+        gradient: "from-green-50/50 via-teal-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
+        accent: "from-green-500 to-teal-500",
+        border: "border-green-200/50 dark:border-slate-700/50",
+        bg: "bg-white/80 dark:bg-slate-900/80",
+        sidebarBg: "bg-gradient-to-b from-green-50/50 via-teal-50/30 to-green-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
+      };
+    }
+    // Free dashboard
+    return {
+      gradient: "from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
+      accent: "from-green-500 to-emerald-500",
+      border: "border-green-200/50 dark:border-slate-700/50",
+      bg: "bg-white/80 dark:bg-slate-900/80",
+      sidebarBg: "bg-gradient-to-b from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
+    };
+  };
+
+  const theme = getDashboardTheme();
+
   return (
     <Sidebar
       className={cn(
-        "transition-all duration-300 ease-in-out border-r border-border/50 bg-background/95 backdrop-blur-md",
+        "transition-all duration-300 ease-in-out border-r backdrop-blur-md",
+        theme.border,
+        theme.sidebarBg,
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <SidebarContent className="p-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-slate-700/10 dark:to-slate-600/10 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-slate-600/10 dark:to-slate-700/10 rounded-full blur-xl"></div>
+      </div>
+      
+      <SidebarContent className="relative p-4">
         {/* User Profile */}
         <div
           className={cn(
-            "mb-6 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20",
+            "mb-6 p-4 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl",
+            `bg-gradient-to-r ${theme.gradient} border ${theme.border}`,
             collapsed && "p-2"
           )}
         >
           {!collapsed ? (
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center">
+                <div className={`w-10 h-10 bg-gradient-to-r ${theme.accent} rounded-full flex items-center justify-center shadow-lg`}>
                   <span className="text-white font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
@@ -162,7 +212,7 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
               )}
             </div>
           ) : (
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto">
+            <div className={`w-8 h-8 bg-gradient-to-r ${theme.accent} rounded-full flex items-center justify-center mx-auto shadow-lg`}>
               <span className="text-white font-bold text-xs">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
@@ -224,10 +274,10 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
         )} */}
 
         {/* Settings & Logout */}
-        <div className="mt-auto pt-4 border-t border-border/50">
+        <div className={`mt-auto pt-4 border-t ${theme.border}`}>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton className="hover:bg-muted/50 transition-colors duration-200">
                 <Settings className="w-4 h-4" />
                 {!collapsed && <span>Settings</span>}
               </SidebarMenuButton>
@@ -238,7 +288,7 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
                   await authService.logout();
                   window.location.href = "/";
                 }}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-200"
               >
                 <LogOut className="w-4 h-4" />
                 {!collapsed && <span>Logout</span>}

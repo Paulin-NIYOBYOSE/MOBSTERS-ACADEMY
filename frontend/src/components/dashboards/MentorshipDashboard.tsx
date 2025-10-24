@@ -25,11 +25,19 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
+  ArrowUpRight,
+  Clock,
+  Activity,
+  Eye,
+  PlayCircle,
+  DollarSign,
+  Zap,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
+import { CourseViewer } from "@/components/CourseViewer";
 
 interface MentorshipContent {
   mentorshipSessions: any[];
@@ -48,6 +56,7 @@ export const MentorshipDashboard: React.FC = () => {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [expandedCourses, setExpandedCourses] = useState<Set<number>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [viewingCourse, setViewingCourse] = useState<any | null>(null);
   const { toast } = useToast();
   const location = useLocation();
   const baseUrl = "http://localhost:3000"; // Backend server URL
@@ -129,80 +138,248 @@ export const MentorshipDashboard: React.FC = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
+  // If viewing a course, show the CourseViewer
+  if (viewingCourse) {
+    return (
+      <CourseViewer 
+        course={viewingCourse} 
+        onBack={() => setViewingCourse(null)} 
+      />
+    );
+  }
+
   const renderOverview = () => (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card className="md:col-span-2 lg:col-span-1 border-green-200 dark:border-green-800">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-green-500" />
-            Next Mentorship Call
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div>
-              <h4 className="font-semibold">
-                {content?.mentorshipSessions[0]?.title || "No upcoming session"}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {content?.mentorshipSessions[0]?.date
-                  ? `${new Date(content.mentorshipSessions[0].date).toLocaleDateString()} at ${new Date(
-                      content.mentorshipSessions[0].date
-                    ).toLocaleTimeString()}`
-                  : "Check schedule for updates"}
-              </p>
+    <div className="space-y-6">
+      {/* Key Metrics Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Win Rate */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Win Rate
+            </CardTitle>
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <Target className="h-4 w-4 text-green-600" />
             </div>
-            <Button variant="cta">
-              <Users className="w-4 h-4 mr-2" />
-              Join Session
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{content?.performance?.winRate || "87%"}</div>
+            <div className="flex items-center text-xs text-green-600 mt-1">
+              <ArrowUpRight className="h-3 w-3 mr-1" />
+              <span>+5% this month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-purple-500" />
-            Featured Strategy
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <h4 className="font-semibold">
-              {content?.advancedStrategies[0]?.title || "No strategy available"}
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              {content?.advancedStrategies[0]?.description || "Check back for new strategies"}
-            </p>
-            <Button variant="cta" size="sm" className="w-full">
-              Learn Strategy
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* P&L */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Monthly P&L
+            </CardTitle>
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <DollarSign className="h-4 w-4 text-blue-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{content?.performance?.profitLoss || "+$2,847"}</div>
+            <div className="flex items-center text-xs text-green-600 mt-1">
+              <ArrowUpRight className="h-3 w-3 mr-1" />
+              <span>+23% from last month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-orange-500" />
-            Active Challenge
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <h4 className="font-semibold">
-              {content?.challenges[0]?.title || "No active challenge"}
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              {content?.challenges[0]?.description || "Join a challenge to compete!"}
+        {/* Total Trades */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Trades
+            </CardTitle>
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <BarChart3 className="h-4 w-4 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{content?.performance?.tradesCount || "156"}</div>
+            <div className="flex items-center text-xs text-green-600 mt-1">
+              <ArrowUpRight className="h-3 w-3 mr-1" />
+              <span>this month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Leaderboard Rank */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Leaderboard Rank
+            </CardTitle>
+            <div className="p-2 bg-orange-500/10 rounded-lg">
+              <Crown className="h-4 w-4 text-orange-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{content?.performance?.rankPosition || "#12"}</div>
+            <div className="flex items-center text-xs text-green-600 mt-1">
+              <ArrowUpRight className="h-3 w-3 mr-1" />
+              <span>moved up 3 spots</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Secondary Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Next Mentorship Call
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">{content?.mentorshipSessions[0]?.title || "Advanced Scalping"}</div>
+            <p className="text-xs text-muted-foreground">
+              {content?.mentorshipSessions[0]?.date
+                ? new Date(content.mentorshipSessions[0].date).toLocaleDateString()
+                : "Tomorrow 2:00 PM"}
             </p>
-            <Button variant="cta" size="sm" className="w-full">
-              View Challenge
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Active Strategies
+            </CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">{content?.advancedStrategies?.length || 8}</div>
+            <p className="text-xs text-muted-foreground">strategies mastered</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Premium Signals
+            </CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">24</div>
+            <p className="text-xs text-muted-foreground">signals this week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Challenge Progress
+            </CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">78%</div>
+            <p className="text-xs text-muted-foreground">monthly challenge</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Analytics & Quick Actions */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Performance Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              Trading Performance
+            </CardTitle>
+            <CardDescription>Your monthly trading statistics and growth</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {content?.performance?.winRate || "87%"}
+                </div>
+                <p className="text-sm text-muted-foreground">Win Rate</p>
+              </div>
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {content?.performance?.profitLoss || "+$2,847"}
+                </div>
+                <p className="text-sm text-muted-foreground">P&L</p>
+              </div>
+              <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {content?.performance?.tradesCount || "156"}
+                </div>
+                <p className="text-sm text-muted-foreground">Trades</p>
+              </div>
+              <div className="text-center p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">
+                  {content?.performance?.rankPosition || "#12"}
+                </div>
+                <p className="text-sm text-muted-foreground">Leaderboard</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-600" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-800">Join Live Session</p>
+                  <p className="text-xs text-green-600">Advanced Scalping</p>
+                </div>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Users className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-800">New Strategy</p>
+                  <p className="text-xs text-purple-600">Fibonacci Retracements</p>
+                </div>
+                <Button size="sm" variant="outline" className="text-purple-600 border-purple-200">
+                  Learn
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-800">Premium Signals</p>
+                  <p className="text-xs text-blue-600">3 new signals today</p>
+                </div>
+                <Button size="sm" variant="outline" className="text-blue-600 border-blue-200">
+                  View
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 
@@ -387,29 +564,34 @@ export const MentorshipDashboard: React.FC = () => {
   );
 
   return (
-    <div className="p-6 bg-gradient-to-br from-green-50/30 via-background to-teal-50/30 dark:from-background dark:via-background dark:to-muted/30 min-h-full">
-      <div className="max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 bg-gradient-to-br from-green-50/50 via-teal-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
+      </div>
+      
+      <div className="relative max-w-7xl mx-auto">
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                <Crown className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-teal-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                <Crown className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
               </div>
-              <div>
-                <h1 className="text-4xl font-bold">
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
                   Elite{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500">
-                    Mentorship
-                  </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">Mentorship</span>
                 </h1>
-                <p className="text-muted-foreground text-lg">
-                  Advanced trading strategies and personalized guidance.
+                <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
+                  Advanced trading strategies and personalized guidance for elite traders.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <Button
-                variant="outline"
+                className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
                 size="sm"
                 onClick={() => {
                   loadMentorshipContent();
@@ -419,7 +601,7 @@ export const MentorshipDashboard: React.FC = () => {
               >
                 {loading ? "Refreshing..." : "Refresh"}
               </Button>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
                 Last updated: {lastRefresh.toLocaleTimeString()}
               </div>
             </div>

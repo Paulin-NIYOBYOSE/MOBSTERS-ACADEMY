@@ -31,7 +31,7 @@ export const UserMenu: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   // If user is not authenticated, render a login button or nothing
