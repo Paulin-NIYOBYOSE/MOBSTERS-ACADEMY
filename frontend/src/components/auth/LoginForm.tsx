@@ -22,13 +22,18 @@ interface LoginFormProps {
   onSwitchToRegister?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({
+  onSuccess,
+  onSwitchToRegister,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<AuthError | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const { login, user } = useAuth();
   const { toast } = useToast();
@@ -37,19 +42,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    
+
     if (!email.trim()) {
-      errors.email = 'Email is required';
+      errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = "Please enter a valid email address";
     }
-    
+
     if (!password.trim()) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long';
+      errors.password = "Password must be at least 6 characters long";
     }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -58,30 +63,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
     e.preventDefault();
     setError(null);
     setValidationErrors({});
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
 
     try {
       // Use context login method which returns user data
       const loggedInUser = await login(email.trim().toLowerCase(), password);
-      
+
       if (loggedInUser) {
         toast({
           title: "Welcome back!",
           description: "You've been signed in successfully.",
         });
-        
+
         if (onSuccess) {
           onSuccess();
         } else {
           // Check if user was trying to access a specific page before login
           const from = (location.state as any)?.from?.pathname;
-          
-          if (from && from !== '/login') {
+
+          if (from && from !== "/login") {
             // Redirect to the intended destination
             navigate(from, { replace: true });
           } else {
@@ -94,11 +99,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
     } catch (err) {
       if (err instanceof AuthError) {
         setError(err);
-        
+
         // Show specific toast messages for different error types
         let toastTitle = "Sign in failed";
         let toastDescription = err.getUserFriendlyMessage();
-        
+
         switch (err.code) {
           case AuthErrorCode.ACCOUNT_LOCKED:
             toastTitle = "Account Locked";
@@ -116,14 +121,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
             toastTitle = "Incorrect Password";
             break;
         }
-        
+
         toast({
           title: toastTitle,
           description: toastDescription,
           variant: "destructive",
         });
       } else {
-        setError(new AuthError(AuthErrorCode.SERVER_ERROR, 'An unexpected error occurred'));
+        setError(
+          new AuthError(
+            AuthErrorCode.SERVER_ERROR,
+            "An unexpected error occurred"
+          )
+        );
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",
@@ -142,7 +152,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
           Welcome Back
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Sign in to your Mobsters Forex Academy account
+          Sign in to your Market Mobsters account
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -161,16 +171,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
                   <AlertDescription className="font-medium">
                     {error.getUserFriendlyMessage()}
                   </AlertDescription>
-                  {error.code === AuthErrorCode.WEAK_PASSWORD && error.details?.requirements && (
-                    <div className="mt-2 text-sm">
-                      <p className="font-medium">Password requirements:</p>
-                      <ul className="list-disc list-inside mt-1 space-y-1">
-                        {error.details.requirements.map((req: string, index: number) => (
-                          <li key={index}>{req}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {error.code === AuthErrorCode.WEAK_PASSWORD &&
+                    error.details?.requirements && (
+                      <div className="mt-2 text-sm">
+                        <p className="font-medium">Password requirements:</p>
+                        <ul className="list-disc list-inside mt-1 space-y-1">
+                          {error.details.requirements.map(
+                            (req: string, index: number) => (
+                              <li key={index}>{req}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
                 </div>
               </div>
             </Alert>
@@ -185,12 +198,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
               onChange={(e) => {
                 setEmail(e.target.value);
                 if (validationErrors.email) {
-                  setValidationErrors(prev => ({ ...prev, email: '' }));
+                  setValidationErrors((prev) => ({ ...prev, email: "" }));
                 }
               }}
               placeholder="Enter your email"
               disabled={loading}
-              className={validationErrors.email ? 'border-red-500' : ''}
+              className={validationErrors.email ? "border-red-500" : ""}
             />
             {validationErrors.email && (
               <p className="text-sm text-red-500">{validationErrors.email}</p>
@@ -207,12 +220,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (validationErrors.password) {
-                    setValidationErrors(prev => ({ ...prev, password: '' }));
+                    setValidationErrors((prev) => ({ ...prev, password: "" }));
                   }
                 }}
                 placeholder="Enter your password"
                 disabled={loading}
-                className={`pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
+                className={`pr-10 ${
+                  validationErrors.password ? "border-red-500" : ""
+                }`}
               />
               <button
                 type="button"
@@ -228,7 +243,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
               </button>
             </div>
             {validationErrors.password && (
-              <p className="text-sm text-red-500">{validationErrors.password}</p>
+              <p className="text-sm text-red-500">
+                {validationErrors.password}
+              </p>
             )}
           </div>
 

@@ -6,10 +6,10 @@ export default function AboutPage() {
     <div className="container mx-auto md:px-4 py-12 mt-10">
       <section className="text-center max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-white mb-6">
-          About Forex Mobsters
+          About Market Mobsters
         </h1>
         <p className="text-lg text-gray-300 leading-relaxed">
-          Forex Mobsters is more than just a trading group—it's a movement.
+          Market mobsters is more than just a trading group—it's a movement.
           Built by seasoned traders, we provide a trusted community where
           expertise meets opportunity. Whether you're a beginner or a pro, we
           equip you with the strategies, tools, and signals to dominate the

@@ -49,9 +49,9 @@ export const Header = () => {
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div className="font-bold text-xl text-gray-900 dark:text-white">
-              Mobsters{" "}
+              Market{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-500">
-                Forex
+                Mobsters
               </span>
             </div>
           </div>

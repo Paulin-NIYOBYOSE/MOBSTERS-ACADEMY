@@ -222,7 +222,7 @@ export const FreeDashboard: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
                   Welcome to{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
-                    Mobsters Forex Academy
+                    Market Mobsters
                   </span>
                 </h1>
                 <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">

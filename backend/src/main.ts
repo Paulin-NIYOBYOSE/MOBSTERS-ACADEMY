@@ -6,6 +6,10 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // Set global API prefix
+  app.setGlobalPrefix('api');
+  
   app.enableCors({
     origin: 'http://localhost:8080', // Frontend origin
     methods: 'GET,POST,PUT,DELETE',
@@ -14,7 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // Raw body for Stripe webhook
-  app.use('/payment/webhook', (req, res, next) => {
+  app.use('/api/payment/webhook', (req, res, next) => {
     if (req.headers['content-type'] === 'application/json') {
       req.rawBody = '';
       req.on('data', chunk => { req.rawBody += chunk; });

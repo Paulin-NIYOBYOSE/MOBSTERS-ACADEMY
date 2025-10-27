@@ -2692,7 +2692,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground text-lg">
-            Manage role requests and content for Mobsters Forex Academy.
+            Manage role requests and content for Market Mobsters.
           </p>
         </div>
         <div className="space-y-6">

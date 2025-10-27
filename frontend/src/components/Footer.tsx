@@ -20,7 +20,7 @@ export const Footer = () => {
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-8 h-8 text-primary" />
               <div className="font-bold text-2xl text-foreground">
-                Mobsters <span className="text-primary">Forex</span>
+                Market <span className="text-primary">Mobsters</span>
               </div>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -150,7 +150,7 @@ export const Footer = () => {
         <div className="border-t border-border pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-muted-foreground">
-              © {currentYear} Mobsters Forex Academy. All rights reserved.
+              © {currentYear} Market Mobsters. All rights reserved.
             </div>
             <div className="flex flex-wrap gap-6 text-sm">
               <a

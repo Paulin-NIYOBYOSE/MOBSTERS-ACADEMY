@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Navigate, useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
 import { CourseViewer } from "@/components/CourseViewer";
+import TradingJournal from "@/components/trading-journal/TradingJournal";
 
 interface MentorshipContent {
   mentorshipSessions: any[];
@@ -652,6 +653,7 @@ export const MentorshipDashboard: React.FC = () => {
           {section === "strategies" && renderStrategies()}
           {section === "signals" && renderSignals()}
           {section === "challenges" && renderChallenges()}
+          {section === "journal" && <TradingJournal />}
             </div>
       </div>
     </div>

@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Navigate, useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
 import { CourseViewer } from "@/components/CourseViewer";
+import TradingJournal from "@/components/trading-journal/TradingJournal";
 
 interface CourseVideo {
   id: number;
@@ -392,6 +393,7 @@ export const AcademyDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
     </div>
   );
 
@@ -758,26 +760,15 @@ export const AcademyDashboard: React.FC = () => {
   );
 
   const renderJournal = () => (
-    <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-          <TrendingUp className="w-5 h-5 text-green-500" />
-          Trading Journal
-        </CardTitle>
-        <CardDescription className="text-gray-600 dark:text-gray-300">
-          Track your trades and analyze your performance.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center py-12">
-          <Award className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
-            Trading journal interface will appear here.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <TradingJournal />
+    </div>
   );
+
+  // If journal section, render only the trading journal
+  if (section === "journal") {
+    return renderJournal();
+  }
 
   return (
     <div className="p-4 sm:p-6 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
@@ -788,9 +779,9 @@ export const AcademyDashboard: React.FC = () => {
         <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-blue-400/5 rounded-full blur-xl"></div>
       </div>
       
-      <div className="relative max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
                 <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
@@ -855,7 +846,6 @@ export const AcademyDashboard: React.FC = () => {
           {section === "courses" && renderCourses()}
           {section === "live" && renderLive()}
           {section === "assignments" && renderAssignments()}
-          {section === "journal" && renderJournal()}
         </div>
       </div>
     </div>

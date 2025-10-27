@@ -141,10 +141,7 @@ const Index = () => {
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground dark:text-white mb-6 leading-tight scroll-slide-left">
               Master Forex Trading with
-              <span className="gradient-text block mt-2">
-                {" "}
-                Mobsters Academy
-              </span>
+              <span className="gradient-text block mt-2"> Market Mobsters</span>
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-foreground/90 dark:text-white/90 mb-8 leading-relaxed scroll-slide-right">
@@ -177,15 +174,21 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-8 text-foreground/90 dark:text-white/90 scroll-fade-in">
               <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">6-Month Structured Program</span>
+                <span className="text-sm sm:text-base">
+                  6-Month Structured Program
+                </span>
               </div>
               <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">Weekly Live Sessions</span>
+                <span className="text-sm sm:text-base">
+                  Weekly Live Sessions
+                </span>
               </div>
               <div className="flex items-center gap-2 hover-lift">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">Personal Trading Plan</span>
+                <span className="text-sm sm:text-base">
+                  Personal Trading Plan
+                </span>
               </div>
             </div>
           </div>
@@ -327,7 +330,7 @@ const Index = () => {
 
                 <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8 scroll-slide-right">
                   <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
-                    MobstersFX
+                    Market Mobsters
                   </span>{" "}
                   has transformed knowledge into proven results. His journey is
                   a testament that with the right mentorship, dedication, and
@@ -521,7 +524,7 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Why Choose{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
-                Mobsters Academy
+                Market Mobsters
               </span>
               ?
             </h2>

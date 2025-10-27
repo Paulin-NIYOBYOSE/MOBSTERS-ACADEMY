@@ -68,7 +68,8 @@ const navigationItems = (
       { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["mentorship_student", "admin"] },
       { title: "Strategies", url: "/dashboard/strategies", icon: BookOpen, roles: ["mentorship_student", "admin"] },
       { title: "Premium Signals", url: "/dashboard/signals", icon: BarChart3, roles: ["mentorship_student", "admin"] },
-      { title: "Challenges", url: "/dashboard/challenges", icon: Users, roles: ["mentorship_student", "admin"] }
+      { title: "Challenges", url: "/dashboard/challenges", icon: Users, roles: ["mentorship_student", "admin"] },
+      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["mentorship_student", "admin"] }
     );
   }
 

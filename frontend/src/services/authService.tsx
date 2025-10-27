@@ -3,20 +3,20 @@ import Cookies from "js-cookie";
 
 // Auth error types matching backend
 export enum AuthErrorCode {
-  USER_NOT_FOUND = 'USER_NOT_FOUND',
-  INVALID_PASSWORD = 'INVALID_PASSWORD',
-  EMAIL_ALREADY_EXISTS = 'EMAIL_ALREADY_EXISTS',
-  INVALID_EMAIL_FORMAT = 'INVALID_EMAIL_FORMAT',
-  WEAK_PASSWORD = 'WEAK_PASSWORD',
-  ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
-  ACCOUNT_DISABLED = 'ACCOUNT_DISABLED',
-  EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
-  INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN',
-  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
-  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
-  TOO_MANY_ATTEMPTS = 'TOO_MANY_ATTEMPTS',
-  SERVER_ERROR = 'SERVER_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  INVALID_PASSWORD = "INVALID_PASSWORD",
+  EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS",
+  INVALID_EMAIL_FORMAT = "INVALID_EMAIL_FORMAT",
+  WEAK_PASSWORD = "WEAK_PASSWORD",
+  ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
+  ACCOUNT_DISABLED = "ACCOUNT_DISABLED",
+  EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED",
+  INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN",
+  TOKEN_EXPIRED = "TOKEN_EXPIRED",
+  INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
+  TOO_MANY_ATTEMPTS = "TOO_MANY_ATTEMPTS",
+  SERVER_ERROR = "SERVER_ERROR",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
 }
 
 export interface AuthErrorResponse {
@@ -37,13 +37,13 @@ export class AuthError extends Error {
     public status?: number
   ) {
     super(message);
-    this.name = 'AuthError';
+    this.name = "AuthError";
   }
 
   static fromResponse(error: AxiosError): AuthError {
-    if (error.response?.data && typeof error.response.data === 'object') {
+    if (error.response?.data && typeof error.response.data === "object") {
       const errorData = error.response.data as any;
-      
+
       // Handle new structured error format
       if (errorData.error && errorData.error.code) {
         return new AuthError(
@@ -53,17 +53,17 @@ export class AuthError extends Error {
           error.response.status
         );
       }
-      
+
       // Handle validation errors
       if (errorData.message && Array.isArray(errorData.message)) {
         return new AuthError(
           AuthErrorCode.VALIDATION_ERROR,
-          'Validation failed',
+          "Validation failed",
           { validationErrors: errorData.message },
           error.response.status
         );
       }
-      
+
       // Handle simple message format
       if (errorData.message) {
         return new AuthError(
@@ -74,11 +74,11 @@ export class AuthError extends Error {
         );
       }
     }
-    
+
     // Default error handling
     return new AuthError(
       AuthErrorCode.SERVER_ERROR,
-      error.message || 'An unexpected error occurred',
+      error.message || "An unexpected error occurred",
       undefined,
       error.response?.status
     );
@@ -87,29 +87,36 @@ export class AuthError extends Error {
   getUserFriendlyMessage(): string {
     switch (this.code) {
       case AuthErrorCode.USER_NOT_FOUND:
-        return 'No account found with this email address. Please check your email or sign up.';
+        return "No account found with this email address. Please check your email or sign up.";
       case AuthErrorCode.INVALID_PASSWORD:
-        return 'The password you entered is incorrect. Please try again.';
+        return "The password you entered is incorrect. Please try again.";
       case AuthErrorCode.EMAIL_ALREADY_EXISTS:
-        return 'An account with this email already exists. Please sign in instead.';
+        return "An account with this email already exists. Please sign in instead.";
       case AuthErrorCode.WEAK_PASSWORD:
-        return `Password is too weak. ${this.details?.requirements ? 'Requirements: ' + this.details.requirements.join(', ') : ''}`;
+        return `Password is too weak. ${
+          this.details?.requirements
+            ? "Requirements: " + this.details.requirements.join(", ")
+            : ""
+        }`;
       case AuthErrorCode.ACCOUNT_LOCKED:
-        return 'Your account is temporarily locked due to multiple failed login attempts. Please try again later.';
+        return "Your account is temporarily locked due to multiple failed login attempts. Please try again later.";
       case AuthErrorCode.ACCOUNT_DISABLED:
-        return 'Your account has been disabled. Please contact support for assistance.';
+        return "Your account has been disabled. Please contact support for assistance.";
       case AuthErrorCode.TOO_MANY_ATTEMPTS:
-        return 'Too many login attempts. Please wait before trying again.';
+        return "Too many login attempts. Please wait before trying again.";
       case AuthErrorCode.VALIDATION_ERROR:
-        if (this.details?.validationErrors && Array.isArray(this.details.validationErrors)) {
-          return this.details.validationErrors.join('. ');
+        if (
+          this.details?.validationErrors &&
+          Array.isArray(this.details.validationErrors)
+        ) {
+          return this.details.validationErrors.join(". ");
         }
-        return 'Please check your input and try again.';
+        return "Please check your input and try again.";
       case AuthErrorCode.INVALID_REFRESH_TOKEN:
       case AuthErrorCode.TOKEN_EXPIRED:
-        return 'Your session has expired. Please sign in again.';
+        return "Your session has expired. Please sign in again.";
       default:
-        return this.message || 'An error occurred. Please try again.';
+        return this.message || "An error occurred. Please try again.";
     }
   }
 }
@@ -143,7 +150,7 @@ interface OverviewStats {
 }
 
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -161,48 +168,58 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Handle 401 errors with token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = Cookies.get("refreshToken");
         if (!refreshToken) {
-          throw new AuthError(AuthErrorCode.INVALID_REFRESH_TOKEN, "No refresh token available");
+          throw new AuthError(
+            AuthErrorCode.INVALID_REFRESH_TOKEN,
+            "No refresh token available"
+          );
         }
-        
+
         const { data } = await axios.post<Tokens>(
-          `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/refresh`,
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/auth/refresh`,
           { refreshToken }
         );
-        
+
         localStorage.setItem("accessToken", data.accessToken);
         Cookies.set("refreshToken", data.refreshToken, {
           expires: 7,
           secure: true,
           sameSite: "strict",
         });
-        
+
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         }
-        
+
         return api(originalRequest);
       } catch (refreshError) {
         // Clear tokens and redirect to login
         localStorage.removeItem("accessToken");
         Cookies.remove("refreshToken");
-        
+
         // Only redirect if we're not already on the login page
-        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        if (
+          !window.location.pathname.includes("/login") &&
+          !window.location.pathname.includes("/register")
+        ) {
           window.location.href = "/login";
         }
-        
-        return Promise.reject(AuthError.fromResponse(refreshError as AxiosError));
+
+        return Promise.reject(
+          AuthError.fromResponse(refreshError as AxiosError)
+        );
       }
     }
-    
+
     // For non-auth endpoints, return the original error
     return Promise.reject(error);
   }
@@ -228,7 +245,10 @@ export const authService = {
 
   login: async (email: string, password: string): Promise<Tokens> => {
     try {
-      const { data } = await api.post<Tokens>("/auth/login", { email, password });
+      const { data } = await api.post<Tokens>("/auth/login", {
+        email,
+        password,
+      });
       localStorage.setItem("accessToken", data.accessToken);
       Cookies.set("refreshToken", data.refreshToken, {
         expires: 7,
@@ -255,7 +275,7 @@ export const authService = {
       await api.post("/auth/logout");
     } catch (error) {
       // Don't throw on logout errors, just log them
-      console.warn('Logout request failed:', error);
+      console.warn("Logout request failed:", error);
     } finally {
       // Always clear local storage
       localStorage.removeItem("accessToken");
@@ -278,20 +298,30 @@ export const authService = {
     (await api.get(`/courses/${courseId}/videos`)).data,
   addCourseVideo: async (
     courseId: number,
-    data: { title: string; description?: string; videoUrl: string; durationSec?: number; orderIndex?: number }
+    data: {
+      title: string;
+      description?: string;
+      videoUrl: string;
+      durationSec?: number;
+      orderIndex?: number;
+    }
   ) => (await api.post(`/courses/${courseId}/videos`, data)).data,
-  addCourseVideoFile: async (
-    courseId: number,
-    formData: FormData,
-  ) => (
-    await api.post(`/courses/${courseId}/videos/file`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-  ).data,
+  addCourseVideoFile: async (courseId: number, formData: FormData) =>
+    (
+      await api.post(`/courses/${courseId}/videos/file`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    ).data,
   updateCourseVideo: async (
     courseId: number,
     videoId: number,
-    data: { title?: string; description?: string; videoUrl?: string; durationSec?: number; orderIndex?: number }
+    data: {
+      title?: string;
+      description?: string;
+      videoUrl?: string;
+      durationSec?: number;
+      orderIndex?: number;
+    }
   ) => (await api.put(`/courses/${courseId}/videos/${videoId}`, data)).data,
   deleteCourseVideo: async (courseId: number, videoId: number) =>
     (await api.delete(`/courses/${courseId}/videos/${videoId}`)).data,
@@ -305,10 +335,12 @@ export const authService = {
     courseData: { title: string; content: string; roleAccess: string[] }
   ) => (await api.put(`/courses/${id}`, courseData)).data,
   deleteCourse: async (id: number) => await api.delete(`/courses/${id}`),
-  uploadCourseThumbnail: async (courseId: number, formData: FormData) => 
-    (await api.post(`/courses/${courseId}/thumbnail`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })).data,
+  uploadCourseThumbnail: async (courseId: number, formData: FormData) =>
+    (
+      await api.post(`/courses/${courseId}/thumbnail`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    ).data,
 
   // Live sessions
   createLiveSession: async (data: {
@@ -358,7 +390,7 @@ export const authService = {
     (await api.post(`/role-requests/${id}/approve`)).data,
   rejectRoleRequest: async (id: number) =>
     (await api.post(`/role-requests/${id}/reject`)).data,
-  requestRole: async (program: 'academy' | 'mentorship') =>
+  requestRole: async (program: "academy" | "mentorship") =>
     (await api.post(`/role-requests`, { program })).data,
   getMyRoleRequests: async () => (await api.get(`/me/role-requests`)).data,
 
@@ -367,7 +399,8 @@ export const authService = {
   updateUser: async (id: number, userData: { plan: string; status: string }) =>
     (await api.put(`/admin/users/${id}`, userData)).data,
 
-  deleteUser: async (id: number) => (await api.delete(`/admin/users/${id}`)).data,
+  deleteUser: async (id: number) =>
+    (await api.delete(`/admin/users/${id}`)).data,
 
   assignRoles: async (id: number, roles: string[]) =>
     (await api.post(`/admin/users/${id}/roles`, { roles })).data,
@@ -385,7 +418,8 @@ export const authService = {
       const users = await authService.getUsers().catch(() => [] as User[]);
       return {
         totalStudents: users.length || 0,
-        activeMentorships: users.filter((u: any) => u.plan === "mentorship").length || 0,
+        activeMentorships:
+          users.filter((u: any) => u.plan === "mentorship").length || 0,
         revenueThisMonth: 0,
         expiringSoon: [],
       } as OverviewStats;
@@ -402,7 +436,9 @@ export const authService = {
   // Payments
   createPaymentIntent: async (amount: number, id: number, program: string) => {
     try {
-      return (await api.post("/payment/create-payment-intent", { amount, program })).data;
+      return (
+        await api.post("/payment/create-payment-intent", { amount, program })
+      ).data;
     } catch (error) {
       throw AuthError.fromResponse(error as AxiosError);
     }
@@ -418,6 +454,6 @@ export const authService = {
     if (error instanceof AuthError) {
       return error.getUserFriendlyMessage();
     }
-    return error?.message || 'An unexpected error occurred';
+    return error?.message || "An unexpected error occurred";
   },
 };

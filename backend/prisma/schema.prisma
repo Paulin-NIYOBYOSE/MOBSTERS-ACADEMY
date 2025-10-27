@@ -18,6 +18,8 @@ model User {
   uploadedCourses Course[]
   uploadedSessions LiveSession[]
   uploadedSignals Signal[]
+  tradingAccounts TradingAccount[]
+  trades        Trade[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -112,4 +114,43 @@ model CourseVideo {
 
   @@index([courseId])
   @@unique([courseId, orderIndex])
+}
+
+model TradingAccount {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String   // e.g., "Live Account", "Demo Account"
+  startingBalance Float    // initial account balance
+  currentBalance  Float    // current account balance
+  description     String?  // simple description of the account
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  trades          Trade[]
+
+  @@index([userId])
+}
+
+model Trade {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId       Int
+  account         TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  pair            String         // e.g., "EURUSD", "GBPJPY"
+  type            String         // "BUY" or "SELL"
+  time            DateTime       // trade entry time
+  chartLink       String?        // link to trading chart/screenshot
+  riskPercent     Float?         // risk percentage of account
+  notes           String?        // trade notes and comments
+  profit          Float?         // actual profit/loss amount
+  status          String         @default("RUNNING") // "RUNNING", "WIN", "LOSS", "BREAKEVEN"
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([userId, accountId])
+  @@index([userId, status])
 }

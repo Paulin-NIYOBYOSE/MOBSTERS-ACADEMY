@@ -12,7 +12,7 @@ export const FAQ = () => {
   const faqs = [
     {
       question:
-        "What makes Mobsters Forex Academy different from other trading courses?",
+        "What makes Market Mobsters different from other trading courses?",
       answer:
         "Our academy offers a comprehensive 6-month structured program with live weekly sessions, hands-on practice, and ongoing mentorship. Unlike other courses that just provide videos, we focus on practical application, risk management, and building a complete trading plan.",
     },
@@ -72,7 +72,7 @@ export const FAQ = () => {
             Frequently Asked Questions
           </h2>
           <p className="text-xl text-muted-foreground">
-            Everything you need to know about joining Mobsters Forex Academy
+            Everything you need to know about joining Market Mobsters
           </p>
         </div>
 
