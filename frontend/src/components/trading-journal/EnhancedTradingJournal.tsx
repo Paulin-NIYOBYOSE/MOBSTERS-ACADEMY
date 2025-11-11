@@ -37,7 +37,7 @@ interface TradeAnalytics {
   totalTrades: number;
   winRate: number;
   totalProfit: number;
-  profitFactor: number;
+  currentBalance: number;
   equityCurve: Array<{ date: string; balance: number }>;
 }
 
@@ -96,7 +96,7 @@ const EnhancedTradingJournal: React.FC = () => {
       totalTrades: 15,
       winRate: 73.3,
       totalProfit: 1250.75,
-      profitFactor: 2.4,
+      currentBalance: 11250.75,
       equityCurve: [
         { date: '2024-10-01', balance: 10000 },
         { date: '2024-10-15', balance: 10625 },
@@ -233,8 +233,8 @@ const EnhancedTradingJournal: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Profit Factor</p>
-                  <p className="text-2xl font-bold text-purple-600">{analytics.profitFactor.toFixed(2)}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Balance</p>
+                  <p className="text-2xl font-bold text-purple-600">${analytics.currentBalance?.toFixed(2) || '0.00'}</p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-purple-600" />
               </div>

@@ -45,7 +45,7 @@ export interface TradeAnalytics {
   totalProfit: number;
   maxDrawdown: number;
   equityCurve: Array<{ date: string; equity: number }>;
-  profitFactor: number;
+  currentBalance: number;
   averageWin: number;
   averageLoss: number;
   largestWin: number;

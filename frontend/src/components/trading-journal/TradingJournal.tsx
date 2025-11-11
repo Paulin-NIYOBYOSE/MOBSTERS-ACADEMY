@@ -1,25 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Progress } from "../ui/progress";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "../ui/dialog";
+  Calendar,
+  Eye,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  Import,
+  MoreHorizontal,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -28,30 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useToast } from "../ui/use-toast";
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Target,
-  BarChart3,
-  Plus,
-  Edit,
-  Trash2,
-  Calendar,
-  Clock,
-  Activity,
-  Award,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Eye,
-  Filter,
-  Wallet,
-} from "lucide-react";
-import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -59,1381 +30,678 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
-import {
-  tradingJournalService,
-  Trade,
-  TradeAnalytics,
-} from "../../services/tradingJournalService";
-import { tradingAccountService } from "../../services/tradingAccountService";
-import EnhancedTradeForm from "./EnhancedTradeForm";
 
-interface TradingJournalProps {
-  className?: string;
+interface DashboardMetrics {
+  netPL: number;
+  tradeExpectancy: number;
+  profitFactor: number;
+  winPercentage: number;
+  avgWinTrade: number;
+  avgLossTrade: number;
+  zellaScore: number;
 }
 
-const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [analytics, setAnalytics] = useState<TradeAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "trades" | "accounts"
-  >("overview");
-  const [showAddTrade, setShowAddTrade] = useState(false);
-  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
-  const [timeFilter, setTimeFilter] = useState<
-    "week" | "month" | "year" | "custom"
-  >("month");
-  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
-  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0,
-  });
+interface CalendarDay {
+  date: number;
+  pnl?: number;
+  trades?: number;
+  isToday?: boolean;
+  isCurrentMonth?: boolean;
+}
 
-  // Account management state
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [accountsLoading, setAccountsLoading] = useState(false);
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const [newAccount, setNewAccount] = useState({
-    name: "",
-    description: "",
-    startingBalance: 10000,
-    accountType: "DEMO" as "DEMO" | "LIVE",
-  });
-  const { toast } = useToast();
+const TradingJournal: React.FC = () => {
+  // State
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("open-positions");
 
-  useEffect(() => {
-    fetchTrades();
-    fetchAnalytics();
-  }, [
-    selectedAccount,
-    timeFilter,
-    customStartDate,
-    customEndDate,
-    pagination.page,
-  ]);
-
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
-
-  const fetchAccounts = async () => {
-    setAccountsLoading(true);
-    try {
-      const accountsData = await tradingAccountService.getAccounts();
-      
-      // Fetch real-time data for each account
-      const accountsWithRealTimeData = await Promise.all(
-        accountsData.map(async (account) => {
-          try {
-            // Get trades for this account to calculate real-time metrics
-            const tradesData = await tradingJournalService.getTrades(
-              1, // page
-              1000, // limit - get all trades
-              account.id, // accountId
-              "custom", // period - use custom to get all data
-              undefined, // startDate - no start date to get all
-              undefined  // endDate - no end date to get all
-            );
-            
-            // Get analytics for this account
-            const analyticsData = await tradingJournalService.getAnalytics(
-              account.id, // accountId
-              "custom", // period - use custom to get all data
-              undefined, // startDate - no start date to get all
-              undefined  // endDate - no end date to get all
-            );
-
-            // Calculate real-time metrics
-            const totalTrades = tradesData.pagination.total;
-            const completedTrades = tradesData.trades.filter(trade => 
-              trade.status === 'WIN' || trade.status === 'LOSS' || trade.status === 'BREAKEVEN'
-            );
-            
-            const totalPnL = completedTrades.reduce((sum, trade) => 
-              sum + (trade.profit || 0), 0
-            );
-            
-            const currentBalance = account.startingBalance + totalPnL;
-            
-            const winTrades = completedTrades.filter(trade => trade.status === 'WIN').length;
-            const winRate = completedTrades.length > 0 
-              ? (winTrades / completedTrades.length) * 100 
-              : 0;
-
-            return {
-              ...account,
-              totalTrades,
-              currentBalance,
-              totalPnL,
-              winRate: Math.round(winRate * 10) / 10, // Round to 1 decimal
-              analytics: analyticsData,
-              _count: { trades: totalTrades }
-            };
-          } catch (error) {
-            console.error(`Error fetching data for account ${account.id}:`, error);
-            // Return account with default values if error
-            return {
-              ...account,
-              totalTrades: 0,
-              currentBalance: account.startingBalance,
-              totalPnL: 0,
-              winRate: 0,
-              _count: { trades: 0 }
-            };
-          }
-        })
-      );
-      
-      setAccounts(accountsWithRealTimeData);
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch trading accounts",
-        variant: "destructive",
-      });
-    } finally {
-      setAccountsLoading(false);
-    }
+  // Dashboard metrics
+  const metrics: DashboardMetrics = {
+    netPL: 248.78,
+    tradeExpectancy: 248.78,
+    profitFactor: 1.2412,
+    winPercentage: 39.02,
+    avgWinTrade: 54.52,
+    avgLossTrade: 51.32,
+    zellaScore: 81,
   };
 
-  const getDateRange = () => {
-    const now = new Date();
-    let startDate: string | undefined;
-    let endDate: string | undefined;
+  // Chart data
+  const dailyCumulativePLData = [
+    { date: "12/04/2022", value: 0 },
+    { date: "12/05/2022", value: 100 },
+    { date: "12/06/2022", value: 200 },
+    { date: "12/07/2022", value: 150 },
+    { date: "12/08/2022", value: -100 },
+    { date: "12/09/2022", value: 250 },
+  ];
 
-    switch (timeFilter) {
-      case "week":
-        startDate = new Date(
-          now.getTime() - 7 * 24 * 60 * 60 * 1000
-        ).toISOString();
-        break;
-      case "month":
-        startDate = new Date(
-          now.getTime() - 30 * 24 * 60 * 60 * 1000
-        ).toISOString();
-        break;
-      case "year":
-        startDate = new Date(
-          now.getTime() - 365 * 24 * 60 * 60 * 1000
-        ).toISOString();
-        break;
-      case "custom":
-        startDate = customStartDate?.toISOString();
-        endDate = customEndDate?.toISOString();
-        break;
+  const netDailyPLData = [
+    { date: "12/04/2022", value: 50 },
+    { date: "12/05/2022", value: 100 },
+    { date: "12/06/2022", value: 80 },
+    { date: "12/07/2022", value: -50 },
+    { date: "12/08/2022", value: -150 },
+    { date: "12/09/2022", value: 120 },
+  ];
+
+  const openPositions = [
+    { id: 1, openDate: "11.12.2023", symbol: "MRO", netPL: 371.21 },
+    { id: 2, openDate: "11.12.2023", symbol: "MRO", netPL: -114.31 },
+    { id: 3, openDate: "11.12.2023", symbol: "MRO", netPL: 314.21 },
+    { id: 4, openDate: "11.12.2023", symbol: "MRO", netPL: -62.21 },
+  ];
+
+  const recentTrades = [
+    { id: 1, openDate: "11.12.2023", symbol: "MRO", netPL: 371.21 },
+    { id: 2, openDate: "10.12.2023", symbol: "MRO", netPL: -114.31 },
+    { id: 3, openDate: "09.12.2023", symbol: "MRO", netPL: 314.21 },
+  ];
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(2)}%`;
+  };
+
+  const getPLColor = (value: number) => {
+    return value >= 0 ? "text-green-600" : "text-red-600";
+  };
+
+  const generateCalendar = (date: Date): CalendarDay[][] => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    const weeks: CalendarDay[][] = [];
+    let currentWeek: CalendarDay[] = [];
+
+    // Static data for demo - prevents reloading
+    const staticPnlData: { [key: string]: number } = {
+      "28": 62.9,
+      "10": -25.4,
+      "15": 45.2,
+      "22": -18.7,
+      "5": 33.1,
+    };
+
+    const staticTradesData: { [key: string]: number } = {
+      "28": 3,
+      "10": 2,
+      "15": 1,
+      "22": 4,
+      "5": 2,
+    };
+
+    for (let i = 0; i < 42; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dayKey = currentDate.getDate().toString();
+
+      const day: CalendarDay = {
+        date: currentDate.getDate(),
+        isCurrentMonth: currentDate.getMonth() === month,
+        isToday: currentDate.toDateString() === new Date().toDateString(),
+        pnl: staticPnlData[dayKey],
+        trades: staticTradesData[dayKey],
+      };
+
+      currentWeek.push(day);
+
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
     }
 
-    return { startDate, endDate };
+    return weeks;
   };
 
-  const fetchTrades = async () => {
-    try {
-      console.log("Fetching trades with params:", {
-        page: pagination.page,
-        limit: pagination.limit,
-        accountId: selectedAccount,
-        period: "custom",
-        timeFilter,
-        dateRange: getDateRange(),
-      });
+  const calendarWeeks = useMemo(
+    () => generateCalendar(currentDate),
+    [currentDate]
+  );
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
-      const { startDate, endDate } = getDateRange();
-      const data = await tradingJournalService.getTrades(
-        pagination.page,
-        pagination.limit,
-        selectedAccount, // Use selected account for filtering
-        "custom", // period - use custom since we're providing dates
-        startDate,
-        endDate
-      );
-      setTrades(data.trades);
-      setPagination(data.pagination);
-    } catch (error) {
-      console.error("Error fetching trades:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch trades",
-        variant: "destructive",
-      });
-    }
+  const navigateMonth = (direction: "prev" | "next") => {
+    setCurrentDate((prev) => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
+      return newDate;
+    });
   };
-
-  const fetchAnalytics = async () => {
-    try {
-      console.log("Fetching analytics with params:", {
-        accountId: selectedAccount,
-        period: "custom",
-        timeFilter,
-        dateRange: getDateRange(),
-      });
-
-      const { startDate, endDate } = getDateRange();
-      const data = await tradingJournalService.getAnalytics(
-        selectedAccount, // Use selected account for filtering analytics
-        "custom", // period - use custom since we're providing dates
-        startDate,
-        endDate
-      );
-      setAnalytics(data);
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch analytics",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatCurrency = (amount: number) =>
-    tradingJournalService.formatCurrency(amount);
-  const formatPercentage = (value: number) =>
-    tradingJournalService.formatPercentage(value);
-  const getStatusColor = (status: string) =>
-    tradingJournalService.getStatusColor(status);
-  const getProfitColor = (profit?: number) =>
-    tradingJournalService.getProfitColor(profit);
-
-  const handleDeleteTrade = async (tradeId: number) => {
-    try {
-      await tradingJournalService.deleteTrade(tradeId);
-      toast({
-        title: "Success",
-        description: "Trade deleted successfully",
-      });
-      fetchTrades();
-      fetchAnalytics();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete trade",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleFormSuccess = () => {
-    fetchTrades();
-    fetchAnalytics();
-  };
-
-  const handleCreateAccount = async () => {
-    try {
-      const createdAccount = await tradingAccountService.createAccount({
-        name: newAccount.name,
-        startingBalance: newAccount.startingBalance,
-        description: newAccount.description,
-      });
-
-      // Refresh accounts to get real-time data for all accounts including the new one
-      await fetchAccounts();
-
-      toast({
-        title: "Success",
-        description: `${newAccount.name} has been created successfully.`,
-      });
-
-      // Refresh trades and analytics to include the new account in filters
-      fetchTrades();
-      fetchAnalytics();
-
-      setShowCreateAccount(false);
-      setNewAccount({
-        name: "",
-        description: "",
-        startingBalance: 10000,
-        accountType: "DEMO",
-      });
-    } catch (error) {
-      console.error("Error creating account:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create account",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className={`space-y-6 ${className}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-        {[
-          { key: "overview", label: "Overview", icon: BarChart3 },
-          { key: "trades", label: "Trades", icon: Activity },
-          { key: "accounts", label: "Accounts", icon: Wallet },
-        ].map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key as any)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === key
-                ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Dashboard</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
+            <Eye className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
+            <Calendar className="w-4 h-4 mr-2" />
+            Date range
+          </Button>
+          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
+            All Accounts
+          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+            <Import className="w-4 h-4 mr-2" />
+            Import Trades
+          </Button>
+        </div>
       </div>
 
-      {/* Modern Filter Controls */}
-      <Card className="bg-gradient-to-r from-slate-50/80 to-blue-50/80 dark:from-slate-900/80 dark:to-blue-900/30 border-slate-200/60 dark:border-slate-700/60 shadow-lg backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center w-full">
-              
-              {/* Account Filter */}
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-md">
-                    <Filter className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  Trading Account
-                </Label>
-                <Select
-                  value={selectedAccount?.toString() || "all"}
-                  onValueChange={(value) =>
-                    setSelectedAccount(
-                      value === "all" ? null : parseInt(value)
-                    )
-                  }
-                >
-                  <SelectTrigger className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm">
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-slate-200 dark:border-slate-700 shadow-xl">
-                    <SelectItem value="all" className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                        All Accounts
-                      </div>
-                    </SelectItem>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id.toString()}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
-                          {account.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Time Period Filter */}
-              <div className="flex flex-col gap-2 min-w-[180px]">
-                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-md">
-                    <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  Time Period
-                </Label>
-                <Select
-                  value={timeFilter}
-                  onValueChange={(value) =>
-                    setTimeFilter(value as "week" | "month" | "year" | "custom")
-                  }
-                >
-                  <SelectTrigger className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm">
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-slate-200 dark:border-slate-700 shadow-xl">
-                    <SelectItem value="week">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
-                        This Week
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="month">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
-                        This Month
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="year">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
-                        This Year
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="custom">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
-                        Custom Range
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Custom Date Range */}
-              {timeFilter === "custom" && (
-                <div className="flex flex-col gap-2 min-w-[300px]">
-                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-md">
-                      <Calendar className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    Date Range
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      type="date"
-                      value={customStartDate?.toISOString().split("T")[0] || ""}
-                      onChange={(e) =>
-                        setCustomStartDate(
-                          e.target.value ? new Date(e.target.value) : null
-                        )
-                      }
-                      className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm"
-                    />
-                    <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md">
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">to</span>
-                    </div>
-                    <Input
-                      type="date"
-                      value={customEndDate?.toISOString().split("T")[0] || ""}
-                      onChange={(e) =>
-                        setCustomEndDate(
-                          e.target.value ? new Date(e.target.value) : null
-                        )
-                      }
-                      className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Filter Actions */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedAccount(null);
-                  setTimeFilter("month");
-                  setCustomStartDate(null);
-                  setCustomEndDate(null);
-                }}
-                className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                Reset
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Overview Tab */}
-      {activeTab === "overview" && analytics && (
-        <div className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                      Win Rate
-                    </p>
-                    <p className="text-3xl font-bold text-green-700 dark:text-green-300">
-                      {formatPercentage(analytics.winRate)}
-                    </p>
-                    <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-1">
-                      {analytics.totalTrades > 0
-                        ? `${Math.round(
-                            (analytics.winRate * analytics.totalTrades) / 100
-                          )} wins`
-                        : "No trades"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-800/30 rounded-lg flex items-center justify-center">
-                    <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <Progress value={analytics.winRate} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      Avg Risk:Reward
-                    </p>
-                    <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-                      1:{analytics.averageRR.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">
-                      {analytics.averageRR >= 2
-                        ? "Excellent"
-                        : analytics.averageRR >= 1.5
-                        ? "Good"
-                        : analytics.averageRR >= 1
-                        ? "Fair"
-                        : "Poor"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-800/30 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border-purple-200 dark:border-purple-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                      Total P&L
-                    </p>
-                    <p
-                      className={`text-3xl font-bold ${getProfitColor(
-                        analytics.totalProfit
-                      )}`}
-                    >
-                      {formatCurrency(analytics.totalProfit)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {analytics.totalProfit > 0 ? (
-                        <TrendingUp className="w-3 h-3 text-green-500" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3 text-red-500" />
-                      )}
-                      <p className="text-xs text-purple-600/70 dark:text-purple-400/70">
-                        {analytics.totalTrades > 0
-                          ? `${formatCurrency(
-                              analytics.totalProfit / analytics.totalTrades
-                            )} per trade`
-                          : "No trades"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-800/30 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-200 dark:border-red-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      Max Drawdown
-                    </p>
-                    <p className="text-3xl font-bold text-red-700 dark:text-red-300">
-                      {formatCurrency(analytics.maxDrawdown)}
-                    </p>
-                    <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
-                      {analytics.maxDrawdown === 0
-                        ? "No drawdown"
-                        : "Peak to trough"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-red-100 dark:bg-red-800/30 rounded-lg flex items-center justify-center">
-                    <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Performance Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                      Profit Factor
-                    </p>
-                    <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">
-                      {analytics.profitFactor.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-1">
-                      {analytics.profitFactor >= 2
-                        ? "Excellent"
-                        : analytics.profitFactor >= 1.5
-                        ? "Good"
-                        : analytics.profitFactor >= 1
-                        ? "Profitable"
-                        : "Losing"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-amber-100 dark:bg-amber-800/30 rounded-lg flex items-center justify-center">
-                    <Award className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border-teal-200 dark:border-teal-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-teal-600 dark:text-teal-400">
-                      Total Trades
-                    </p>
-                    <p className="text-3xl font-bold text-teal-700 dark:text-teal-300">
-                      {analytics.totalTrades}
-                    </p>
-                    <p className="text-xs text-teal-600/70 dark:text-teal-400/70 mt-1">
-                      {analytics.totalTrades >= 100
-                        ? "High volume"
-                        : analytics.totalTrades >= 30
-                        ? "Good sample"
-                        : "Small sample"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-teal-100 dark:bg-teal-800/30 rounded-lg flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-teal-600 dark:text-teal-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                      Best Streak
-                    </p>
-                    <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
-                      {analytics.consecutiveWins}
-                    </p>
-                    <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
-                      Consecutive wins
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-800/30 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-900/20 dark:to-red-900/20 border-rose-200 dark:border-rose-800 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
-                      Worst Streak
-                    </p>
-                    <p className="text-3xl font-bold text-rose-700 dark:text-rose-300">
-                      {analytics.consecutiveLosses}
-                    </p>
-                    <p className="text-xs text-rose-600/70 dark:text-rose-400/70 mt-1">
-                      Consecutive losses
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-800/30 rounded-lg flex items-center justify-center">
-                    <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Equity Curve */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                Equity Curve
-                <Badge variant="secondary" className="ml-auto">
-                  {analytics.equityCurve.length} data points
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {analytics.equityCurve.length > 0 ? (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={analytics.equityCurve}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        className="opacity-30"
-                      />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) =>
-                          new Date(value).toLocaleDateString()
-                        }
-                      />
-                      <YAxis
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
-                      <Tooltip
-                        formatter={(value: any) => [
-                          formatCurrency(value),
-                          "Equity",
-                        ]}
-                        labelFormatter={(label) =>
-                          `Date: ${new Date(label).toLocaleDateString()}`
-                        }
-                        contentStyle={{
-                          backgroundColor: "rgba(255, 255, 255, 0.95)",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "8px",
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="equity"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, stroke: "#3b82f6", strokeWidth: 2 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  <div className="text-center">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No equity data available</p>
-                    <p className="text-sm">
-                      Start trading to see your equity curve
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Additional Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Profit Factor
-                    </p>
-                    <p className="text-2xl font-bold">
-                      {analytics.profitFactor.toFixed(2)}
-                    </p>
-                  </div>
-                  <Award className="w-8 h-8 text-yellow-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Total Trades
-                    </p>
-                    <p className="text-2xl font-bold">
-                      {analytics.totalTrades}
-                    </p>
-                  </div>
-                  <Activity className="w-8 h-8 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Best Streak
-                    </p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {analytics.consecutiveWins}
-                    </p>
-                  </div>
-                  <CheckCircle className="w-8 h-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+      {/* Last imported info */}
+      <div className="flex items-center justify-between mb-6 text-sm text-gray-500">
+        <div></div>
+        <div className="flex items-center gap-4">
+          <span>Last imported 2 months ago</span>
+          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0 h-auto">
+            Edit Widgets
+          </Button>
         </div>
-      )}
+      </div>
 
-      {/* Trades Tab */}
-      {activeTab === "trades" && (
-        <div className="space-y-6">
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  setSelectedTrade(null);
-                  setShowAddTrade(true);
-                }}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Trade
-              </Button>
-            </div>
-
-            {/* Pagination Info */}
-            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <span>
-                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
-                of {pagination.total} trades
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: Math.max(1, prev.page - 1),
-                    }))
-                  }
-                  disabled={pagination.page <= 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: Math.min(prev.totalPages, prev.page + 1),
-                    }))
-                  }
-                  disabled={pagination.page >= pagination.totalPages}
-                >
-                  Next
-                </Button>
+      {/* Top Metrics Row */}
+      <div className="grid grid-cols-5 gap-4">
+        {/* Net P&L */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Net P&L</span>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ${metrics.netPL.toFixed(2)}
+                </div>
+              </div>
+              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
+                <div className="w-3 h-3 bg-blue-500 rounded"></div>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Modern Trades Table */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20">
-              <CardTitle>Trade History</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
+        {/* Trade Expectancy */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Trade Expectancy</span>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ${metrics.tradeExpectancy.toFixed(2)}
+                </div>
+              </div>
+              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
+                <div className="w-3 h-3 bg-blue-500 rounded"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profit Factor */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Profit Factor</span>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {metrics.profitFactor.toFixed(4)}
+                </div>
+              </div>
+              <div className="w-12 h-12">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { value: metrics.profitFactor * 20 },
+                        { value: 100 - metrics.profitFactor * 20 },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={16}
+                      outerRadius={24}
+                      startAngle={90}
+                      endAngle={-270}
+                      dataKey="value"
+                    >
+                      <Cell fill="#10b981" />
+                      <Cell fill="#e5e7eb" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Win % */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Win %</span>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatPercentage(metrics.winPercentage)}
+                </div>
+              </div>
+              <div className="w-12 h-12">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { value: metrics.winPercentage },
+                        { value: 100 - metrics.winPercentage },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={16}
+                      outerRadius={24}
+                      startAngle={90}
+                      endAngle={-270}
+                      dataKey="value"
+                    >
+                      <Cell fill="#3b82f6" />
+                      <Cell fill="#e5e7eb" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Avg win/loss trade */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg win/loss trade</span>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-bold text-green-600">
+                    $34.82
+                  </span>
+                  <span className="text-xl font-bold text-red-600">
+                    $51.32
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-3 gap-6">
+        {/* Zella Score */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              Zella Score <Info className="w-4 h-4 text-gray-400" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-col items-center">
+              {/* Triangle Chart */}
+              <div className="relative w-48 h-32 mb-4">
+                <svg width="100%" height="100%" viewBox="0 0 192 128" className="overflow-visible">
+                  {/* Triangle outline */}
+                  <path
+                    d="M 96 20 L 20 108 L 172 108 Z"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="2"
+                  />
+                  {/* Filled triangle */}
+                  <path
+                    d="M 96 20 L 20 108 L 172 108 Z"
+                    fill="url(#purpleGradient)"
+                    fillOpacity="0.6"
+                  />
+                  {/* Corner dots */}
+                  <circle cx="96" cy="20" r="3" fill="#8b5cf6" />
+                  <circle cx="20" cy="108" r="3" fill="#8b5cf6" />
+                  <circle cx="172" cy="108" r="3" fill="#8b5cf6" />
+                  
+                  <defs>
+                    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.2" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                
+                {/* Labels */}
+                <div className="absolute bottom-0 left-0 text-xs text-gray-600 dark:text-gray-400">
+                  Avg win/loss
+                </div>
+                <div className="absolute bottom-0 right-0 text-xs text-gray-600 dark:text-gray-400">
+                  Profit factor
+                </div>
+                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 dark:text-gray-400">
+                  Win %
+                </div>
+              </div>
+              
+              {/* Score display */}
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Your Zella Score: <span className="font-semibold text-green-600">81</span> <span className="text-green-600">+1</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Net Cumulative P&L */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              Daily Net Cumulative P&L <Info className="w-4 h-4 text-gray-400" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dailyCumulativePLData} margin={{ top: 10, right: 10, left: 10, bottom: 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tickFormatter={(value) => `$${value}`}
+                  />
+                  <defs>
+                    <linearGradient id="cumulativePLGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.8} />
+                      <stop offset="50%" stopColor="#10b981" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0.4} />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    fill="url(#cumulativePLGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Net Daily P&L */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              Net Daily P&L <Info className="w-4 h-4 text-gray-400" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={netDailyPLData} margin={{ top: 10, right: 10, left: 10, bottom: 40 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tickFormatter={(value) => `$${value}`}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    radius={[2, 2, 0, 0]}
+                  >
+                    {netDailyPLData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#10b981' : '#ef4444'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="grid grid-cols-10 gap-6">
+        {/* Trades Table */}
+        <Card className="col-span-4">
+          <CardHeader className="pb-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="open-positions">Open Positions</TabsTrigger>
+                <TabsTrigger value="recent-trades">Recent Trades</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab}>
+              <TabsContent value="open-positions">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-800">
-                      <TableHead className="font-semibold">
-                        Date & Time
-                      </TableHead>
-                      <TableHead className="font-semibold">Account</TableHead>
-                      <TableHead className="font-semibold">Pair</TableHead>
-                      <TableHead className="font-semibold">Type</TableHead>
-                      <TableHead className="font-semibold">Risk %</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                      <TableHead className="font-semibold">P&L</TableHead>
-                      <TableHead className="font-semibold">Actions</TableHead>
+                    <TableRow>
+                      <TableHead>Open Date</TableHead>
+                      <TableHead>Symbol</TableHead>
+                      <TableHead className="text-right">Net P&L</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {trades.map((trade) => (
-                      <TableRow
-                        key={trade.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <TableCell>
-                          <div className="text-sm font-medium">
-                            {new Date(trade.time).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(trade.time).toLocaleTimeString()}
-                          </div>
+                    {openPositions.map((trade) => (
+                      <TableRow key={trade.id}>
+                        <TableCell className="font-medium">
+                          {trade.openDate}
                         </TableCell>
-                        <TableCell>
-                          <div className="text-sm font-medium">
-                            {trade.account?.name || "Unknown"}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {trade.account?.currentBalance
-                              ? formatCurrency(trade.account.currentBalance)
-                              : "-"}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-mono font-bold text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                            {trade.pair}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              trade.type === "BUY" ? "default" : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {trade.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">
-                            {trade.riskPercent ? `${trade.riskPercent}%` : "-"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${
-                              trade.status === "RUNNING"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : trade.status === "WIN"
-                                ? "bg-green-50 text-green-700 border-green-200"
-                                : "bg-red-50 text-red-700 border-red-200"
-                            }`}
-                          >
-                            {trade.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {trade.profit !== undefined ? (
-                            <span
-                              className={`font-bold text-sm ${getProfitColor(
-                                trade.profit
-                              )}`}
-                            >
-                              {formatCurrency(trade.profit)}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 text-sm">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={() => setSelectedTrade(trade)}
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={() => {
-                                setSelectedTrade(trade);
-                                setShowAddTrade(true);
-                              }}
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={() => handleDeleteTrade(trade.id)}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
+                        <TableCell>{trade.symbol}</TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${getPLColor(
+                            trade.netPL
+                          )}`}
+                        >
+                          {formatCurrency(trade.netPL)}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </div>
-            </CardContent>
-          </Card>
+              </TabsContent>
 
-          {/* Advanced Analytics Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-            {/* Performance Breakdown */}
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
-                  <Award className="w-5 h-5" />
-                  Performance Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Average Win</span>
-                    <span className="text-green-600 dark:text-green-400 font-semibold">
-                      {formatCurrency(analytics.averageWin)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Average Loss</span>
-                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                      {formatCurrency(analytics.averageLoss)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Largest Win</span>
-                    <span className="text-green-600 dark:text-green-400 font-semibold">
-                      {formatCurrency(analytics.largestWin)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Largest Loss</span>
-                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                      {formatCurrency(analytics.largestLoss)}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Risk Management */}
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
-                  <AlertTriangle className="w-5 h-5" />
-                  Risk Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">
-                      Max Consecutive Wins
-                    </span>
-                    <span className="text-green-600 dark:text-green-400 font-semibold">
-                      {analytics.consecutiveWins}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">
-                      Max Consecutive Losses
-                    </span>
-                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                      {analytics.consecutiveLosses}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Profit Factor</span>
-                    <span
-                      className={`font-semibold ${
-                        analytics.profitFactor > 1
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {analytics.profitFactor.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Max Drawdown</span>
-                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                      {formatCurrency(analytics.maxDrawdown)}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* Accounts Tab */}
-      {activeTab === "accounts" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                Trading Accounts
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
-                Manage your trading accounts and view performance
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchAccounts}
-                disabled={accountsLoading}
-                className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <Activity className={`w-4 h-4 mr-2 ${accountsLoading ? 'animate-spin' : ''}`} />
-                {accountsLoading ? 'Refreshing...' : 'Refresh Data'}
-              </Button>
-              <Button
-                onClick={() => setShowCreateAccount(true)}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Account
-              </Button>
-            </div>
-          </div>
-
-          {/* Accounts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {accounts.map((account) => (
-              <Card
-                key={account.id}
-                className="overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                        <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                          {account.name}
-                        </CardTitle>
-                        <Badge
-                          variant="outline"
-                          className="text-xs mt-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+              <TabsContent value="recent-trades">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Open Date</TableHead>
+                      <TableHead>Symbol</TableHead>
+                      <TableHead className="text-right">Net P&L</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentTrades.map((trade) => (
+                      <TableRow key={trade.id}>
+                        <TableCell className="font-medium">
+                          {trade.openDate}
+                        </TableCell>
+                        <TableCell>{trade.symbol}</TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${getPLColor(
+                            trade.netPL
+                          )}`}
                         >
-                          TRADING
-                        </Badge>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="h-8 px-2">
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {account.description}
-                  </p>
+                          {formatCurrency(trade.netPL)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Starting Balance
-                      </p>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        ${account.startingBalance?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Current Balance
-                      </p>
-                      <p className={`text-lg font-bold ${
-                        (account.currentBalance || account.startingBalance) >= account.startingBalance
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        ${(account.currentBalance || account.startingBalance)?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Total P&L
-                      </p>
-                      <p className={`text-sm font-semibold ${
-                        (account.totalPnL || 0) >= 0
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {(account.totalPnL || 0) >= 0 ? '+' : ''}${(account.totalPnL || 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Win Rate
-                      </p>
-                      <p className={`text-sm font-semibold ${
-                        (account.winRate || 0) >= 50
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {(account.winRate || 0).toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Total Trades
-                      </p>
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        {account.totalTrades || account._count?.trades || 0}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Created
-                      </p>
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        {new Date(account.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-xs"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      View Details
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-xs"
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Create Account Dialog */}
-          <Dialog open={showCreateAccount} onOpenChange={setShowCreateAccount}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  Create New Trading Account
-                </DialogTitle>
-                <DialogDescription>
-                  Create a new trading account to organize your trades and track
-                  performance.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountName">Account Name *</Label>
-                  <Input
-                    id="accountName"
-                    value={newAccount.name}
-                    onChange={(e) =>
-                      setNewAccount((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., Live Trading Account"
-                    className="bg-white dark:bg-slate-800"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="startingBalance">Starting Balance *</Label>
-                  <Input
-                    id="startingBalance"
-                    type="number"
-                    value={newAccount.startingBalance}
-                    onChange={(e) =>
-                      setNewAccount((prev) => ({
-                        ...prev,
-                        startingBalance: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                    placeholder="10000"
-                    className="bg-white dark:bg-slate-800"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newAccount.description}
-                    onChange={(e) =>
-                      setNewAccount((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    placeholder="Optional description for this account..."
-                    rows={3}
-                    className="bg-white dark:bg-slate-800"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button
-                    onClick={() => setShowCreateAccount(false)}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateAccount}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                    disabled={
-                      !newAccount.name || newAccount.startingBalance <= 0
-                    }
-                  >
-                    Create Account
-                  </Button>
-                </div>
+        {/* Calendar */}
+        <Card className="col-span-6">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateMonth("prev")}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <h3 className="text-lg font-semibold">
+                  {monthNames[currentDate.getMonth()]}{" "}
+                  {currentDate.getFullYear()}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateMonth("next")}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      )}
-
-      {/* Trade Form Modal */}
-      <EnhancedTradeForm
-        isOpen={showAddTrade}
-        onClose={() => {
-          setShowAddTrade(false);
-          setSelectedTrade(null);
-        }}
-        onSuccess={() => {
-          fetchTrades();
-          fetchAnalytics();
-        }}
-      />
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-0 mb-4">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-gray-500 p-3 border-b border-gray-200 dark:border-gray-700"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-0 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+              {calendarWeeks.flat().map((day, index) => (
+                <div
+                  key={index}
+                  className={`
+                      relative p-3 h-20 cursor-pointer
+                      ${
+                        day.pnl !== undefined
+                          ? day.pnl >= 0
+                            ? "bg-green-100 dark:bg-green-900/30 border-[1.5px] border-green-400 dark:border-green-500 rounded-md"
+                            : "bg-red-100 dark:bg-red-900/30 border-[1.5px] border-red-400 dark:border-red-500 rounded-md"
+                          : day.isCurrentMonth
+                          ? "bg-white dark:bg-gray-900 border-r border-b border-gray-300 dark:border-gray-600"
+                          : "bg-gray-50 dark:bg-gray-800 border-r border-b border-gray-300 dark:border-gray-600"
+                      }
+                      ${
+                        day.pnl === undefined && (index + 1) % 7 === 0
+                          ? "border-r-0"
+                          : ""
+                      }
+                      ${
+                        day.pnl === undefined && index >= 35 ? "border-b-0" : ""
+                      }
+                      hover:opacity-80
+                    `}
+                >
+                  <div
+                    className={`text-xs font-medium ${
+                      day.isCurrentMonth
+                        ? "text-gray-900 dark:text-white"
+                        : "text-gray-400 dark:text-gray-600"
+                    }`}
+                  >
+                    {day.date}
+                  </div>
+                  {day.pnl && (
+                    <div className="absolute bottom-1 left-1 right-1">
+                      <div
+                        className={`text-xs font-semibold ${
+                          day.pnl >= 0
+                            ? "text-green-700 dark:text-green-300"
+                            : "text-red-700 dark:text-red-300"
+                        }`}
+                      >
+                        ${Math.abs(day.pnl).toFixed(1)}K
+                      </div>
+                      {day.trades && (
+                        <div
+                          className={`text-xs ${
+                            day.pnl >= 0
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-red-600 dark:text-red-400"
+                          }`}
+                        >
+                          {day.trades} trades
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

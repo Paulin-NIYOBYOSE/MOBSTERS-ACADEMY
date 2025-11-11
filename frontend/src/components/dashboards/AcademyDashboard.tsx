@@ -676,6 +676,7 @@ export const AcademyDashboard: React.FC = () => {
                 <Button
                   variant="cta"
                   className="bg-purple-500 hover:bg-purple-600 text-white"
+                  onClick={() => window.open(`/session/${session.id}`, '_blank')}
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Join Session

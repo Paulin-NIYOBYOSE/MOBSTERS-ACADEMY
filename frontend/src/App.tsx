@@ -17,6 +17,7 @@ import { MentorshipDashboard } from "./components/dashboards/MentorshipDashboard
 import { PaymentPage } from "./pages/PaymentPage";
 import { useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import SessionJoin from "./components/live-session/SessionJoin";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,16 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PaymentPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Live Session */}
+            <Route
+              path="/session/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <SessionJoin />
                 </ProtectedRoute>
               }
             />

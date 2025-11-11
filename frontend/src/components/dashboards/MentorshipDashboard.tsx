@@ -477,7 +477,10 @@ export const MentorshipDashboard: React.FC = () => {
                   Scheduled {new Date(session.date).toLocaleDateString()} at{" "}
                   {new Date(session.date).toLocaleTimeString()}
                 </p>
-                <Button variant="cta">
+                <Button 
+                  variant="cta"
+                  onClick={() => window.open(`/session/${session.id}`, '_blank')}
+                >
                   <Users className="w-4 h-4 mr-2" />
                   Join Session
                 </Button>

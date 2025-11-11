@@ -65,6 +65,7 @@ import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import TradingJournal from "@/components/trading-journal/TradingJournal";
+import SessionScheduler from "@/components/live-session/SessionScheduler";
 import {
   Bar,
   BarChart,
@@ -2128,9 +2129,32 @@ export const AdminDashboard: React.FC = () => {
   );
 
   const renderSessions = () => (
+    <SessionScheduler 
+      onSessionCreated={(session) => {
+        toast({
+          title: "Session Created",
+          description: `${session.title} has been scheduled successfully`,
+        });
+      }}
+      onSessionUpdated={(session) => {
+        toast({
+          title: "Session Updated", 
+          description: `${session.title} has been updated`,
+        });
+      }}
+      onSessionDeleted={(sessionId) => {
+        toast({
+          title: "Session Deleted",
+          description: "Session has been removed",
+        });
+      }}
+    />
+  );
+
+  const renderSessionsOld = () => (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Live Session Management</h3>
+        <h3 className="text-lg font-semibold">Live Session Management (Legacy)</h3>
         <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
           <DialogTrigger asChild>
             <Button
@@ -2399,21 +2423,21 @@ export const AdminDashboard: React.FC = () => {
   );
 
   const renderTradingJournal = () => (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <TradingJournal />
-    </div>
+    <TradingJournal />
   );
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground text-lg">
-            Manage role requests and content for Market Mobsters.
-          </p>
-        </div>
-        <div className="space-y-6">
+    <div className={section === "journal" ? "" : "p-6"}>
+      <div className={section === "journal" ? "" : "max-w-7xl mx-auto"}>
+        {section !== "journal" && (
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground text-lg">
+              Manage role requests and content for Market Mobsters.
+            </p>
+          </div>
+        )}
+        <div className={section === "journal" ? "" : "space-y-6"}>
           {section === "overview" && renderOverview()}
           {section === "users" && renderUsers()}
           {section === "courses" && renderCourses()}
