@@ -21,12 +21,12 @@ export class TradingAccountController {
 
   @Post()
   async createAccount(@Request() req, @Body() createAccountDto: CreateTradingAccountDto) {
-    return this.tradingAccountService.createAccount(req.user.userId, createAccountDto);
+    return this.tradingAccountService.createAccount(req.user.id, createAccountDto);
   }
 
   @Get()
   async getUserAccounts(@Request() req) {
-    return this.tradingAccountService.getUserAccounts(req.user.userId);
+    return this.tradingAccountService.getUserAccounts(req.user.id);
   }
 
   @Put(':id')
@@ -35,11 +35,11 @@ export class TradingAccountController {
     @Param('id', ParseIntPipe) accountId: number,
     @Body() updateAccountDto: UpdateTradingAccountDto,
   ) {
-    return this.tradingAccountService.updateAccount(req.user.userId, accountId, updateAccountDto);
+    return this.tradingAccountService.updateAccount(req.user.id, accountId, updateAccountDto);
   }
 
   @Delete(':id')
   async deleteAccount(@Request() req, @Param('id', ParseIntPipe) accountId: number) {
-    return this.tradingAccountService.deleteAccount(req.user.userId, accountId);
+    return this.tradingAccountService.deleteAccount(req.user.id, accountId);
   }
 }
