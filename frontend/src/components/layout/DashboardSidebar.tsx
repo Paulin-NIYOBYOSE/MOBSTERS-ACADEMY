@@ -44,7 +44,7 @@ const navigationItems = (
       { title: "Users", url: "/dashboard/users", icon: Users, roles: ["admin"] },
       { title: "Courses", url: "/dashboard/courses", icon: BookOpen, roles: ["admin"] },
       { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["admin"] },
-      { title: "Signals", url: "/dashboard/signals", icon: BarChart3, roles: ["admin"] },
+      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["admin"] },
       { title: "Transactions", url: "/dashboard/transactions", icon: DollarSign, roles: ["admin"] },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, roles: ["admin"] }
     );
@@ -67,7 +67,6 @@ const navigationItems = (
       { title: "Overview", url: "/dashboard", icon: Home, roles: ["mentorship_student", "admin"] },
       { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["mentorship_student", "admin"] },
       { title: "Strategies", url: "/dashboard/strategies", icon: BookOpen, roles: ["mentorship_student", "admin"] },
-      { title: "Premium Signals", url: "/dashboard/signals", icon: BarChart3, roles: ["mentorship_student", "admin"] },
       { title: "Challenges", url: "/dashboard/challenges", icon: Users, roles: ["mentorship_student", "admin"] },
       { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["mentorship_student", "admin"] }
     );
@@ -79,7 +78,6 @@ const navigationItems = (
     items.push(
       { title: "Overview", url: "/dashboard", icon: Home, roles: [] },
       { title: "Free Courses", url: "/dashboard/courses", icon: BookOpen, roles: [] },
-      { title: "Daily Signals", url: "/dashboard/signals", icon: BarChart3, roles: [] },
       { title: "Community", url: "/dashboard/community", icon: Users, roles: [] }
     );
   }
@@ -91,7 +89,6 @@ const quickActions = [
   { title: "Manage Users", icon: Users, action: "users" },
   { title: "Add Course", icon: BookOpen, action: "courses" },
   { title: "Schedule Session", icon: Calendar, action: "sessions" },
-  { title: "Create Signal", icon: BarChart3, action: "signals" },
 ];
 
 export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {

@@ -3,6 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
 import {
   Table,
   TableBody,
@@ -30,6 +47,7 @@ import {
   XCircle,
   Eye,
   Filter,
+  Wallet,
 } from "lucide-react";
 import {
   LineChart,
@@ -47,6 +65,7 @@ import {
   Trade,
   TradeAnalytics,
 } from "../../services/tradingJournalService";
+import { tradingAccountService } from "../../services/tradingAccountService";
 import EnhancedTradeForm from "./EnhancedTradeForm";
 
 interface TradingJournalProps {
@@ -58,7 +77,7 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
   const [analytics, setAnalytics] = useState<TradeAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "trades" | "analytics"
+    "overview" | "trades" | "accounts"
   >("overview");
   const [showAddTrade, setShowAddTrade] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
@@ -74,6 +93,17 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
     total: 0,
     totalPages: 0,
   });
+
+  // Account management state
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [newAccount, setNewAccount] = useState({
+    name: "",
+    description: "",
+    startingBalance: 10000,
+    accountType: "DEMO" as "DEMO" | "LIVE",
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,6 +116,91 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
     customEndDate,
     pagination.page,
   ]);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const fetchAccounts = async () => {
+    setAccountsLoading(true);
+    try {
+      const accountsData = await tradingAccountService.getAccounts();
+      
+      // Fetch real-time data for each account
+      const accountsWithRealTimeData = await Promise.all(
+        accountsData.map(async (account) => {
+          try {
+            // Get trades for this account to calculate real-time metrics
+            const tradesData = await tradingJournalService.getTrades(
+              1, // page
+              1000, // limit - get all trades
+              account.id, // accountId
+              "custom", // period - use custom to get all data
+              undefined, // startDate - no start date to get all
+              undefined  // endDate - no end date to get all
+            );
+            
+            // Get analytics for this account
+            const analyticsData = await tradingJournalService.getAnalytics(
+              account.id, // accountId
+              "custom", // period - use custom to get all data
+              undefined, // startDate - no start date to get all
+              undefined  // endDate - no end date to get all
+            );
+
+            // Calculate real-time metrics
+            const totalTrades = tradesData.pagination.total;
+            const completedTrades = tradesData.trades.filter(trade => 
+              trade.status === 'WIN' || trade.status === 'LOSS' || trade.status === 'BREAKEVEN'
+            );
+            
+            const totalPnL = completedTrades.reduce((sum, trade) => 
+              sum + (trade.profit || 0), 0
+            );
+            
+            const currentBalance = account.startingBalance + totalPnL;
+            
+            const winTrades = completedTrades.filter(trade => trade.status === 'WIN').length;
+            const winRate = completedTrades.length > 0 
+              ? (winTrades / completedTrades.length) * 100 
+              : 0;
+
+            return {
+              ...account,
+              totalTrades,
+              currentBalance,
+              totalPnL,
+              winRate: Math.round(winRate * 10) / 10, // Round to 1 decimal
+              analytics: analyticsData,
+              _count: { trades: totalTrades }
+            };
+          } catch (error) {
+            console.error(`Error fetching data for account ${account.id}:`, error);
+            // Return account with default values if error
+            return {
+              ...account,
+              totalTrades: 0,
+              currentBalance: account.startingBalance,
+              totalPnL: 0,
+              winRate: 0,
+              _count: { trades: 0 }
+            };
+          }
+        })
+      );
+      
+      setAccounts(accountsWithRealTimeData);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch trading accounts",
+        variant: "destructive",
+      });
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
 
   const getDateRange = () => {
     const now = new Date();
@@ -122,8 +237,8 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
       console.log("Fetching trades with params:", {
         page: pagination.page,
         limit: pagination.limit,
-        accountId: undefined, // No account filter in old component
-        period: "custom", // Use custom period
+        accountId: selectedAccount,
+        period: "custom",
         timeFilter,
         dateRange: getDateRange(),
       });
@@ -132,7 +247,7 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
       const data = await tradingJournalService.getTrades(
         pagination.page,
         pagination.limit,
-        undefined, // accountId - no account filter in old component
+        selectedAccount, // Use selected account for filtering
         "custom", // period - use custom since we're providing dates
         startDate,
         endDate
@@ -152,7 +267,7 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
   const fetchAnalytics = async () => {
     try {
       console.log("Fetching analytics with params:", {
-        accountId: undefined,
+        accountId: selectedAccount,
         period: "custom",
         timeFilter,
         dateRange: getDateRange(),
@@ -160,7 +275,7 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
 
       const { startDate, endDate } = getDateRange();
       const data = await tradingJournalService.getAnalytics(
-        undefined, // accountId - no account filter in old component
+        selectedAccount, // Use selected account for filtering analytics
         "custom", // period - use custom since we're providing dates
         startDate,
         endDate
@@ -210,6 +325,43 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
     fetchAnalytics();
   };
 
+  const handleCreateAccount = async () => {
+    try {
+      const createdAccount = await tradingAccountService.createAccount({
+        name: newAccount.name,
+        startingBalance: newAccount.startingBalance,
+        description: newAccount.description,
+      });
+
+      // Refresh accounts to get real-time data for all accounts including the new one
+      await fetchAccounts();
+
+      toast({
+        title: "Success",
+        description: `${newAccount.name} has been created successfully.`,
+      });
+
+      // Refresh trades and analytics to include the new account in filters
+      fetchTrades();
+      fetchAnalytics();
+
+      setShowCreateAccount(false);
+      setNewAccount({
+        name: "",
+        description: "",
+        startingBalance: 10000,
+        accountType: "DEMO",
+      });
+    } catch (error) {
+      console.error("Error creating account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create account",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className={`space-y-6 ${className}`}>
@@ -234,7 +386,7 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
         {[
           { key: "overview", label: "Overview", icon: BarChart3 },
           { key: "trades", label: "Trades", icon: Activity },
-          { key: "analytics", label: "Analytics", icon: TrendingUp },
+          { key: "accounts", label: "Accounts", icon: Wallet },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -251,81 +403,107 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
         ))}
       </div>
 
-      {/* Filter Controls */}
-      <Card className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-800/50">
-        <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              {/* Time Filter */}
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Period:
-                </span>
-                <div className="flex gap-1 bg-white dark:bg-gray-800 p-1 rounded-lg border">
-                  {["7D", "30D", "90D", "1Y", "ALL"].map((period) => (
-                    <button
-                      key={period}
-                      onClick={() => setTimeFilter(period as any)}
-                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                        timeFilter === period
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                      }`}
-                    >
-                      {period}
-                    </button>
-                  ))}
-                </div>
+      {/* Modern Filter Controls */}
+      <Card className="bg-gradient-to-r from-slate-50/80 to-blue-50/80 dark:from-slate-900/80 dark:to-blue-900/30 border-slate-200/60 dark:border-slate-700/60 shadow-lg backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center w-full">
+              
+              {/* Account Filter */}
+              <div className="flex flex-col gap-2 min-w-[200px]">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+                    <Filter className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  Trading Account
+                </Label>
+                <Select
+                  value={selectedAccount?.toString() || "all"}
+                  onValueChange={(value) =>
+                    setSelectedAccount(
+                      value === "all" ? null : parseInt(value)
+                    )
+                  }
+                >
+                  <SelectTrigger className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm">
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-slate-200 dark:border-slate-700 shadow-xl">
+                    <SelectItem value="all" className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                        All Accounts
+                      </div>
+                    </SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
+                          {account.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Account and Period Filters */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Account:
-                  </span>
-                  <select
-                    value={selectedAccount?.toString() || "all"}
-                    onChange={(e) =>
-                      setSelectedAccount(
-                        e.target.value === "all"
-                          ? null
-                          : parseInt(e.target.value)
-                      )
-                    }
-                    className="px-3 py-1 rounded text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
-                  >
-                    <option value="all">All Accounts</option>
-                    <option value="1">Live Account</option>
-                    <option value="2">Demo Account</option>
-                  </select>
-                </div>
+              {/* Time Period Filter */}
+              <div className="flex flex-col gap-2 min-w-[180px]">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-md">
+                    <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  Time Period
+                </Label>
+                <Select
+                  value={timeFilter}
+                  onValueChange={(value) =>
+                    setTimeFilter(value as "week" | "month" | "year" | "custom")
+                  }
+                >
+                  <SelectTrigger className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-slate-200 dark:border-slate-700 shadow-xl">
+                    <SelectItem value="week">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+                        This Week
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="month">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                        This Month
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="year">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+                        This Year
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="custom">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+                        Custom Range
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Period:
-                  </span>
-                  <select
-                    value={timeFilter}
-                    onChange={(e) =>
-                      setTimeFilter(
-                        e.target.value as "week" | "month" | "year" | "custom"
-                      )
-                    }
-                    className="px-3 py-1 rounded text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
-                  >
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="year">This Year</option>
-                    <option value="custom">Custom Range</option>
-                  </select>
-                </div>
-
-                {timeFilter === "custom" && (
-                  <div className="flex items-center gap-2">
-                    <input
+              {/* Custom Date Range */}
+              {timeFilter === "custom" && (
+                <div className="flex flex-col gap-2 min-w-[300px]">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-md">
+                      <Calendar className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    Date Range
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
                       type="date"
                       value={customStartDate?.toISOString().split("T")[0] || ""}
                       onChange={(e) =>
@@ -333,10 +511,12 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
                           e.target.value ? new Date(e.target.value) : null
                         )
                       }
-                      className="px-2 py-1 rounded text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+                      className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm"
                     />
-                    <span className="text-xs text-gray-500">to</span>
-                    <input
+                    <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md">
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">to</span>
+                    </div>
+                    <Input
                       type="date"
                       value={customEndDate?.toISOString().split("T")[0] || ""}
                       onChange={(e) =>
@@ -344,11 +524,29 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
                           e.target.value ? new Date(e.target.value) : null
                         )
                       }
-                      className="px-2 py-1 rounded text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+                      className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm"
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
+
+            {/* Filter Actions */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedAccount(null);
+                  setTimeFilter("month");
+                  setCustomStartDate(null);
+                  setCustomEndDate(null);
+                }}
+                className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                Reset
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -882,17 +1080,16 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
 
-      {/* Analytics Tab */}
-      {activeTab === "analytics" && analytics && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Win/Loss Distribution */}
-            <Card>
+          {/* Advanced Analytics Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            {/* Performance Breakdown */}
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
               <CardHeader>
-                <CardTitle>Performance Breakdown</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                  <Award className="w-5 h-5" />
+                  Performance Breakdown
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -925,9 +1122,12 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
             </Card>
 
             {/* Risk Management */}
-            <Card>
+            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
               <CardHeader>
-                <CardTitle>Risk Management</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                  <AlertTriangle className="w-5 h-5" />
+                  Risk Management
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -969,6 +1169,256 @@ const TradingJournal: React.FC<TradingJournalProps> = ({ className = "" }) => {
               </CardContent>
             </Card>
           </div>
+        </div>
+      )}
+
+      {/* Accounts Tab */}
+      {activeTab === "accounts" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+                Trading Accounts
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Manage your trading accounts and view performance
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchAccounts}
+                disabled={accountsLoading}
+                className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <Activity className={`w-4 h-4 mr-2 ${accountsLoading ? 'animate-spin' : ''}`} />
+                {accountsLoading ? 'Refreshing...' : 'Refresh Data'}
+              </Button>
+              <Button
+                onClick={() => setShowCreateAccount(true)}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Account
+              </Button>
+            </div>
+          </div>
+
+          {/* Accounts Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {accounts.map((account) => (
+              <Card
+                key={account.id}
+                className="overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                          {account.name}
+                        </CardTitle>
+                        <Badge
+                          variant="outline"
+                          className="text-xs mt-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+                        >
+                          TRADING
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-8 px-2">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {account.description}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Starting Balance
+                      </p>
+                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        ${account.startingBalance?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Current Balance
+                      </p>
+                      <p className={`text-lg font-bold ${
+                        (account.currentBalance || account.startingBalance) >= account.startingBalance
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        ${(account.currentBalance || account.startingBalance)?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Total P&L
+                      </p>
+                      <p className={`text-sm font-semibold ${
+                        (account.totalPnL || 0) >= 0
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {(account.totalPnL || 0) >= 0 ? '+' : ''}${(account.totalPnL || 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Win Rate
+                      </p>
+                      <p className={`text-sm font-semibold ${
+                        (account.winRate || 0) >= 50
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {(account.winRate || 0).toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Total Trades
+                      </p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        {account.totalTrades || account._count?.trades || 0}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Created
+                      </p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        {new Date(account.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-xs"
+                    >
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-xs"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Create Account Dialog */}
+          <Dialog open={showCreateAccount} onOpenChange={setShowCreateAccount}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  Create New Trading Account
+                </DialogTitle>
+                <DialogDescription>
+                  Create a new trading account to organize your trades and track
+                  performance.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="accountName">Account Name *</Label>
+                  <Input
+                    id="accountName"
+                    value={newAccount.name}
+                    onChange={(e) =>
+                      setNewAccount((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., Live Trading Account"
+                    className="bg-white dark:bg-slate-800"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="startingBalance">Starting Balance *</Label>
+                  <Input
+                    id="startingBalance"
+                    type="number"
+                    value={newAccount.startingBalance}
+                    onChange={(e) =>
+                      setNewAccount((prev) => ({
+                        ...prev,
+                        startingBalance: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    placeholder="10000"
+                    className="bg-white dark:bg-slate-800"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newAccount.description}
+                    onChange={(e) =>
+                      setNewAccount((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    placeholder="Optional description for this account..."
+                    rows={3}
+                    className="bg-white dark:bg-slate-800"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={() => setShowCreateAccount(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateAccount}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                    disabled={
+                      !newAccount.name || newAccount.startingBalance <= 0
+                    }
+                  >
+                    Create Account
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
 

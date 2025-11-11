@@ -64,6 +64,7 @@ import {
 import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import TradingJournal from "@/components/trading-journal/TradingJournal";
 import {
   Bar,
   BarChart,
@@ -125,13 +126,6 @@ interface LiveSession {
   createdAt: string;
 }
 
-interface Signal {
-  id: number;
-  title: string;
-  content: string;
-  roleAccess: string[];
-  createdAt: string;
-}
 
 interface User {
   id: number;
@@ -161,7 +155,6 @@ export const AdminDashboard: React.FC = () => {
   const [roleRequests, setRoleRequests] = useState<RoleRequest[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [sessions, setSessions] = useState<LiveSession[]>([]);
-  const [signals, setSignals] = useState<Signal[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [overviewStats, setOverviewStats] = useState<OverviewStats>({
     totalStudents: 0,
@@ -183,10 +176,10 @@ export const AdminDashboard: React.FC = () => {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentType, setContentType] = useState<
-    "course" | "session" | "signal"
+    "course" | "session"
   >("course");
   const [editingContent, setEditingContent] = useState<
-    Course | LiveSession | Signal | null
+    Course | LiveSession | null
   >(null);
   const [contentForm, setContentForm] = useState({
     title: "",
@@ -220,6 +213,7 @@ export const AdminDashboard: React.FC = () => {
   }>({ title: "", file: null, order: 0 });
   const [coursePreviewOpen, setCoursePreviewOpen] = useState(false);
   const [previewCourse, setPreviewCourse] = useState<Course | null>(null);
+  const [journalModalOpen, setJournalModalOpen] = useState(false);
 
   const { toast } = useToast();
   const { refreshUser } = useAuth();
@@ -240,21 +234,18 @@ export const AdminDashboard: React.FC = () => {
         requestsData,
         coursesData, // Changed to use getAllCourses for admin to fetch all data
         sessionsData,
-        signalsData,
         usersData,
         statsData,
       ] = await Promise.all([
         authService.getPendingRoleRequests(),
         authService.getAllCourses(), // FIX: Use admin-specific fetch to get all courses, bypassing role filters
         authService.getLiveSessions(),
-        authService.getSignals(),
         authService.getUsers(),
         authService.getOverviewStats(),
       ]);
       setRoleRequests(requestsData);
       setCourses(coursesData);
       setSessions(sessionsData);
-      setSignals(signalsData);
       setUsers(usersData);
       setOverviewStats(statsData);
       console.log("Fetched all courses for admin:", coursesData); // Debug log to confirm fetch
@@ -479,46 +470,24 @@ export const AdminDashboard: React.FC = () => {
             description: "The session has been created successfully.",
           });
         }
-      } else if (contentType === "signal") {
-        if (editingContent) {
-          await authService.updateSignal((editingContent as Signal).id, {
-            title: contentForm.title,
-            content: contentForm.content,
-            roleAccess: contentForm.roleAccess,
-          });
-          toast({
-            title: "Signal Updated",
-            description: "The signal has been updated successfully.",
-          });
-        } else {
-          await authService.createSignal({
-            title: contentForm.title,
-            content: contentForm.content,
-            roleAccess: contentForm.roleAccess,
-          });
-          toast({
-            title: "Signal Created",
-            description: "The signal has been created successfully.",
-          });
-        }
+      } else {
+        setContentModalOpen(false);
+        setEditingContent(null);
+        setContentForm({
+          title: "",
+          content: "",
+          description: "",
+          date: "",
+          roleAccess: ["community_student"],
+          category: "",
+          duration: 0,
+          level: "beginner",
+          isPublished: true,
+          thumbnailFile: null,
+        });
+        setCourseVideoDrafts([]);
+        await loadData();
       }
-
-      setContentModalOpen(false);
-      setEditingContent(null);
-      setContentForm({
-        title: "",
-        content: "",
-        description: "",
-        date: "",
-        roleAccess: ["community_student"],
-        category: "",
-        duration: 0,
-        level: "beginner",
-        isPublished: true,
-        thumbnailFile: null,
-      });
-      setCourseVideoDrafts([]);
-      await loadData();
     } catch (error) {
       console.error("Content operation failed:", error);
       toast({
@@ -529,6 +498,22 @@ export const AdminDashboard: React.FC = () => {
     } finally {
       setContentLoading(false);
     }
+
+    setContentModalOpen(false);
+    setEditingContent(null);
+    setContentForm({
+      title: "",
+      content: "",
+      description: "",
+      date: "",
+      roleAccess: ["community_student"],
+      category: "",
+      duration: 0,
+      level: "beginner",
+      isPublished: true,
+      thumbnailFile: null,
+    });
+    setCourseVideoDrafts([]);
   };
 
   const handleUserSubmit = async (e: React.FormEvent) => {
@@ -763,15 +748,15 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleEditContent = (
-    content: Course | LiveSession | Signal,
-    type: "course" | "session" | "signal"
+    content: Course | LiveSession,
+    type: "course" | "session"
   ) => {
     setEditingContent(content);
     setContentType(type);
     const courseContent = content as Course;
     setContentForm({
       title: content.title,
-      content: (content as Course | Signal).content || "",
+      content: (content as Course).content || "",
       description: (content as Course | LiveSession).description || "",
       date: (content as LiveSession).date || "",
       roleAccess: content.roleAccess,
@@ -786,7 +771,7 @@ export const AdminDashboard: React.FC = () => {
 
   const handleDeleteContent = async (
     id: number,
-    type: "course" | "session" | "signal"
+    type: "course" | "session"
   ) => {
     if (
       !confirm(
@@ -797,7 +782,6 @@ export const AdminDashboard: React.FC = () => {
     try {
       if (type === "course") await authService.deleteCourse(id);
       else if (type === "session") await authService.deleteLiveSession(id);
-      else await authService.deleteSignal(id);
       toast({
         title: `${type.charAt(0).toUpperCase() + type.slice(1)} Deleted`,
         description: `The ${type} has been deleted successfully.`,
@@ -1622,7 +1606,7 @@ export const AdminDashboard: React.FC = () => {
                 <Label htmlFor="contentType">Content Type</Label>
                 <Select
                   value={contentType}
-                  onValueChange={(value: "course" | "session" | "signal") => {
+                  onValueChange={(value: "course" | "session") => {
                     setContentType(value);
                     setContentForm({
                       ...contentForm,
@@ -1639,7 +1623,6 @@ export const AdminDashboard: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="course">Course</SelectItem>
                     <SelectItem value="session">Live Session</SelectItem>
-                    <SelectItem value="signal">Signal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2190,7 +2173,7 @@ export const AdminDashboard: React.FC = () => {
                 <Label htmlFor="contentType">Content Type</Label>
                 <Select
                   value={contentType}
-                  onValueChange={(value: "course" | "session" | "signal") => {
+                  onValueChange={(value: "course" | "session") => {
                     setContentType(value);
                     setContentForm({
                       ...contentForm,
@@ -2207,7 +2190,6 @@ export const AdminDashboard: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="course">Course</SelectItem>
                     <SelectItem value="session">Live Session</SelectItem>
-                    <SelectItem value="signal">Signal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2416,274 +2398,10 @@ export const AdminDashboard: React.FC = () => {
     </>
   );
 
-  const renderSignals = () => (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Trading Signal Management</h3>
-        <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="cta"
-              onClick={() => {
-                setEditingContent(null);
-                setContentType("signal");
-                setContentForm({
-                  title: "",
-                  content: "",
-                  description: "",
-                  date: "",
-                  roleAccess: ["community_student"],
-                  category: "",
-                  duration: 0,
-                  level: "beginner",
-                  isPublished: true,
-                  thumbnailFile: null,
-                });
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Signal
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingContent
-                  ? `Edit ${
-                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
-                    }`
-                  : `Create New ${
-                      contentType.charAt(0).toUpperCase() + contentType.slice(1)
-                    }`}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleContentSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="contentType">Content Type</Label>
-                <Select
-                  value={contentType}
-                  onValueChange={(value: "course" | "session" | "signal") => {
-                    setContentType(value);
-                    setContentForm({
-                      ...contentForm,
-                      title: "",
-                      content: "",
-                      description: "",
-                      date: "",
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="course">Course</SelectItem>
-                    <SelectItem value="session">Live Session</SelectItem>
-                    <SelectItem value="signal">Signal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={contentForm.title}
-                  onChange={(e) =>
-                    setContentForm((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter title"
-                  required
-                />
-              </div>
-
-              {contentType !== "session" && (
-                <div className="space-y-2">
-                  <Label htmlFor="content">Content</Label>
-                  <Textarea
-                    id="content"
-                    value={contentForm.content}
-                    onChange={(e) =>
-                      setContentForm((prev) => ({
-                        ...prev,
-                        content: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter content (markdown supported)"
-                    rows={8}
-                    required
-                  />
-                </div>
-              )}
-
-              {contentType === "session" && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={contentForm.description}
-                      onChange={(e) =>
-                        setContentForm((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter session description"
-                      rows={4}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Date</Label>
-                    <Input
-                      id="date"
-                      type="datetime-local"
-                      value={contentForm.date}
-                      onChange={(e) =>
-                        setContentForm((prev) => ({
-                          ...prev,
-                          date: e.target.value,
-                        }))
-                      }
-                      required
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="roleAccess">Access Level</Label>
-                <Select
-                  value={contentForm.roleAccess[0] || "community_student"}
-                  onValueChange={(value) =>
-                    setContentForm((prev) => ({
-                      ...prev,
-                      roleAccess: [value],
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="community_student">
-                      Community (Free)
-                    </SelectItem>
-                    <SelectItem value="academy_student">
-                      Academy (Premium)
-                    </SelectItem>
-                    <SelectItem value="mentorship_student">
-                      Mentorship (Elite)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  variant="cta"
-                  disabled={contentLoading}
-                  className="flex-1"
-                >
-                  {contentLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {editingContent ? "Updating..." : "Creating..."}
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {editingContent
-                        ? `Update ${
-                            contentType.charAt(0).toUpperCase() +
-                            contentType.slice(1)
-                          }`
-                        : `Create ${
-                            contentType.charAt(0).toUpperCase() +
-                            contentType.slice(1)
-                          }`}
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setContentModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Trading Signals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Access</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {signals.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4}>
-                      <span className="text-sm text-muted-foreground">
-                        No signals available
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  signals.map((signal) => (
-                    <TableRow key={signal.id}>
-                      <TableCell>{signal.title}</TableCell>
-                      <TableCell>
-                        {new Date(signal.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        {getAccessLevelBadge(signal.roleAccess)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditContent(signal, "signal")}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleDeleteContent(signal.id, "signal")
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+  const renderTradingJournal = () => (
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <TradingJournal />
+    </div>
   );
 
   return (
@@ -2700,7 +2418,7 @@ export const AdminDashboard: React.FC = () => {
           {section === "users" && renderUsers()}
           {section === "courses" && renderCourses()}
           {section === "sessions" && renderSessions()}
-          {section === "signals" && renderSignals()}
+          {section === "journal" && renderTradingJournal()}
         </div>
       </div>
     </div>

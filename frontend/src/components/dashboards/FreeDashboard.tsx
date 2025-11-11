@@ -40,7 +40,6 @@ import { CourseViewer } from "@/components/CourseViewer";
 
 interface CommunityContent {
   freeCourses: any[];
-  dailySignals: any[];
   marketRecaps: any[];
   communityLinks: any;
 }
@@ -59,7 +58,6 @@ interface Course {
 
 export const FreeDashboard: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
-  const [signals, setSignals] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [myRequests, setMyRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,10 +107,9 @@ export const FreeDashboard: React.FC = () => {
 
   const loadCommunityContent = async () => {
     try {
-      const [coursesData, signalsData, sessionsData, myReq] = await Promise.all(
+      const [coursesData, sessionsData, myReq] = await Promise.all(
         [
           authService.getCourses(),
-          authService.getSignals(),
           authService.getLiveSessions(),
           authService.getMyRoleRequests().catch(() => []),
         ]
@@ -135,7 +132,6 @@ export const FreeDashboard: React.FC = () => {
       );
 
       setCourses(coursesWithVideos);
-      setSignals(signalsData);
       setSessions(sessionsData);
       setMyRequests(myReq || []);
     } catch (error) {
@@ -174,7 +170,6 @@ export const FreeDashboard: React.FC = () => {
   // Compose content object from state
   const content: CommunityContent = {
     freeCourses: courses,
-    dailySignals: signals,
     marketRecaps: [],
     communityLinks: {},
   };
@@ -380,7 +375,7 @@ export const FreeDashboard: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {signals.length || 15}
+                      15
                     </p>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       Daily Signals
@@ -486,7 +481,7 @@ export const FreeDashboard: React.FC = () => {
                           <CheckCircle className="w-3 h-3 text-white" />
                         </div>
                         <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                          Daily forex signals & market analysis
+                          Daily forex signals via Telegram
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
@@ -653,7 +648,7 @@ export const FreeDashboard: React.FC = () => {
                           <CheckCircle className="w-3 h-3 text-white" />
                         </div>
                         <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                          Premium trading signals
+                          Premium trading signals via Telegram
                         </span>
                       </div>
                       <div className="flex items-start gap-3">
@@ -887,77 +882,21 @@ export const FreeDashboard: React.FC = () => {
                 Daily Trading Signals
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-8">
-                Get expert market analysis and trading opportunities
+                Join our free Telegram channel for daily signals and market analysis
               </p>
             </div>
             
-            <div className="grid gap-6">
-              {signals.length > 0 ? (
-                signals.map((signal, index) => (
-                  <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="font-bold text-lg mb-2">{signal.pair}</h3>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              signal.type === 'BUY' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            }`}>
-                              {signal.type}
-                            </span>
-                            <span className="text-muted-foreground">
-                              Entry: {signal.entry}
-                            </span>
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {signal.timeframe}
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Stop Loss</p>
-                          <p className="font-medium">{signal.stopLoss}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Take Profit 1</p>
-                          <p className="font-medium">{signal.takeProfit1}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Take Profit 2</p>
-                          <p className="font-medium">{signal.takeProfit2}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Risk/Reward</p>
-                          <span className="font-medium text-green-600 dark:text-green-400">
-                            1:{signal.riskReward}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {signal.analysis && (
-                        <div className="mt-4 p-3 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-100 dark:border-green-800">
-                          <p className="text-sm">{signal.analysis}</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <Card className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow">
-                  <CardContent className="text-center py-8">
-                    <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
-                      <MessageCircle className="w-16 h-16 text-green-500 dark:text-green-400" />
-                    </div>
-                    <p className="text-muted-foreground">
-                      Daily signals will appear here.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+            <div className="text-center py-12">
+              <BarChart3 className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Signals Available on Telegram
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Get real-time trading signals and market analysis in our free Telegram channel
+              </p>
+              <Button className="bg-blue-500 hover:bg-blue-600">
+                Join Telegram Channel
+              </Button>
             </div>
           </div>
         )}

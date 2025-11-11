@@ -55,7 +55,9 @@ export const MentorshipDashboard: React.FC = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(new Set());
+  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
+    new Set()
+  );
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [viewingCourse, setViewingCourse] = useState<any | null>(null);
   const { toast } = useToast();
@@ -80,7 +82,7 @@ export const MentorshipDashboard: React.FC = () => {
           authService.getSignals(),
           authService.getLiveSessions(),
         ]);
-      
+
       // Fetch videos for each course
       const coursesWithVideos = await Promise.all(
         coursesData.map(async (course: any) => {
@@ -88,12 +90,15 @@ export const MentorshipDashboard: React.FC = () => {
             const videos = await authService.getCourseVideos(course.id);
             return { ...course, videos: videos || [] };
           } catch (error) {
-            console.error(`Failed to load videos for course ${course.id}:`, error);
+            console.error(
+              `Failed to load videos for course ${course.id}:`,
+              error
+            );
             return { ...course, videos: [] };
           }
         })
       );
-      
+
       setContent(contentData);
       setCourses(coursesWithVideos);
       setSignals(signalsData);
@@ -132,7 +137,8 @@ export const MentorshipDashboard: React.FC = () => {
 
   // Determine active section from URL and default redirect
   const pathParts = location.pathname.split("/").filter(Boolean);
-  const section = pathParts[0] === "dashboard" ? (pathParts[1] || "overview") : pathParts[1];
+  const section =
+    pathParts[0] === "dashboard" ? pathParts[1] || "overview" : pathParts[1];
 
   // Default redirect
   if (pathParts[0] === "mentorship" && !section) {
@@ -142,15 +148,52 @@ export const MentorshipDashboard: React.FC = () => {
   // If viewing a course, show the CourseViewer
   if (viewingCourse) {
     return (
-      <CourseViewer 
-        course={viewingCourse} 
-        onBack={() => setViewingCourse(null)} 
+      <CourseViewer
+        course={viewingCourse}
+        onBack={() => setViewingCourse(null)}
       />
     );
   }
 
   const renderOverview = () => (
     <div className="space-y-6">
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-teal-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+              <Crown className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
+                Elite{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">
+                  Mentorship
+                </span>
+              </h1>
+              <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
+                Advanced trading strategies and personalized guidance for elite
+                traders.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+            <Button
+              className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
+              size="sm"
+              onClick={() => {
+                loadMentorshipContent();
+                setLastRefresh(new Date());
+              }}
+              disabled={loading}
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </Button>
+            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Win Rate */}
@@ -165,7 +208,9 @@ export const MentorshipDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.performance?.winRate || "87%"}</div>
+            <div className="text-2xl font-bold">
+              {content?.performance?.winRate || "87%"}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+5% this month</span>
@@ -185,7 +230,9 @@ export const MentorshipDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.performance?.profitLoss || "+$2,847"}</div>
+            <div className="text-2xl font-bold">
+              {content?.performance?.profitLoss || "+$2,847"}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+23% from last month</span>
@@ -205,7 +252,9 @@ export const MentorshipDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.performance?.tradesCount || "156"}</div>
+            <div className="text-2xl font-bold">
+              {content?.performance?.tradesCount || "156"}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>this month</span>
@@ -225,7 +274,9 @@ export const MentorshipDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.performance?.rankPosition || "#12"}</div>
+            <div className="text-2xl font-bold">
+              {content?.performance?.rankPosition || "#12"}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>moved up 3 spots</span>
@@ -244,10 +295,14 @@ export const MentorshipDashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">{content?.mentorshipSessions[0]?.title || "Advanced Scalping"}</div>
+            <div className="text-lg font-bold">
+              {content?.mentorshipSessions[0]?.title || "Advanced Scalping"}
+            </div>
             <p className="text-xs text-muted-foreground">
               {content?.mentorshipSessions[0]?.date
-                ? new Date(content.mentorshipSessions[0].date).toLocaleDateString()
+                ? new Date(
+                    content.mentorshipSessions[0].date
+                  ).toLocaleDateString()
                 : "Tomorrow 2:00 PM"}
             </p>
           </CardContent>
@@ -261,7 +316,9 @@ export const MentorshipDashboard: React.FC = () => {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">{content?.advancedStrategies?.length || 8}</div>
+            <div className="text-lg font-bold">
+              {content?.advancedStrategies?.length || 8}
+            </div>
             <p className="text-xs text-muted-foreground">strategies mastered</p>
           </CardContent>
         </Card>
@@ -302,7 +359,9 @@ export const MentorshipDashboard: React.FC = () => {
               <TrendingUp className="h-5 w-5 text-green-600" />
               Trading Performance
             </CardTitle>
-            <CardDescription>Your monthly trading statistics and growth</CardDescription>
+            <CardDescription>
+              Your monthly trading statistics and growth
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-4 gap-4">
@@ -346,7 +405,9 @@ export const MentorshipDashboard: React.FC = () => {
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-800">Join Live Session</p>
+                  <p className="text-sm font-medium text-green-800">
+                    Join Live Session
+                  </p>
                   <p className="text-xs text-green-600">Advanced Scalping</p>
                 </div>
                 <Button size="sm" className="bg-green-600 hover:bg-green-700">
@@ -358,10 +419,18 @@ export const MentorshipDashboard: React.FC = () => {
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-800">New Strategy</p>
-                  <p className="text-xs text-purple-600">Fibonacci Retracements</p>
+                  <p className="text-sm font-medium text-purple-800">
+                    New Strategy
+                  </p>
+                  <p className="text-xs text-purple-600">
+                    Fibonacci Retracements
+                  </p>
                 </div>
-                <Button size="sm" variant="outline" className="text-purple-600 border-purple-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-purple-600 border-purple-200"
+                >
                   Learn
                 </Button>
               </div>
@@ -370,10 +439,16 @@ export const MentorshipDashboard: React.FC = () => {
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-800">Premium Signals</p>
+                  <p className="text-sm font-medium text-blue-800">
+                    Premium Signals
+                  </p>
                   <p className="text-xs text-blue-600">3 new signals today</p>
                 </div>
-                <Button size="sm" variant="outline" className="text-blue-600 border-blue-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-blue-600 border-blue-200"
+                >
                   View
                 </Button>
               </div>
@@ -399,7 +474,8 @@ export const MentorshipDashboard: React.FC = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Scheduled {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString()}
+                  Scheduled {new Date(session.date).toLocaleDateString()} at{" "}
+                  {new Date(session.date).toLocaleTimeString()}
                 </p>
                 <Button variant="cta">
                   <Users className="w-4 h-4 mr-2" />
@@ -413,7 +489,9 @@ export const MentorshipDashboard: React.FC = () => {
         <Card>
           <CardContent className="text-center py-8">
             <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Live sessions will appear here.</p>
+            <p className="text-muted-foreground">
+              Live sessions will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -436,11 +514,17 @@ export const MentorshipDashboard: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Win Rate:</span>
-                  <span className="font-medium text-green-500">{strategy.winRate}</span>
+                  <span className="font-medium text-green-500">
+                    {strategy.winRate}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Risk Level:</span>
-                  <Badge variant={strategy.riskLevel === "Low" ? "secondary" : "outline"}>
+                  <Badge
+                    variant={
+                      strategy.riskLevel === "Low" ? "secondary" : "outline"
+                    }
+                  >
                     {strategy.riskLevel}
                   </Badge>
                 </div>
@@ -455,7 +539,9 @@ export const MentorshipDashboard: React.FC = () => {
         <Card className="col-span-full">
           <CardContent className="text-center py-8">
             <TrendingUp className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Advanced strategies will appear here.</p>
+            <p className="text-muted-foreground">
+              Advanced strategies will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -471,13 +557,19 @@ export const MentorshipDashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{signal.title}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Badge className={signal.direction === "BUY" ? "bg-green-500" : "bg-red-500"}>
+                  <Badge
+                    className={
+                      signal.direction === "BUY" ? "bg-green-500" : "bg-red-500"
+                    }
+                  >
                     {signal.direction}
                   </Badge>
                   <Badge variant="outline">{signal.status}</Badge>
                 </div>
               </div>
-              <CardDescription>Sent {new Date(signal.createdAt).toLocaleDateString()}</CardDescription>
+              <CardDescription>
+                Sent {new Date(signal.createdAt).toLocaleDateString()}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
@@ -487,11 +579,15 @@ export const MentorshipDashboard: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Take Profit: </span>
-                  <span className="font-medium text-green-500">{signal.takeProfit}</span>
+                  <span className="font-medium text-green-500">
+                    {signal.takeProfit}
+                  </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Stop Loss: </span>
-                  <span className="font-medium text-red-500">{signal.stopLoss}</span>
+                  <span className="font-medium text-red-500">
+                    {signal.stopLoss}
+                  </span>
                 </div>
               </div>
               {signal.content && (
@@ -506,7 +602,9 @@ export const MentorshipDashboard: React.FC = () => {
         <Card>
           <CardContent className="text-center py-8">
             <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Premium signals will appear here.</p>
+            <p className="text-muted-foreground">
+              Premium signals will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -524,7 +622,11 @@ export const MentorshipDashboard: React.FC = () => {
                   <Target className="w-5 h-5 text-purple-500" />
                   {challenge.title}
                 </CardTitle>
-                <Badge variant={challenge.status === "active" ? "default" : "secondary"}>
+                <Badge
+                  variant={
+                    challenge.status === "active" ? "default" : "secondary"
+                  }
+                >
                   {challenge.status}
                 </Badge>
               </div>
@@ -533,20 +635,31 @@ export const MentorshipDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Progress</span>
-                  <span className="text-sm font-medium">{challenge.progress}%</span>
+                  <span className="text-sm text-muted-foreground">
+                    Progress
+                  </span>
+                  <span className="text-sm font-medium">
+                    {challenge.progress}%
+                  </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${challenge.progress}%` }}></div>
+                  <div
+                    className="bg-purple-500 h-2 rounded-full transition-all"
+                    style={{ width: `${challenge.progress}%` }}
+                  ></div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="text-sm">
                     <span className="text-muted-foreground">Reward: </span>
-                    <span className="font-medium text-primary">{challenge.reward}</span>
+                    <span className="font-medium text-primary">
+                      {challenge.reward}
+                    </span>
                   </div>
                   <div className="text-sm">
                     <span className="text-muted-foreground">Ends: </span>
-                    <span className="font-medium">{new Date(challenge.endDate).toLocaleDateString()}</span>
+                    <span className="font-medium">
+                      {new Date(challenge.endDate).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -557,7 +670,9 @@ export const MentorshipDashboard: React.FC = () => {
         <Card>
           <CardContent className="text-center py-8">
             <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Monthly challenges will appear here.</p>
+            <p className="text-muted-foreground">
+              Monthly challenges will appear here.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -572,80 +687,8 @@ export const MentorshipDashboard: React.FC = () => {
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl"></div>
         <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
       </div>
-      
+
       <div className="relative max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-teal-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
-                <Crown className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
-                  Elite{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">Mentorship</span>
-                </h1>
-                <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
-                  Advanced trading strategies and personalized guidance for elite traders.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-              <Button
-                className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
-                size="sm"
-                onClick={() => {
-                  loadMentorshipContent();
-                  setLastRefresh(new Date());
-                }}
-                disabled={loading}
-              >
-                {loading ? "Refreshing..." : "Refresh"}
-              </Button>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-slate-700/50">
-                Last updated: {lastRefresh.toLocaleTimeString()}
-              </div>
-            </div>
-          </div>
-
-          <Card className="border-l-4 border-l-green-500">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-green-500" />
-                Your Performance This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">
-                    {content?.performance?.winRate || "0%"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Win Rate</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-500">
-                    {content?.performance?.profitLoss || "$0"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">P&L</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-500">
-                    {content?.performance?.tradesCount || "0"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Trades</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-500">
-                    {content?.performance?.rankPosition || "N/A"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Leaderboard</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Render by route section */}
         <div className="space-y-6">
           {section === "overview" && renderOverview()}
@@ -654,7 +697,7 @@ export const MentorshipDashboard: React.FC = () => {
           {section === "signals" && renderSignals()}
           {section === "challenges" && renderChallenges()}
           {section === "journal" && <TradingJournal />}
-            </div>
+        </div>
       </div>
     </div>
   );

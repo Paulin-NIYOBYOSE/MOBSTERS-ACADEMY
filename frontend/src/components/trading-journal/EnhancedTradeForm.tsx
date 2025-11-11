@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { tradingAccountService } from '../../services/tradingAccountService';
 import { tradingJournalService } from '../../services/tradingJournalService';
 import { useToast } from '../../hooks/use-toast';
@@ -50,10 +50,39 @@ const EnhancedTradeForm: React.FC<EnhancedTradeFormProps> = ({
     }
   }, [isOpen]);
 
+  // Auto-handle profit based on status
+  useEffect(() => {
+    if (formData.status === 'BREAKEVEN') {
+      setFormData(prev => ({ ...prev, profit: 0 }));
+    } else if (formData.status === 'RUNNING') {
+      setFormData(prev => ({ ...prev, profit: undefined }));
+    }
+  }, [formData.status]);
+
   const fetchAccounts = async () => {
     try {
       const accountsData = await tradingAccountService.getAccounts();
-      setAccounts(accountsData);
+      
+      // If no accounts exist, create a default one
+      if (accountsData.length === 0) {
+        const defaultAccount = await tradingAccountService.createAccount({
+          name: 'Main Account',
+          startingBalance: 10000,
+          description: 'Default trading account'
+        });
+        setAccounts([defaultAccount]);
+        setSelectedAccountId(defaultAccount.id);
+        toast({
+          title: 'Account Created',
+          description: 'A default trading account has been created for you.',
+        });
+      } else {
+        setAccounts(accountsData);
+        // Auto-select the first account if none is selected
+        if (!selectedAccountId && accountsData.length > 0) {
+          setSelectedAccountId(accountsData[0].id);
+        }
+      }
     } catch (error) {
       console.error('Error fetching accounts:', error);
       toast({
@@ -126,6 +155,9 @@ const EnhancedTradeForm: React.FC<EnhancedTradeFormProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Trade</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to record a new trade in your journal.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -231,15 +263,61 @@ const EnhancedTradeForm: React.FC<EnhancedTradeFormProps> = ({
             </div>
             {(formData.status === 'WIN' || formData.status === 'LOSS' || formData.status === 'BREAKEVEN') && (
               <div>
-                <Label htmlFor="profit">Profit/Loss ($)</Label>
+                <Label htmlFor="profit">
+                  {formData.status === 'WIN' ? 'Profit ($)' : 
+                   formData.status === 'LOSS' ? 'Loss ($)' : 
+                   'Profit/Loss ($)'}
+                </Label>
                 <Input
                   id="profit"
                   type="number"
                   step="0.01"
-                  value={formData.profit || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, profit: parseFloat(e.target.value) || undefined }))}
-                  placeholder="Enter profit or loss amount"
+                  min={formData.status === 'WIN' ? "0.01" : formData.status === 'BREAKEVEN' ? "0" : undefined}
+                  max={formData.status === 'LOSS' ? "-0.01" : formData.status === 'BREAKEVEN' ? "0" : undefined}
+                  value={formData.profit !== undefined ? formData.profit : ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setFormData(prev => ({ ...prev, profit: undefined }));
+                      return;
+                    }
+                    
+                    // Validate based on status
+                    if (formData.status === 'WIN' && value < 0) {
+                      return; // Don't allow negative values for WIN
+                    }
+                    if (formData.status === 'LOSS' && value > 0) {
+                      return; // Don't allow positive values for LOSS
+                    }
+                    if (formData.status === 'BREAKEVEN' && value !== 0) {
+                      return; // Only allow 0 for BREAKEVEN
+                    }
+                    
+                    setFormData(prev => ({ ...prev, profit: value }));
+                  }}
+                  placeholder={
+                    formData.status === 'WIN' ? 'Enter profit amount (positive)' :
+                    formData.status === 'LOSS' ? 'Enter loss amount (negative)' :
+                    formData.status === 'BREAKEVEN' ? '0' : 'Enter amount'
+                  }
+                  disabled={formData.status === 'BREAKEVEN'}
+                  className={formData.status === 'BREAKEVEN' ? 'bg-gray-100 dark:bg-gray-800' : ''}
                 />
+                {formData.status === 'WIN' && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    Enter positive profit amount only
+                  </p>
+                )}
+                {formData.status === 'LOSS' && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Enter negative loss amount only
+                  </p>
+                )}
+                {formData.status === 'BREAKEVEN' && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Breakeven trades have no profit or loss
+                  </p>
+                )}
               </div>
             )}
           </div>

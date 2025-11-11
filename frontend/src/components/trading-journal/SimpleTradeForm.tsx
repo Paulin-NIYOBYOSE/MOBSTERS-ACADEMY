@@ -44,10 +44,10 @@ const tradeSchema = z.object({
   time: z.date(),
   chartLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   riskPercent: z.number().min(0).max(100).optional(),
-  result: z.enum(['WIN', 'LOSS']).optional(),
-  accountIds: z.array(z.number()).min(1, 'Please select at least one account'),
+  accountId: z.number().min(1, 'Please select an account'),
   profit: z.number().optional(),
-  status: z.enum(['RUNNING', 'CLOSED']).optional(),
+  status: z.enum(['RUNNING', 'WIN', 'LOSS', 'BREAKEVEN']).optional(),
+  notes: z.string().optional(),
 });
 
 type TradeFormData = z.infer<typeof tradeSchema>;
@@ -85,10 +85,10 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
       time: new Date(),
       chartLink: '',
       riskPercent: 1,
-      notes: '',
-      currentBalance: 1000,
-      comment: '',
+      accountId: 0,
+      profit: 0,
       status: 'RUNNING',
+      notes: '',
     },
   });
 
@@ -100,12 +100,10 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
         time: new Date(trade.time),
         chartLink: trade.chartLink || '',
         riskPercent: trade.riskPercent,
-        result: trade.result,
-        notes: trade.notes || '',
-        currentBalance: trade.currentBalance,
-        comment: trade.comment || '',
+        accountId: trade.accountId,
         profit: trade.profit,
         status: trade.status,
+        notes: trade.notes || '',
       });
     } else {
       form.reset({
@@ -114,10 +112,10 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
         time: new Date(),
         chartLink: '',
         riskPercent: 1,
-        notes: '',
-        currentBalance: 1000,
-        comment: '',
+        accountId: 0,
+        profit: 0,
         status: 'RUNNING',
+        notes: '',
       });
     }
   }, [trade, mode, form]);
@@ -294,25 +292,21 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
                 )}
               />
 
-              {/* Current Balance */}
+              {/* Account ID */}
               <FormField
                 control={form.control}
-                name="currentBalance"
+                name="accountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Account Balance</FormLabel>
+                    <FormLabel>Trading Account</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="1000.00"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        />
-                        <DollarSign className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-                      </div>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Account ID"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -334,7 +328,9 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="RUNNING">Running</SelectItem>
-                        <SelectItem value="CLOSED">Closed</SelectItem>
+                        <SelectItem value="WIN">Win</SelectItem>
+                        <SelectItem value="LOSS">Loss</SelectItem>
+                        <SelectItem value="BREAKEVEN">Breakeven</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -365,51 +361,27 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
               )}
             />
 
-            {/* Result and Profit (for closed trades) */}
-            {form.watch('status') === 'CLOSED' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="result"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Result</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select result" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="WIN">WIN</SelectItem>
-                          <SelectItem value="LOSS">LOSS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="profit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profit/Loss ($)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            {/* Profit (for non-running trades) */}
+            {form.watch('status') !== 'RUNNING' && (
+              <FormField
+                control={form.control}
+                name="profit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profit/Loss ($)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
 
             {/* Notes */}
@@ -424,6 +396,7 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
                       placeholder="Why did you take this trade? What was your setup?"
                       className="min-h-[80px]"
                       {...field}
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -431,24 +404,6 @@ export const SimpleTradeForm: React.FC<SimpleTradeFormProps> = ({
               )}
             />
 
-            {/* Comment */}
-            <FormField
-              control={form.control}
-              name="comment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Comments</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Any additional thoughts or lessons learned..."
-                      className="min-h-[60px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
