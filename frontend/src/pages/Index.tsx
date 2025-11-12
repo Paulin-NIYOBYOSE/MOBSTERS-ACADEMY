@@ -135,58 +135,57 @@ const Index = () => {
 
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <Badge className="mb-6 bg-primary/20 text-primary-dark border-primary/30 hover-lift shimmer-effect glow-pulse scroll-fade-in">
+            <Badge className="mb-6 glass-effect border-primary/30 text-primary hover-lift scroll-fade-in">
               🎯 Limited Cohort Opening - December 2024
             </Badge>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground dark:text-white mb-6 leading-tight scroll-slide-left">
-              Master Forex Trading with
-              <span className="gradient-text block mt-2"> Market Mobsters</span>
+            <h1 className="heading-xl text-foreground mb-6 scroll-slide-left">
+              Turn Charts into Cash with
+              <span className="gradient-text block mt-2">Market Mobsters</span>
             </h1>
 
-            <p className="text-base sm:text-lg lg:text-xl text-foreground/90 dark:text-white/90 mb-8 leading-relaxed scroll-slide-right">
-              Transform from beginner to professional trader with our
-              comprehensive 6-month program. Join thousands of successful
-              traders who've mastered the markets.
+            <p className="body-lg text-foreground/80 mb-8 max-w-2xl scroll-slide-right">
+              From zero to market legend in just 6 months. Our proven system has
+              created thousands of traders who make serious money and live the
+              life most only dream of.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12 scroll-scale-up">
               <Button
-                variant="cta"
-                size="xl"
+                size="lg"
                 onClick={handleEnrollClick}
-                className="hover-lift light-sweep"
+                className="btn-modern bg-gradient-primary hover:shadow-glow-lg text-white border-0 px-8 py-6 text-lg font-semibold"
               >
-                <TrendingUp className="mr-2" />
+                <TrendingUp className="mr-2 w-5 h-5" />
                 Enroll in Academy
               </Button>
               <Button
-                variant="outline-primary"
-                size="xl"
+                variant="outline"
+                size="lg"
                 onClick={handleJoinCommunityClick}
-                className="hover-lift"
+                className="btn-modern border-2 border-primary/50 hover:border-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold"
               >
-                <Users className="mr-2" />
+                <Users className="mr-2 w-5 h-5" />
                 Join Free Community
               </Button>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-8 text-foreground/90 dark:text-white/90 scroll-fade-in">
-              <div className="flex items-center gap-2 hover-lift">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 scroll-fade-in">
+              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                <span className="body-sm font-medium">
                   6-Month Structured Program
                 </span>
               </div>
-              <div className="flex items-center gap-2 hover-lift">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">
+              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                <span className="body-sm font-medium">
                   Weekly Live Sessions
                 </span>
               </div>
-              <div className="flex items-center gap-2 hover-lift">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                <span className="text-sm sm:text-base">
+              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                <span className="body-sm font-medium">
                   Personal Trading Plan
                 </span>
               </div>
@@ -230,11 +229,9 @@ const Index = () => {
         <div className="relative max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             <div className="text-center group scroll-fade-in">
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
-                  2,500+
-                </div>
-                <div className="text-muted-foreground font-medium text-sm sm:text-base">
+              <div className="glass-card rounded-xl p-6 hover-lift">
+                <div className="heading-md gradient-text mb-2">2,500+</div>
+                <div className="body-sm text-muted-foreground font-medium">
                   Students Trained
                 </div>
               </div>
@@ -243,11 +240,9 @@ const Index = () => {
               className="text-center group scroll-fade-in"
               style={{ animationDelay: "0.2s" }}
             >
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
-                  89%
-                </div>
-                <div className="text-muted-foreground font-medium text-sm sm:text-base">
+              <div className="glass-card rounded-xl p-6 hover-lift">
+                <div className="heading-md gradient-text mb-2">89%</div>
+                <div className="body-sm text-muted-foreground font-medium">
                   Success Rate
                 </div>
               </div>

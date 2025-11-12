@@ -35,22 +35,22 @@ export const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-1000 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? "bg-white/30 dark:bg-slate-900/30 backdrop-blur-3xl border-b border-green-300/20 dark:border-slate-600/20 shadow-lg"
-          : "bg-white/5 dark:bg-slate-900/5 backdrop-blur-3xl border-b border-green-200/5 dark:border-slate-700/5 shadow-none"
+          ? "glass-effect shadow-lg"
+          : "bg-background/60 backdrop-blur-2xl border-b border-border/30"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg">
-              <TrendingUp className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 rounded-xl bg-gradient-primary shadow-md hover:shadow-lg transition-shadow">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div className="font-bold text-xl text-gray-900 dark:text-white">
+            <div className="font-display font-bold text-lg sm:text-xl text-foreground">
               Market{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-500">
+              <span className="gradient-text">
                 Mobsters
               </span>
             </div>
@@ -58,28 +58,28 @@ export const Header = () => {
 
           {/* Desktop Navigation - Centered */}
           <nav className="hidden md:flex items-center justify-center flex-1">
-            <div className="flex items-center gap-1 bg-green-50/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full p-2 border-2 border-green-300/80 dark:border-slate-600/80 shadow-xl">
+            <div className="flex items-center gap-1 glass-effect rounded-full p-1.5 shadow-md">
               <button
                 onClick={() => scrollToSection("programs")}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/90 dark:hover:bg-slate-700/90 rounded-full transition-all duration-200 hover:shadow-lg"
+                className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-full transition-all duration-200"
               >
                 Programs
               </button>
               <button
                 onClick={() => scrollToSection("testimonials")}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/90 dark:hover:bg-slate-700/90 rounded-full transition-all duration-200 hover:shadow-lg"
+                className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-full transition-all duration-200"
               >
                 Reviews
               </button>
               <button
                 onClick={() => scrollToSection("faq")}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/90 dark:hover:bg-slate-700/90 rounded-full transition-all duration-200 hover:shadow-lg"
+                className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-full transition-all duration-200"
               >
                 FAQ
               </button>
               <button
                 onClick={() => scrollToSection("about")}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/90 dark:hover:bg-slate-700/90 rounded-full transition-all duration-200 hover:shadow-lg"
+                className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-full transition-all duration-200"
               >
                 About
               </button>
@@ -88,7 +88,7 @@ export const Header = () => {
 
           {/* Desktop Actions - Hidden on mobile */}
           <div className="hidden md:flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80 hover:bg-green-200/80 dark:hover:bg-slate-700/80 transition-all duration-200">
+            <div className="p-2 rounded-lg glass-effect hover:bg-accent/50 transition-all duration-200">
               <ThemeToggle />
             </div>
 
@@ -100,14 +100,14 @@ export const Header = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => openAuthModal("login")}
-                  className="border-green-300 dark:border-slate-500 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-50 dark:hover:bg-slate-700/60 hover:border-green-400 dark:hover:border-slate-400 backdrop-blur-sm"
+                  className="btn-modern border-border hover:border-primary/50 hover:bg-accent"
                 >
                   Login
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => openAuthModal("register")}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                  className="btn-modern bg-gradient-primary hover:shadow-glow text-white border-0"
                 >
                   Get Started
                 </Button>
@@ -118,43 +118,43 @@ export const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-200/80 dark:hover:bg-slate-700/80 transition-all duration-200"
+            className="md:hidden p-2 rounded-lg glass-effect hover:bg-accent/50 transition-all duration-200"
           >
             {isMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-green-200/80 dark:border-slate-600/80">
-            <nav className="flex flex-col gap-4 pt-4">
+          <div className="md:hidden mt-4 pb-4 border-t border-border/50">
+            <nav className="flex flex-col gap-3 pt-4">
               {/* Navigation Links */}
-              <div className="bg-green-50/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-2 border-2 border-green-300/80 dark:border-slate-600/80 shadow-xl">
+              <div className="glass-effect rounded-xl p-2 shadow-md">
                 <button
                   onClick={() => scrollToSection("programs")}
-                  className="w-full text-left px-4 py-3 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/80 dark:hover:bg-slate-700/80 rounded-xl transition-all duration-200 font-medium"
+                  className="w-full text-left px-4 py-2.5 text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 font-medium"
                 >
                   Programs
                 </button>
                 <button
                   onClick={() => scrollToSection("testimonials")}
-                  className="w-full text-left px-4 py-3 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/80 dark:hover:bg-slate-700/80 rounded-xl transition-all duration-200 font-medium"
+                  className="w-full text-left px-4 py-2.5 text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 font-medium"
                 >
                   Reviews
                 </button>
                 <button
                   onClick={() => scrollToSection("faq")}
-                  className="w-full text-left px-4 py-3 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/80 dark:hover:bg-slate-700/80 rounded-xl transition-all duration-200 font-medium"
+                  className="w-full text-left px-4 py-2.5 text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 font-medium"
                 >
                   FAQ
                 </button>
                 <button
                   onClick={() => scrollToSection("about")}
-                  className="w-full text-left px-4 py-3 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-100/80 dark:hover:bg-slate-700/80 rounded-xl transition-all duration-200 font-medium"
+                  className="w-full text-left px-4 py-2.5 text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 font-medium"
                 >
                   About
                 </button>
@@ -162,7 +162,7 @@ export const Header = () => {
 
               {/* Theme Toggle */}
               <div className="flex justify-center">
-                <div className="p-3 rounded-xl bg-green-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-green-300/80 dark:border-slate-600/80 hover:bg-green-200/80 dark:hover:bg-slate-700/80 transition-all duration-200">
+                <div className="p-2 rounded-lg glass-effect hover:bg-accent/50 transition-all duration-200">
                   <ThemeToggle />
                 </div>
               </div>
@@ -173,7 +173,7 @@ export const Header = () => {
                   <UserMenu />
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
                   <Button
                     variant="outline"
                     size="lg"
@@ -181,7 +181,7 @@ export const Header = () => {
                       openAuthModal("login");
                       setIsMenuOpen(false);
                     }}
-                    className="w-full border-green-300 dark:border-slate-500 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-green-50 dark:hover:bg-slate-700/60 hover:border-green-400 dark:hover:border-slate-400 backdrop-blur-sm"
+                    className="w-full btn-modern border-border hover:border-primary/50 hover:bg-accent"
                   >
                     Login
                   </Button>
@@ -191,7 +191,7 @@ export const Header = () => {
                       openAuthModal("register");
                       setIsMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                    className="w-full btn-modern bg-gradient-primary hover:shadow-glow text-white border-0"
                   >
                     Get Started
                   </Button>

@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -74,21 +78,40 @@ export default {
         'gradient-success': 'var(--gradient-success)',
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-card': 'var(--gradient-card)',
+        'gradient-accent': 'var(--gradient-accent)',
       },
       boxShadow: {
+        'xs': 'var(--shadow-xs)',
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+        'xl': 'var(--shadow-xl)',
+        '2xl': 'var(--shadow-2xl)',
         'soft': 'var(--shadow-soft)',
         'medium': 'var(--shadow-medium)',
         'strong': 'var(--shadow-strong)',
         'glow': 'var(--shadow-glow)',
+        'glow-lg': 'var(--shadow-glow-lg)',
       },
       transitionTimingFunction: {
         'smooth': 'var(--transition-smooth)',
         'bounce': 'var(--transition-bounce)',
+        'spring': 'var(--transition-spring)',
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        'sm': 'var(--radius-sm)',
+        'md': 'var(--radius-md)',
+        'lg': 'var(--radius-lg)',
+        'xl': 'var(--radius-xl)',
+      },
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
+        '2xl': '24px',
+        '3xl': '40px',
       },
       keyframes: {
         "accordion-down": {

@@ -158,9 +158,9 @@ export const AcademyDashboard: React.FC = () => {
   // If viewing a course, show the CourseViewer
   if (viewingCourse) {
     return (
-      <CourseViewer 
-        course={viewingCourse} 
-        onBack={() => setViewingCourse(null)} 
+      <CourseViewer
+        course={viewingCourse}
+        onBack={() => setViewingCourse(null)}
       />
     );
   }
@@ -171,17 +171,19 @@ export const AcademyDashboard: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Completed Lessons */}
         <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Completed Lessons
             </CardTitle>
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <CheckCircle className="h-4 w-4 text-blue-600" />
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <CheckCircle className="h-4 w-4 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.progress?.completedLessons || 12}</div>
+            <div className="text-2xl font-bold">
+              {content?.progress?.completedLessons || 12}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>of {content?.progress?.totalLessons || 24} total</span>
@@ -191,17 +193,20 @@ export const AcademyDashboard: React.FC = () => {
 
         {/* Assignments */}
         <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Assignments
             </CardTitle>
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <FileText className="h-4 w-4 text-purple-600" />
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <FileText className="h-4 w-4 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.assignments?.filter((a: any) => a.submitted).length || 8}</div>
+            <div className="text-2xl font-bold">
+              {content?.assignments?.filter((a: any) => a.submitted).length ||
+                8}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>of {content?.assignments?.length || 12} submitted</span>
@@ -241,7 +246,9 @@ export const AcademyDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{content?.tradingJournal?.totalTrades || 47}</div>
+            <div className="text-2xl font-bold">
+              {content?.tradingJournal?.totalTrades || 47}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>trades logged</span>
@@ -260,10 +267,14 @@ export const AcademyDashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">{content?.liveSession?.title || "Advanced Strategies"}</div>
+            <div className="text-lg font-bold">
+              {content?.liveSession?.title || "Advanced Strategies"}
+            </div>
             <p className="text-xs text-muted-foreground">
               {content?.liveSession?.scheduledTime
-                ? new Date(content.liveSession.scheduledTime).toLocaleDateString()
+                ? new Date(
+                    content.liveSession.scheduledTime
+                  ).toLocaleDateString()
                 : "Tomorrow 3:00 PM"}
             </p>
           </CardContent>
@@ -315,31 +326,41 @@ export const AcademyDashboard: React.FC = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <TrendingUp className="h-5 w-5 text-green-600" />
               Learning Progress
             </CardTitle>
-            <CardDescription>Your weekly study activity and progress</CardDescription>
+            <CardDescription>
+              Your weekly study activity and progress
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Overall Progress</span>
-                <span className="text-sm text-muted-foreground">{overallProgress}%</span>
+                <span className="text-sm text-muted-foreground">
+                  {overallProgress}%
+                </span>
               </div>
               <Progress value={overallProgress} className="h-2" />
-              
+
               <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <div className="text-lg font-bold text-blue-600">24</div>
-                  <div className="text-xs text-muted-foreground">Videos Watched</div>
+                <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div className="text-lg font-bold text-green-600">24</div>
+                  <div className="text-xs text-muted-foreground">
+                    Videos Watched
+                  </div>
                 </div>
                 <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                   <div className="text-lg font-bold text-green-600">8</div>
-                  <div className="text-xs text-muted-foreground">Assignments Done</div>
+                  <div className="text-xs text-muted-foreground">
+                    Assignments Done
+                  </div>
                 </div>
-                <div className="text-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                  <div className="text-lg font-bold text-purple-600">5</div>
-                  <div className="text-xs text-muted-foreground">Live Sessions</div>
+                <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div className="text-lg font-bold text-green-600">5</div>
+                  <div className="text-xs text-muted-foreground">
+                    Live Sessions
+                  </div>
                 </div>
               </div>
             </div>
@@ -355,13 +376,15 @@ export const AcademyDashboard: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-800">Continue Learning</p>
-                  <p className="text-xs text-blue-600">Resume last video</p>
+                  <p className="text-sm font-medium text-green-800">
+                    Continue Learning
+                  </p>
+                  <p className="text-xs text-green-600">Resume last video</p>
                 </div>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700">
                   <Play className="h-3 w-3" />
                 </Button>
               </div>
@@ -370,22 +393,34 @@ export const AcademyDashboard: React.FC = () => {
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-800">New Assignment</p>
+                  <p className="text-sm font-medium text-green-800">
+                    New Assignment
+                  </p>
                   <p className="text-xs text-green-600">Due in 3 days</p>
                 </div>
-                <Button size="sm" variant="outline" className="text-green-600 border-green-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-green-600 border-green-200"
+                >
                   View
                 </Button>
               </div>
             </div>
 
-            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-800">Live Session</p>
-                  <p className="text-xs text-purple-600">Tomorrow 3:00 PM</p>
+                  <p className="text-sm font-medium text-green-800">
+                    Live Session
+                  </p>
+                  <p className="text-xs text-green-600">Tomorrow 3:00 PM</p>
                 </div>
-                <Button size="sm" variant="outline" className="text-purple-600 border-purple-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-green-600 border-green-200"
+                >
                   Join
                 </Button>
               </div>
@@ -393,7 +428,6 @@ export const AcademyDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 
@@ -407,10 +441,10 @@ export const AcademyDashboard: React.FC = () => {
               className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0"
             >
               {/* Course Thumbnail */}
-              <div className="relative h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 overflow-hidden">
+              <div className="relative h-48 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 overflow-hidden">
                 {course.thumbnailUrl ? (
-                  <img 
-                    src={course.thumbnailUrl} 
+                  <img
+                    src={course.thumbnailUrl}
                     alt={course.title}
                     className="w-full h-full object-cover"
                   />
@@ -419,37 +453,39 @@ export const AcademyDashboard: React.FC = () => {
                     <GraduationCap className="w-16 h-16 text-white/80" />
                   </div>
                 )}
-                
+
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                
+
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30">
                     <PlayCircle className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                
+
                 {/* Course Stats */}
                 <div className="absolute top-4 left-4">
-                  <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm">
+                  <Badge className="bg-green-600/90 text-white border-0 backdrop-blur-sm">
                     {course.videos?.length || 0} videos
                   </Badge>
                 </div>
-                
+
                 {/* Progress Badge */}
                 <div className="absolute top-4 right-4">
-                  <Badge 
+                  <Badge
                     className={`border-0 backdrop-blur-sm ${
-                      course.completed 
-                        ? "bg-green-600/90 text-white" 
+                      course.completed
+                        ? "bg-green-600/90 text-white"
                         : "bg-orange-600/90 text-white"
                     }`}
                   >
-                    {course.completed ? "Completed" : `${course.progress || 0}% Done`}
+                    {course.completed
+                      ? "Completed"
+                      : `${course.progress || 0}% Done`}
                   </Badge>
                 </div>
-                
+
                 {/* Duration */}
                 <div className="absolute bottom-4 right-4">
                   <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-white text-xs">
@@ -458,20 +494,20 @@ export const AcademyDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Course Content */}
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {/* Course Title & Description */}
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                       {course.title}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                       {course.description}
                     </p>
                   </div>
-                  
+
                   {/* Course Meta */}
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-4">
@@ -493,30 +529,34 @@ export const AcademyDashboard: React.FC = () => {
                       <span>{course.level || "Beginner"}</span>
                     </div>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                      <span className="font-medium text-blue-600 dark:text-blue-400">{course.progress || 0}%</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Progress
+                      </span>
+                      <span className="font-medium text-green-600 dark:text-green-400">
+                        {course.progress || 0}%
+                      </span>
                     </div>
-                    <Progress 
-                      value={course.progress || 0} 
+                    <Progress
+                      value={course.progress || 0}
                       className="h-2 bg-gray-200 dark:bg-gray-700"
                     />
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-2">
-                    <Button 
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+                    <Button
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0"
                       onClick={() => setViewingCourse(course)}
                     >
                       <Play className="w-4 h-4 mr-2" />
                       {course.progress > 0 ? "Continue" : "Start Course"}
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="icon"
                       className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
@@ -525,74 +565,88 @@ export const AcademyDashboard: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
-              
+
               {/* Expanded Video List */}
               {expandedCourses.has(course.id) && (
                 <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
                   <div className="p-6">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <PlayCircle className="w-5 h-5 text-blue-600" />
+                      <PlayCircle className="w-5 h-5 text-green-600" />
                       Course Content ({course.videos?.length || 0} videos)
                     </h4>
-                    
+
                     {course.videos && course.videos.length > 0 ? (
                       <div className="space-y-3">
-                        {course.videos.map((video: CourseVideo, index: number) => (
-                          <div
-                            key={video.id}
-                            className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors duration-200 cursor-pointer group/video"
-                            onClick={() => {
-                              let videoUrl = video.videoUrl;
-                              if (!videoUrl.startsWith('http')) {
-                                if (videoUrl.startsWith('/uploads/')) {
-                                  videoUrl = videoUrl.replace('/uploads/', '/');
+                        {course.videos.map(
+                          (video: CourseVideo, index: number) => (
+                            <div
+                              key={video.id}
+                              className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl hover:bg-green-50 dark:hover:bg-slate-800 transition-colors duration-200 cursor-pointer group/video"
+                              onClick={() => {
+                                let videoUrl = video.videoUrl;
+                                if (!videoUrl.startsWith("http")) {
+                                  if (videoUrl.startsWith("/uploads/")) {
+                                    videoUrl = videoUrl.replace(
+                                      "/uploads/",
+                                      "/"
+                                    );
+                                  }
+                                  videoUrl = `${baseUrl}${
+                                    videoUrl.startsWith("/") ? "" : "/"
+                                  }${videoUrl}`;
                                 }
-                                videoUrl = `${baseUrl}${videoUrl.startsWith('/') ? '' : '/'}${videoUrl}`;
-                              }
-                              setSelectedVideo(videoUrl);
-                            }}
-                          >
-                            {/* Video Thumbnail */}
-                            <div className="relative w-16 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex-shrink-0 overflow-hidden">
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <Play className="w-4 h-4 text-white" />
-                              </div>
-                              <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
-                                {video.duration ? `${video.duration}:00` : `${5 + (index % 10)}:00`}
-                              </div>
-                            </div>
-                            
-                            {/* Video Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex-shrink-0">
-                                  {index + 1}.
-                                </span>
-                                <h5 className="font-medium text-gray-900 dark:text-white truncate group-hover/video:text-blue-600 dark:group-hover/video:text-blue-400">
-                                  {video.title}
-                                </h5>
-                              </div>
-                              <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                <span>Video • {video.duration ? `${video.duration} min` : `${5 + (index % 10)} min`}</span>
-                                {video.completed && (
-                                  <div className="flex items-center gap-1 text-green-600">
-                                    <CheckCircle className="w-3 h-3" />
-                                    <span>Completed</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Play Button */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="opacity-0 group-hover/video:opacity-100 transition-opacity"
+                                setSelectedVideo(videoUrl);
+                              }}
                             >
-                              <Play className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ))}
+                              {/* Video Thumbnail */}
+                              <div className="relative w-16 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex-shrink-0 overflow-hidden">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <Play className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
+                                  {video.duration
+                                    ? `${video.duration}:00`
+                                    : `${5 + (index % 10)}:00`}
+                                </div>
+                              </div>
+
+                              {/* Video Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-green-600 dark:text-green-400 flex-shrink-0">
+                                    {index + 1}.
+                                  </span>
+                                  <h5 className="font-medium text-gray-900 dark:text-white truncate group-hover/video:text-green-600 dark:group-hover/video:text-green-400">
+                                    {video.title}
+                                  </h5>
+                                </div>
+                                <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                  <span>
+                                    Video •{" "}
+                                    {video.duration
+                                      ? `${video.duration} min`
+                                      : `${5 + (index % 10)} min`}
+                                  </span>
+                                  {video.completed && (
+                                    <div className="flex items-center gap-1 text-green-600">
+                                      <CheckCircle className="w-3 h-3" />
+                                      <span>Completed</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Play Button */}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="opacity-0 group-hover/video:opacity-100 transition-opacity"
+                              >
+                                <Play className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-8">
@@ -602,7 +656,7 @@ export const AcademyDashboard: React.FC = () => {
                         </p>
                       </div>
                     )}
-                    
+
                     {/* Video Player */}
                     {selectedVideo && (
                       <div className="mt-6 p-4 bg-black rounded-xl">
@@ -615,7 +669,8 @@ export const AcademyDashboard: React.FC = () => {
                             console.error("Video playback error:", e);
                             toast({
                               title: "Video Error",
-                              description: "Failed to load video. Please try again.",
+                              description:
+                                "Failed to load video. Please try again.",
                               variant: "destructive",
                             });
                           }}
@@ -639,7 +694,7 @@ export const AcademyDashboard: React.FC = () => {
             </p>
             <Button
               variant="outline"
-              className="mt-4 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+              className="mt-4 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
               onClick={loadAcademyContent}
             >
               Refresh Courses
@@ -660,7 +715,7 @@ export const AcademyDashboard: React.FC = () => {
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <Calendar className="w-5 h-5 text-purple-500" />
+                <Calendar className="w-5 h-5 text-green-500" />
                 {session.title}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-300">
@@ -675,8 +730,10 @@ export const AcademyDashboard: React.FC = () => {
                 </p>
                 <Button
                   variant="cta"
-                  className="bg-purple-500 hover:bg-purple-600 text-white"
-                  onClick={() => window.open(`/session/${session.id}`, '_blank')}
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                  onClick={() =>
+                    window.open(`/session/${session.id}`, "_blank")
+                  }
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Join Session
@@ -736,7 +793,7 @@ export const AcademyDashboard: React.FC = () => {
                   className={
                     assignment.submitted
                       ? "border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-300"
-                      : "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
                   }
                 >
                   {assignment.submitted
@@ -772,28 +829,31 @@ export const AcademyDashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
+    <div className="p-4 sm:p-6 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 min-h-full relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl"></div>
-        <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-blue-400/5 rounded-full blur-xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-green-400/5 rounded-full blur-xl"></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
                 <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
                   Academy{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Dashboard</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
+                    Dashboard
+                  </span>
                 </h1>
                 <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
-                  Your 6-month journey to forex trading mastery and professional development.
+                  Your 6-month journey to forex trading mastery and professional
+                  development.
                 </p>
               </div>
             </div>

@@ -12,48 +12,56 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card border-t border-border py-16 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+    <footer className="relative bg-gradient-to-b from-background to-accent/30 border-t border-border py-16 px-6 overflow-hidden">
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div className="absolute top-10 right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-8 h-8 text-primary" />
-              <div className="font-bold text-2xl text-foreground">
-                Market <span className="text-primary">Mobsters</span>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-gradient-primary shadow-md">
+                <TrendingUp className="w-7 h-7 text-white" />
+              </div>
+              <div className="font-display font-bold text-2xl text-foreground">
+                Market <span className="gradient-text">Mobsters</span>
               </div>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="body-md text-muted-foreground mb-6 max-w-md">
               Transform your financial future with professional forex trading
               education. Join thousands of successful traders who have mastered
               the markets with our comprehensive academy program.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-primary/10 hover:text-primary"
+                className="rounded-lg hover:bg-primary/10 hover:text-primary transition-all hover:scale-110"
               >
                 <Instagram className="w-5 h-5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-primary/10 hover:text-primary"
+                className="rounded-lg hover:bg-primary/10 hover:text-primary transition-all hover:scale-110"
               >
                 <Youtube className="w-5 h-5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-primary/10 hover:text-primary"
+                className="rounded-lg hover:bg-primary/10 hover:text-primary transition-all hover:scale-110"
               >
                 <MessageSquare className="w-5 h-5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-primary/10 hover:text-primary"
+                className="rounded-lg hover:bg-primary/10 hover:text-primary transition-all hover:scale-110"
               >
                 <Mail className="w-5 h-5" />
               </Button>
@@ -62,14 +70,14 @@ export const Footer = () => {
 
           {/* Programs */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 text-primary">
+            <h3 className="font-display font-semibold text-lg mb-4 text-foreground">
               Programs
             </h3>
-            <ul className="space-y-3 text-muted-foreground">
+            <ul className="space-y-3 body-sm text-muted-foreground">
               <li>
                 <a
                   href="#programs"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-all hover:translate-x-1 inline-block"
                 >
                   6-Month Academy
                 </a>
@@ -77,7 +85,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="#programs"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-all hover:translate-x-1 inline-block"
                 >
                   Monthly Mentorship
                 </a>
@@ -85,7 +93,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="#programs"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-all hover:translate-x-1 inline-block"
                 >
                   Free Community
                 </a>
@@ -93,7 +101,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="#programs"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-all hover:translate-x-1 inline-block"
                 >
                   Trading Signals
                 </a>

@@ -12,8 +12,8 @@ import {
   TrendingUp,
   Gift,
   Clock,
+  Sparkles,
 } from "lucide-react";
-import { link } from "fs";
 
 export const ProgramCards = () => {
   const programs = [
@@ -79,97 +79,105 @@ export const ProgramCards = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto" id="programs">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto" id="programs">
       {programs.map((program) => (
         <Card
           key={program.id}
-          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+          className={`relative overflow-hidden group hover-lift ${
             program.popular
-              ? "border-2 border-primary shadow-lg scale-105"
-              : "border border-border hover:border-primary/50"
+              ? "border-2 border-primary shadow-xl ring-2 ring-primary/20 lg:scale-105"
+              : "card-modern hover:border-primary/30"
           }`}
         >
+          {/* Gradient overlay for popular card */}
+          {program.popular && (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+          )}
+
           {program.badge && (
-            <div className="absolute top-1 right-4">
+            <div className="absolute top-4 right-4 z-10">
               <Badge
                 variant={program.popular ? "default" : "secondary"}
-                className={
-                  program.popular ? "bg-primary text-primary-foreground" : ""
-                }
+                className={`shadow-md ${
+                  program.popular ? "bg-gradient-primary text-white border-0" : ""
+                }`}
               >
+                {program.popular && <Sparkles className="w-3 h-3 mr-1" />}
                 {program.badge}
               </Badge>
             </div>
           )}
 
-          <CardHeader className="pb-4">
-            <div className="flex items-start justify-between mb-4">
+          <CardHeader className="pb-6 relative">
+            <div className="flex items-start justify-between mb-6">
               <div
-                className={`p-3 rounded-lg ${
-                  program.popular ? "bg-primary/10" : "bg-muted"
+                className={`p-3 rounded-xl shadow-sm transition-all duration-300 group-hover:scale-110 ${
+                  program.popular 
+                    ? "bg-gradient-primary text-white" 
+                    : "bg-accent"
                 }`}
               >
                 <program.icon
-                  className={`w-6 h-6 ${
-                    program.popular ? "text-primary" : "text-muted-foreground"
+                  className={`w-7 h-7 ${
+                    program.popular ? "text-white" : "text-primary"
                   }`}
                 />
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-foreground">
+                <div className="heading-sm text-foreground">
                   {program.price}
                   {program.priceUnit && (
-                    <span className="text-lg font-normal text-muted-foreground">
+                    <span className="text-base font-normal text-muted-foreground">
                       {program.priceUnit}
                     </span>
                   )}
                 </div>
                 {program.originalPrice && (
-                  <div className="text-sm line-through text-red-500">
+                  <div className="text-sm line-through text-destructive/70 font-medium">
                     {program.originalPrice}
                   </div>
                 )}
               </div>
             </div>
 
-            <CardTitle className="text-xl font-bold text-foreground mb-1">
+            <CardTitle className="heading-xs mb-2">
               {program.title}
             </CardTitle>
-            <p className="text-muted-foreground text-sm">{program.subtitle}</p>
+            <p className="body-sm text-muted-foreground">{program.subtitle}</p>
           </CardHeader>
 
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 relative">
             <div className="space-y-3 mb-6">
               {program.keyFeatures.map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-card-foreground leading-relaxed">
+                <div key={idx} className="flex items-start gap-3 group/item">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0 transition-transform group-hover/item:scale-110" />
+                  <span className="body-sm text-card-foreground leading-relaxed">
                     {feature}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-center gap-2 text-primary font-medium mb-6">
-              <Star className="w-4 h-4" />
-              <span className="text-sm">{program.highlight}</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 mb-6">
+              <Star className="w-4 h-4 text-primary fill-primary" />
+              <span className="text-sm font-medium text-foreground">{program.highlight}</span>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {program.id === "academy" && (
                 <>
                   <Button
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="w-full btn-modern bg-gradient-primary hover:shadow-glow text-white border-0 font-semibold"
                     size="lg"
                     onClick={() => handleEnrollClick(program.id)}
                   >
-                    <Zap className="mr-2 w-4 h-4" />
+                    <Zap className="mr-2 w-5 h-5" />
                     Enroll Now
                   </Button>
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full border-primary text-primary hover:bg-primary/5 bg-transparent"
+                    className="w-full btn-modern border-primary/50 text-primary hover:bg-primary/5 hover:border-primary"
                     onClick={() => (window.location.href = "/register")}
                   >
                     <Clock className="mr-2 w-4 h-4" />
@@ -180,11 +188,11 @@ export const ProgramCards = () => {
 
               {program.id === "mentorship" && (
                 <Button
-                  className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                  className="w-full btn-modern bg-gradient-to-r from-primary/90 to-primary hover:from-primary hover:to-primary-light text-white border-0 font-semibold hover:shadow-glow"
                   size="lg"
                   onClick={() => handleEnrollClick(program.id)}
                 >
-                  <TrendingUp className="mr-2 w-4 h-4" />
+                  <TrendingUp className="mr-2 w-5 h-5" />
                   Start Mentorship
                 </Button>
               )}
@@ -193,10 +201,10 @@ export const ProgramCards = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full border-accent text-accent hover:bg-accent/5 bg-transparent"
+                  className="w-full btn-modern border-primary/50 text-primary hover:bg-primary/5 hover:border-primary font-semibold"
                   onClick={() => handleEnrollClick(program.id)}
                 >
-                  <Gift className="mr-2 w-4 h-4" />
+                  <Gift className="mr-2 w-5 h-5" />
                   Join Free Community
                 </Button>
               )}

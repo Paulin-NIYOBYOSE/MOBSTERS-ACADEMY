@@ -220,13 +220,13 @@ export const MentorshipDashboard: React.FC = () => {
 
         {/* P&L */}
         <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Monthly P&L
             </CardTitle>
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <DollarSign className="h-4 w-4 text-blue-600" />
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <DollarSign className="h-4 w-4 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -242,13 +242,13 @@ export const MentorshipDashboard: React.FC = () => {
 
         {/* Total Trades */}
         <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Trades
             </CardTitle>
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <BarChart3 className="h-4 w-4 text-purple-600" />
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <BarChart3 className="h-4 w-4 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -371,14 +371,14 @@ export const MentorshipDashboard: React.FC = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">Win Rate</p>
               </div>
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
                   {content?.performance?.profitLoss || "+$2,847"}
                 </div>
                 <p className="text-sm text-muted-foreground">P&L</p>
               </div>
-              <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
                   {content?.performance?.tradesCount || "156"}
                 </div>
                 <p className="text-sm text-muted-foreground">Trades</p>
@@ -416,38 +416,38 @@ export const MentorshipDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-800">
+                  <p className="text-sm font-medium text-green-800">
                     New Strategy
                   </p>
-                  <p className="text-xs text-purple-600">
+                  <p className="text-xs text-green-600">
                     Fibonacci Retracements
                   </p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-purple-600 border-purple-200"
+                  className="text-green-600 border-green-200"
                 >
                   Learn
                 </Button>
               </div>
             </div>
 
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-800">
+                  <p className="text-sm font-medium text-green-800">
                     Premium Signals
                   </p>
-                  <p className="text-xs text-blue-600">3 new signals today</p>
+                  <p className="text-xs text-green-600">3 new signals today</p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-blue-600 border-blue-200"
+                  className="text-green-600 border-green-200"
                 >
                   View
                 </Button>
@@ -477,9 +477,11 @@ export const MentorshipDashboard: React.FC = () => {
                   Scheduled {new Date(session.date).toLocaleDateString()} at{" "}
                   {new Date(session.date).toLocaleTimeString()}
                 </p>
-                <Button 
+                <Button
                   variant="cta"
-                  onClick={() => window.open(`/session/${session.id}`, '_blank')}
+                  onClick={() =>
+                    window.open(`/session/${session.id}`, "_blank")
+                  }
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Join Session
@@ -508,7 +510,7 @@ export const MentorshipDashboard: React.FC = () => {
           <Card key={index}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-purple-500" />
+                <Star className="w-5 h-5 text-green-500" />
                 {strategy.title}
               </CardTitle>
               <CardDescription>{strategy.description}</CardDescription>
@@ -555,7 +557,7 @@ export const MentorshipDashboard: React.FC = () => {
     <div className="space-y-4">
       {signals.length ? (
         signals.map((signal, index) => (
-          <Card key={index} className="border-l-4 border-l-blue-500">
+          <Card key={index} className="border-l-4 border-l-green-500">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{signal.title}</CardTitle>
@@ -622,7 +624,7 @@ export const MentorshipDashboard: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Target className="w-5 h-5 text-purple-500" />
+                  <Target className="w-5 h-5 text-green-500" />
                   {challenge.title}
                 </CardTitle>
                 <Badge
@@ -647,7 +649,7 @@ export const MentorshipDashboard: React.FC = () => {
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-purple-500 h-2 rounded-full transition-all"
+                    className="bg-green-500 h-2 rounded-full transition-all"
                     style={{ width: `${challenge.progress}%` }}
                   ></div>
                 </div>

@@ -510,6 +510,7 @@ const TradingJournal: React.FC = () => {
                   <Bar 
                     dataKey="value" 
                     radius={[2, 2, 0, 0]}
+                    fill="#10b981"
                   >
                     {netDailyPLData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#10b981' : '#ef4444'} />

@@ -35,40 +35,121 @@ interface DashboardSidebarProps {
 const navigationItems = (
   hasRole: (r: string) => boolean
 ): { title: string; url: string; icon: any; roles: string[] }[] => {
-  const items: { title: string; url: string; icon: any; roles: string[] }[] = [];
+  const items: { title: string; url: string; icon: any; roles: string[] }[] =
+    [];
 
   // Admin section
   if (hasRole("admin")) {
     items.push(
       { title: "Dashboard", url: "/dashboard", icon: Home, roles: ["admin"] },
-      { title: "Users", url: "/dashboard/users", icon: Users, roles: ["admin"] },
-      { title: "Courses", url: "/dashboard/courses", icon: BookOpen, roles: ["admin"] },
-      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["admin"] },
-      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["admin"] },
-      { title: "Transactions", url: "/dashboard/transactions", icon: DollarSign, roles: ["admin"] },
-      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, roles: ["admin"] }
+      {
+        title: "Users",
+        url: "/dashboard/users",
+        icon: Users,
+        roles: ["admin"],
+      },
+      {
+        title: "Courses",
+        url: "/dashboard/courses",
+        icon: BookOpen,
+        roles: ["admin"],
+      },
+      {
+        title: "Live Sessions",
+        url: "/dashboard/sessions",
+        icon: Calendar,
+        roles: ["admin"],
+      },
+      {
+        title: "Trading Journal",
+        url: "/dashboard/journal",
+        icon: BarChart3,
+        roles: ["admin"],
+      },
+      {
+        title: "Transactions",
+        url: "/dashboard/transactions",
+        icon: DollarSign,
+        roles: ["admin"],
+      },
+      {
+        title: "Messages",
+        url: "/dashboard/messages",
+        icon: MessageSquare,
+        roles: ["admin"],
+      }
     );
   }
 
   // Academy student section
   if (hasRole("academy_student")) {
     items.push(
-      { title: "Overview", url: "/dashboard", icon: Home, roles: ["academy_student", "admin"] },
-      { title: "Courses", url: "/dashboard/courses", icon: BookOpen, roles: ["academy_student", "admin"] },
-      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["academy_student", "admin"] },
-      { title: "Assignments", url: "/dashboard/assignments", icon: MessageSquare, roles: ["academy_student", "admin"] },
-      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["academy_student", "admin"] }
+      {
+        title: "Overview",
+        url: "/dashboard",
+        icon: Home,
+        roles: ["academy_student", "admin"],
+      },
+      {
+        title: "Courses",
+        url: "/dashboard/courses",
+        icon: BookOpen,
+        roles: ["academy_student", "admin"],
+      },
+      {
+        title: "Live Sessions",
+        url: "/dashboard/sessions",
+        icon: Calendar,
+        roles: ["academy_student", "admin"],
+      },
+      {
+        title: "Assignments",
+        url: "/dashboard/assignments",
+        icon: MessageSquare,
+        roles: ["academy_student", "admin"],
+      },
+      {
+        title: "Trading Journal",
+        url: "/dashboard/journal",
+        icon: BarChart3,
+        roles: ["academy_student", "admin"],
+      }
     );
   }
 
   // Mentorship student section
   if (hasRole("mentorship_student")) {
     items.push(
-      { title: "Overview", url: "/dashboard", icon: Home, roles: ["mentorship_student", "admin"] },
-      { title: "Live Sessions", url: "/dashboard/sessions", icon: Calendar, roles: ["mentorship_student", "admin"] },
-      { title: "Strategies", url: "/dashboard/strategies", icon: BookOpen, roles: ["mentorship_student", "admin"] },
-      { title: "Challenges", url: "/dashboard/challenges", icon: Users, roles: ["mentorship_student", "admin"] },
-      { title: "Trading Journal", url: "/dashboard/journal", icon: BarChart3, roles: ["mentorship_student", "admin"] }
+      {
+        title: "Overview",
+        url: "/dashboard",
+        icon: Home,
+        roles: ["mentorship_student", "admin"],
+      },
+      {
+        title: "Live Sessions",
+        url: "/dashboard/sessions",
+        icon: Calendar,
+        roles: ["mentorship_student", "admin"],
+      },
+      {
+        title: "Strategies",
+        url: "/dashboard/strategies",
+        icon: BookOpen,
+        roles: ["mentorship_student", "admin"],
+      },
+      {
+        title: "Challenges",
+        url: "/dashboard/challenges",
+        icon: Users,
+        roles: ["mentorship_student", "admin"],
+      },
+      {
+        title: "Trading Journal",
+        url: "/dashboard/journal",
+        icon: BarChart3,
+        roles: ["mentorship_student", "admin"],
+      }
     );
   }
 
@@ -77,8 +158,18 @@ const navigationItems = (
     // Free/Community users: dashboard sections via sidebar
     items.push(
       { title: "Overview", url: "/dashboard", icon: Home, roles: [] },
-      { title: "Free Courses", url: "/dashboard/courses", icon: BookOpen, roles: [] },
-      { title: "Community", url: "/dashboard/community", icon: Users, roles: [] }
+      {
+        title: "Free Courses",
+        url: "/dashboard/courses",
+        icon: BookOpen,
+        roles: [],
+      },
+      {
+        title: "Community",
+        url: "/dashboard/community",
+        icon: Users,
+        roles: [],
+      }
     );
   }
 
@@ -105,50 +196,22 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
   };
   const getNavClassName = (path: string) =>
     cn(
-      "w-full justify-start transition-colors",
+      "w-full justify-start transition-all duration-200 rounded-lg",
       isActive(path)
-        ? "bg-primary text-primary-foreground font-medium"
-        : "hover:bg-muted/50"
+        ? "bg-gradient-primary text-white font-semibold shadow-md hover:shadow-lg"
+        : "hover:bg-accent/50 text-foreground/80 hover:text-foreground"
     );
 
   const visibleItems = navigationItems(hasRole);
 
-  // Determine dashboard theme colors based on user role
+  // Determine dashboard theme colors based on user role - consistent green theme across all dashboards
   const getDashboardTheme = () => {
-    if (hasRole("admin")) {
-      return {
-        gradient: "from-purple-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
-        accent: "from-purple-500 to-blue-500",
-        border: "border-purple-200/50 dark:border-slate-700/50",
-        bg: "bg-white/80 dark:bg-slate-900/80",
-        sidebarBg: "bg-gradient-to-b from-purple-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
-      };
-    }
-    if (hasRole("academy_student")) {
-      return {
-        gradient: "from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
-        accent: "from-blue-500 to-purple-500",
-        border: "border-blue-200/50 dark:border-slate-700/50",
-        bg: "bg-white/80 dark:bg-slate-900/80",
-        sidebarBg: "bg-gradient-to-b from-blue-50/50 via-purple-50/30 to-blue-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
-      };
-    }
-    if (hasRole("mentorship_student")) {
-      return {
-        gradient: "from-green-50/50 via-teal-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
-        accent: "from-green-500 to-teal-500",
-        border: "border-green-200/50 dark:border-slate-700/50",
-        bg: "bg-white/80 dark:bg-slate-900/80",
-        sidebarBg: "bg-gradient-to-b from-green-50/50 via-teal-50/30 to-green-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
-      };
-    }
-    // Free dashboard
     return {
-      gradient: "from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
-      accent: "from-green-500 to-emerald-500",
+      gradient: "from-green-50/30 via-emerald-50/20 to-green-50/30 dark:from-slate-900/30 dark:via-slate-800/20 dark:to-slate-900/30",
+      accent: "from-primary to-primary-light",
       border: "border-green-200/50 dark:border-slate-700/50",
-      bg: "bg-white/80 dark:bg-slate-900/80",
-      sidebarBg: "bg-gradient-to-b from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90"
+      bg: "bg-white/80 dark:bg-slate-800/80",
+      sidebarBg: "bg-gradient-to-b from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
     };
   };
 
@@ -157,51 +220,46 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
   return (
     <Sidebar
       className={cn(
-        "transition-all duration-300 ease-in-out border-r backdrop-blur-md",
+        "transition-all duration-300 ease-in-out border-r glass-effect",
         theme.border,
-        theme.sidebarBg,
         collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-slate-700/10 dark:to-slate-600/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-slate-600/10 dark:to-slate-700/10 rounded-full blur-xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-green-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl"></div>
       </div>
-      
-      <SidebarContent className="relative p-4">
+
+      <SidebarContent className={cn("relative p-4", theme.sidebarBg)}>
         {/* User Profile */}
         <div
           className={cn(
-            "mb-6 p-4 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl",
-            `bg-gradient-to-r ${theme.gradient} border ${theme.border}`,
+            "mb-6 p-4 rounded-xl glass-card shadow-md transition-all duration-300 hover:shadow-lg hover-lift",
             collapsed && "p-2"
           )}
         >
           {!collapsed ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 bg-gradient-to-r ${theme.accent} rounded-full flex items-center justify-center shadow-lg`}>
+                <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center shadow-md">
                   <span className="text-white font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">
+                  <p className="font-display font-semibold text-sm truncate text-foreground">
                     {user?.name || "User"}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </p>
+                  <p className="caption truncate">{user?.email}</p>
                 </div>
               </div>
               {user?.roles?.length && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {user.roles.map((role, idx) => (
                     <Badge
                       key={idx}
-                      variant="secondary"
-                      className="text-xs px-2 py-0.5"
+                      className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5 font-medium"
                     >
                       {role.replace("_student", "").replace("_", " ")}
                     </Badge>
@@ -210,7 +268,7 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
               )}
             </div>
           ) : (
-            <div className={`w-8 h-8 bg-gradient-to-r ${theme.accent} rounded-full flex items-center justify-center mx-auto shadow-lg`}>
+            <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-md">
               <span className="text-white font-bold text-xs">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
@@ -220,11 +278,8 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {visibleItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -232,10 +287,12 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
                       to={item.url}
                       className={getNavClassName(item.url)}
                     >
-                      <item.icon className="w-4 h-4 shrink-0" />
+                      <item.icon className="w-5 h-5 shrink-0" />
                       {!collapsed && (
                         <div className="flex items-center justify-between flex-1 min-w-0">
-                          <span className="truncate">{item.title}</span>
+                          <span className="truncate body-sm font-medium">
+                            {item.title}
+                          </span>
                         </div>
                       )}
                     </NavLink>
@@ -273,11 +330,13 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
 
         {/* Settings & Logout */}
         <div className={`mt-auto pt-4 border-t ${theme.border}`}>
-          <SidebarMenu>
+          <SidebarMenu className="space-y-1">
             <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-muted/50 transition-colors duration-200">
-                <Settings className="w-4 h-4" />
-                {!collapsed && <span>Settings</span>}
+              <SidebarMenuButton className="hover:bg-accent/50 transition-all duration-200 rounded-lg">
+                <Settings className="w-5 h-5" />
+                {!collapsed && (
+                  <span className="body-sm font-medium">Settings</span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -286,10 +345,12 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
                   await authService.logout();
                   window.location.href = "/";
                 }}
-                className="text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-200"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg"
               >
-                <LogOut className="w-4 h-4" />
-                {!collapsed && <span>Logout</span>}
+                <LogOut className="w-5 h-5" />
+                {!collapsed && (
+                  <span className="body-sm font-medium">Logout</span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

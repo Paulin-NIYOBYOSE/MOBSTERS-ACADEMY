@@ -14,7 +14,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,7 +30,7 @@ import {
 } from '../ui/select';
 import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, Plus, X } from 'lucide-react';
+import { CalendarIcon, Plus, X, Link, DollarSign, Percent } from 'lucide-react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,20 +39,15 @@ import { cn } from '../../lib/utils';
 import { CreateTradeDto, UpdateTradeDto, Trade, tradingJournalService } from '../../services/tradingJournalService';
 
 const tradeSchema = z.object({
-  symbol: z.string().min(1, 'Symbol is required').max(10, 'Symbol too long'),
+  pair: z.string().min(1, 'Pair is required').max(10, 'Pair too long'),
   type: z.enum(['BUY', 'SELL']),
-  entryPrice: z.number().positive('Entry price must be positive'),
-  exitPrice: z.number().positive('Exit price must be positive').optional(),
-  lotSize: z.number().positive('Lot size must be positive'),
-  entryTime: z.date(),
-  exitTime: z.date().optional(),
-  stopLoss: z.number().positive('Stop loss must be positive').optional(),
-  takeProfit: z.number().positive('Take profit must be positive').optional(),
-  commission: z.number().min(0, 'Commission cannot be negative').optional(),
-  swap: z.number().optional(),
+  time: z.date(),
+  chartLink: z.string().url('Invalid URL').optional().or(z.literal('')),
+  riskPercent: z.number().min(0).max(100).optional(),
+  accountId: z.number().min(1, 'Please select an account'),
+  profit: z.number().optional(),
+  status: z.enum(['RUNNING', 'WIN', 'LOSS', 'BREAKEVEN']).optional(),
   notes: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  status: z.enum(['OPEN', 'CLOSED', 'CANCELLED']).optional(),
 });
 
 type TradeFormData = z.infer<typeof tradeSchema>;
@@ -66,18 +60,11 @@ interface TradeFormProps {
   mode: 'create' | 'edit';
 }
 
-const COMMON_SYMBOLS = [
+const COMMON_PAIRS = [
   'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD',
   'EURJPY', 'GBPJPY', 'EURGBP', 'AUDJPY', 'EURAUD', 'CHFJPY', 'GBPCHF',
   'AUDCAD', 'AUDCHF', 'CADCHF', 'CADJPY', 'EURCHF', 'EURCAD', 'GBPAUD',
   'GBPCAD', 'NZDJPY', 'AUDNZD'
-];
-
-const COMMON_TAGS = [
-  'Scalping', 'Day Trading', 'Swing Trading', 'Position Trading',
-  'Breakout', 'Reversal', 'Trend Following', 'Counter Trend',
-  'Support/Resistance', 'Moving Average', 'Fibonacci', 'RSI',
-  'MACD', 'Bollinger Bands', 'News Trading', 'Economic Data'
 ];
 
 export const TradeForm: React.FC<TradeFormProps> = ({
@@ -88,59 +75,48 @@ export const TradeForm: React.FC<TradeFormProps> = ({
   mode
 }) => {
   const [loading, setLoading] = useState(false);
-  const [customTags, setCustomTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState('');
   const { toast } = useToast();
 
   const form = useForm<TradeFormData>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
-      symbol: '',
+      pair: '',
       type: 'BUY',
-      entryPrice: 0,
-      lotSize: 0.01,
-      entryTime: new Date(),
-      commission: 0,
-      swap: 0,
+      time: new Date(),
+      chartLink: '',
+      riskPercent: 1,
+      accountId: 0,
+      profit: 0,
+      status: 'RUNNING',
       notes: '',
-      tags: [],
-      status: 'OPEN',
     },
   });
 
   useEffect(() => {
     if (trade && mode === 'edit') {
       form.reset({
-        symbol: trade.symbol,
+        pair: trade.pair,
         type: trade.type,
-        entryPrice: trade.entryPrice,
-        exitPrice: trade.exitPrice,
-        lotSize: trade.lotSize,
-        entryTime: new Date(trade.entryTime),
-        exitTime: trade.exitTime ? new Date(trade.exitTime) : undefined,
-        stopLoss: trade.stopLoss,
-        takeProfit: trade.takeProfit,
-        commission: trade.commission,
-        swap: trade.swap,
-        notes: trade.notes || '',
-        tags: trade.tags || [],
+        time: new Date(trade.time),
+        chartLink: trade.chartLink || '',
+        riskPercent: trade.riskPercent,
+        accountId: trade.accountId,
+        profit: trade.profit,
         status: trade.status,
+        notes: trade.notes || '',
       });
-      setCustomTags(trade.tags || []);
     } else {
       form.reset({
-        symbol: '',
+        pair: '',
         type: 'BUY',
-        entryPrice: 0,
-        lotSize: 0.01,
-        entryTime: new Date(),
-        commission: 0,
-        swap: 0,
+        time: new Date(),
+        chartLink: '',
+        riskPercent: 1,
+        accountId: 0,
+        profit: 0,
+        status: 'RUNNING',
         notes: '',
-        tags: [],
-        status: 'OPEN',
       });
-      setCustomTags([]);
     }
   }, [trade, mode, form]);
 
@@ -149,9 +125,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     try {
       const tradeData = {
         ...data,
-        entryTime: data.entryTime.toISOString(),
-        exitTime: data.exitTime?.toISOString(),
-        tags: customTags,
+        time: data.time.toISOString(),
+        chartLink: data.chartLink || undefined,
       };
 
       if (mode === 'create') {
@@ -181,23 +156,6 @@ export const TradeForm: React.FC<TradeFormProps> = ({
     }
   };
 
-  const addTag = () => {
-    if (newTag.trim() && !customTags.includes(newTag.trim())) {
-      setCustomTags([...customTags, newTag.trim()]);
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setCustomTags(customTags.filter(tag => tag !== tagToRemove));
-  };
-
-  const addCommonTag = (tag: string) => {
-    if (!customTags.includes(tag)) {
-      setCustomTags([...customTags, tag]);
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -207,8 +165,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
           </DialogTitle>
           <DialogDescription>
             {mode === 'create' 
-              ? 'Enter the details of your new trade'
-              : 'Update the trade information'
+              ? 'Enter the essential details of your trade. You can update results later when the trade closes.'
+              : 'Update the trade information and results'
             }
           </DialogDescription>
         </DialogHeader>
@@ -216,23 +174,23 @@ export const TradeForm: React.FC<TradeFormProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Symbol */}
+              {/* Pair */}
               <FormField
                 control={form.control}
-                name="symbol"
+                name="pair"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Symbol</FormLabel>
+                    <FormLabel>Currency Pair</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select symbol" />
+                          <SelectValue placeholder="Select pair" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {COMMON_SYMBOLS.map((symbol) => (
-                          <SelectItem key={symbol} value={symbol}>
-                            {symbol}
+                        {COMMON_PAIRS.map((pair) => (
+                          <SelectItem key={pair} value={pair}>
+                            {pair}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -248,7 +206,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
+                    <FormLabel>Trade Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -256,8 +214,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="BUY">BUY</SelectItem>
-                        <SelectItem value="SELL">SELL</SelectItem>
+                        <SelectItem value="BUY">BUY (Long)</SelectItem>
+                        <SelectItem value="SELL">SELL (Short)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -265,62 +223,89 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                 )}
               />
 
-              {/* Entry Price */}
+              {/* Time */}
               <FormField
                 control={form.control}
-                name="entryPrice"
+                name="time"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Trade Time</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP HH:mm")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Risk Percent */}
+              <FormField
+                control={form.control}
+                name="riskPercent"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Entry Price</FormLabel>
+                    <FormLabel>Risk %</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.00001"
-                        placeholder="1.12345"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          placeholder="1.0"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        />
+                        <Percent className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Exit Price */}
+              {/* Account ID */}
               <FormField
                 control={form.control}
-                name="exitPrice"
+                name="accountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Exit Price (Optional)</FormLabel>
+                    <FormLabel>Trading Account</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        step="0.00001"
-                        placeholder="1.12445"
+                        min="1"
+                        placeholder="Account ID"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Lot Size */}
-              <FormField
-                control={form.control}
-                name="lotSize"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lot Size</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.01"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -342,186 +327,62 @@ export const TradeForm: React.FC<TradeFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="OPEN">OPEN</SelectItem>
-                        <SelectItem value="CLOSED">CLOSED</SelectItem>
-                        <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                        <SelectItem value="RUNNING">Running</SelectItem>
+                        <SelectItem value="WIN">Win</SelectItem>
+                        <SelectItem value="LOSS">Loss</SelectItem>
+                        <SelectItem value="BREAKEVEN">Breakeven</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-              {/* Entry Time */}
-              <FormField
-                control={form.control}
-                name="entryTime"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Entry Time</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP HH:mm")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Exit Time */}
-              <FormField
-                control={form.control}
-                name="exitTime"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Exit Time (Optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP HH:mm")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Stop Loss */}
-              <FormField
-                control={form.control}
-                name="stopLoss"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stop Loss (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.00001"
-                        placeholder="1.12000"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Take Profit */}
-              <FormField
-                control={form.control}
-                name="takeProfit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Take Profit (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.00001"
-                        placeholder="1.12500"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Commission */}
-              <FormField
-                control={form.control}
-                name="commission"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Commission</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Swap */}
-              <FormField
-                control={form.control}
-                name="swap"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Swap</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+
+            {/* Chart Link */}
+            <FormField
+              control={form.control}
+              name="chartLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chart Link (Optional)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type="url"
+                        placeholder="https://tradingview.com/chart/..."
+                        {...field}
+                      />
+                      <Link className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Profit (for non-running trades) */}
+            {form.watch('status') !== 'RUNNING' && (
+              <FormField
+                control={form.control}
+                name="profit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profit/Loss ($)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Notes */}
             <FormField
@@ -529,68 +390,19 @@ export const TradeForm: React.FC<TradeFormProps> = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>Trade Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any notes about this trade..."
-                      className="min-h-[100px]"
+                      placeholder="Why did you take this trade? What was your setup?"
+                      className="min-h-[80px]"
                       {...field}
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Tags */}
-            <div className="space-y-4">
-              <FormLabel>Tags</FormLabel>
-              
-              {/* Current Tags */}
-              {customTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {customTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                      {tag}
-                      <X
-                        className="w-3 h-3 cursor-pointer hover:text-red-500"
-                        onClick={() => removeTag(tag)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Add Custom Tag */}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add custom tag..."
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                />
-                <Button type="button" variant="outline" onClick={addTag}>
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
-              {/* Common Tags */}
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Common tags:</p>
-                <div className="flex flex-wrap gap-2">
-                  {COMMON_TAGS.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => addCommonTag(tag)}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>

@@ -127,7 +127,6 @@ interface LiveSession {
   createdAt: string;
 }
 
-
 interface User {
   id: number;
   name: string;
@@ -176,9 +175,9 @@ export const AdminDashboard: React.FC = () => {
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [contentModalOpen, setContentModalOpen] = useState(false);
-  const [contentType, setContentType] = useState<
-    "course" | "session"
-  >("course");
+  const [contentType, setContentType] = useState<"course" | "session">(
+    "course"
+  );
   const [editingContent, setEditingContent] = useState<
     Course | LiveSession | null
   >(null);
@@ -584,7 +583,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -631,7 +629,7 @@ export const AdminDashboard: React.FC = () => {
     switch (program) {
       case "academy":
         return (
-          <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+          <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
             Academy
           </Badge>
         );
@@ -716,7 +714,7 @@ export const AdminDashboard: React.FC = () => {
         key={level}
         className={
           level === "academy_student"
-            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+            ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
             : level === "mentorship_student"
             ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
             : "bg-gray-200 text-gray-800"
@@ -797,7 +795,6 @@ export const AdminDashboard: React.FC = () => {
       });
     }
   };
-
 
   if (loading) {
     return (
@@ -911,29 +908,29 @@ export const AdminDashboard: React.FC = () => {
 
   // Mock data for enhanced analytics (in production, this would come from API)
   const revenueData = [
-    { month: 'Jan', revenue: 4500, students: 45 },
-    { month: 'Feb', revenue: 5200, students: 52 },
-    { month: 'Mar', revenue: 4800, students: 48 },
-    { month: 'Apr', revenue: 6100, students: 61 },
-    { month: 'May', revenue: 7200, students: 72 },
-    { month: 'Jun', revenue: 8500, students: 85 },
+    { month: "Jan", revenue: 4500, students: 45 },
+    { month: "Feb", revenue: 5200, students: 52 },
+    { month: "Mar", revenue: 4800, students: 48 },
+    { month: "Apr", revenue: 6100, students: 61 },
+    { month: "May", revenue: 7200, students: 72 },
+    { month: "Jun", revenue: 8500, students: 85 },
   ];
 
   const engagementData = [
-    { name: 'Course Views', value: 65, color: '#8B5CF6' },
-    { name: 'Video Completion', value: 45, color: '#06B6D4' },
-    { name: 'Live Sessions', value: 30, color: '#10B981' },
-    { name: 'Signals Read', value: 80, color: '#F59E0B' },
+    { name: "Course Views", value: 65, color: "#8B5CF6" },
+    { name: "Video Completion", value: 45, color: "#06B6D4" },
+    { name: "Live Sessions", value: 30, color: "#10B981" },
+    { name: "Signals Read", value: 80, color: "#F59E0B" },
   ];
 
   const activityData = [
-    { day: 'Mon', active: 120, new: 15 },
-    { day: 'Tue', active: 135, new: 22 },
-    { day: 'Wed', active: 145, new: 18 },
-    { day: 'Thu', active: 160, new: 25 },
-    { day: 'Fri', active: 180, new: 30 },
-    { day: 'Sat', active: 95, new: 12 },
-    { day: 'Sun', active: 85, new: 8 },
+    { day: "Mon", active: 120, new: 15 },
+    { day: "Tue", active: 135, new: 22 },
+    { day: "Wed", active: 145, new: 18 },
+    { day: "Thu", active: 160, new: 25 },
+    { day: "Fri", active: 180, new: 30 },
+    { day: "Sat", active: 95, new: 12 },
+    { day: "Sun", active: 85, new: 8 },
   ];
 
   const renderOverview = () => (
@@ -942,17 +939,19 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Students */}
         <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Students
             </CardTitle>
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <Users className="h-4 w-4 text-blue-600" />
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <Users className="h-4 w-4 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.totalStudents || 247}</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.totalStudents || 247}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+12% from last month</span>
@@ -972,7 +971,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.activeMentorships || 89}</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.activeMentorships || 89}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+8% from last month</span>
@@ -992,7 +993,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(overviewStats.revenueThisMonth || 8500).toFixed(0)}</div>
+            <div className="text-2xl font-bold">
+              ${(overviewStats.revenueThisMonth || 8500).toFixed(0)}
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+18% from last month</span>
@@ -1012,7 +1015,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{overviewStats.avgEngagementRate || 73}%</div>
+            <div className="text-2xl font-bold">
+              {overviewStats.avgEngagementRate || 73}%
+            </div>
             <div className="flex items-center text-xs text-green-600 mt-1">
               <ArrowUpRight className="h-3 w-3 mr-1" />
               <span>+5% from last month</span>
@@ -1031,7 +1036,9 @@ export const AdminDashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold">{overviewStats.newStudentsThisWeek || 23}</div>
+            <div className="text-xl font-bold">
+              {overviewStats.newStudentsThisWeek || 23}
+            </div>
           </CardContent>
         </Card>
 
@@ -1043,7 +1050,9 @@ export const AdminDashboard: React.FC = () => {
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold">{overviewStats.courseCompletions || 156}</div>
+            <div className="text-xl font-bold">
+              {overviewStats.courseCompletions || 156}
+            </div>
           </CardContent>
         </Card>
 
@@ -1081,33 +1090,46 @@ export const AdminDashboard: React.FC = () => {
               <TrendingUp className="h-5 w-5 text-green-600" />
               Revenue & Growth Trend
             </CardTitle>
-            <CardDescription>Monthly revenue and student acquisition</CardDescription>
+            <CardDescription>
+              Monthly revenue and student acquisition
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={revenueData}>
                 <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                  <linearGradient
+                    id="revenueGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
+                <Tooltip
                   formatter={(value, name) => [
-                    name === 'revenue' ? `$${value}` : value,
-                    name === 'revenue' ? 'Revenue' : 'Students'
+                    name === "revenue" ? `$${value}` : value,
+                    name === "revenue" ? "Revenue" : "Students",
                   ]}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#8B5CF6" 
-                  fillOpacity={1} 
-                  fill="url(#revenueGradient)" 
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#8B5CF6"
+                  fillOpacity={1}
+                  fill="url(#revenueGradient)"
                 />
-                <Line type="monotone" dataKey="students" stroke="#06B6D4" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="students"
+                  stroke="#06B6D4"
+                  strokeWidth={2}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -1117,10 +1139,12 @@ export const AdminDashboard: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-blue-600" />
+              <Target className="h-5 w-5 text-green-600" />
               Engagement Breakdown
             </CardTitle>
-            <CardDescription>User interaction across different content types</CardDescription>
+            <CardDescription>
+              User interaction across different content types
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -1138,7 +1162,7 @@ export const AdminDashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value}%`, 'Engagement']} />
+                <Tooltip formatter={(value) => [`${value}%`, "Engagement"]} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -1155,7 +1179,9 @@ export const AdminDashboard: React.FC = () => {
               <BarChart3 className="h-5 w-5 text-purple-600" />
               Weekly User Activity
             </CardTitle>
-            <CardDescription>Daily active users and new registrations</CardDescription>
+            <CardDescription>
+              Daily active users and new registrations
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -1164,8 +1190,18 @@ export const AdminDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="active" fill="#8B5CF6" name="Active Users" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="new" fill="#06B6D4" name="New Users" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="active"
+                  fill="#8B5CF6"
+                  name="Active Users"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="new"
+                  fill="#06B6D4"
+                  name="New Users"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -1183,10 +1219,18 @@ export const AdminDashboard: React.FC = () => {
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-red-800">Expiring Soon</p>
-                  <p className="text-xs text-red-600">{overviewStats.expiringSoon.length} mentorships</p>
+                  <p className="text-sm font-medium text-red-800">
+                    Expiring Soon
+                  </p>
+                  <p className="text-xs text-red-600">
+                    {overviewStats.expiringSoon.length} mentorships
+                  </p>
                 </div>
-                <Button size="sm" variant="outline" className="text-red-600 border-red-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-600 border-red-200"
+                >
                   View All
                 </Button>
               </div>
@@ -1195,10 +1239,18 @@ export const AdminDashboard: React.FC = () => {
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-800">Pending Requests</p>
-                  <p className="text-xs text-yellow-600">{roleRequests.length} role requests</p>
+                  <p className="text-sm font-medium text-yellow-800">
+                    Pending Requests
+                  </p>
+                  <p className="text-xs text-yellow-600">
+                    {roleRequests.length} role requests
+                  </p>
                 </div>
-                <Button size="sm" variant="outline" className="text-yellow-600 border-yellow-200">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-yellow-600 border-yellow-200"
+                >
                   Review
                 </Button>
               </div>
@@ -1207,8 +1259,12 @@ export const AdminDashboard: React.FC = () => {
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-800">System Status</p>
-                  <p className="text-xs text-green-600">All systems operational</p>
+                  <p className="text-sm font-medium text-green-800">
+                    System Status
+                  </p>
+                  <p className="text-xs text-green-600">
+                    All systems operational
+                  </p>
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               </div>
@@ -1230,7 +1286,9 @@ export const AdminDashboard: React.FC = () => {
               <Clock className="h-5 w-5 text-orange-600" />
               Expiring Mentorships
             </CardTitle>
-            <CardDescription>Mentorships expiring in the next 30 days</CardDescription>
+            <CardDescription>
+              Mentorships expiring in the next 30 days
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -1248,7 +1306,10 @@ export const AdminDashboard: React.FC = () => {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-orange-600 border-orange-200">
+                      <Badge
+                        variant="outline"
+                        className="text-orange-600 border-orange-200"
+                      >
                         {user.subscriptionEnd}
                       </Badge>
                     </TableCell>
@@ -1944,7 +2005,7 @@ export const AdminDashboard: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditContent(course, "course")}
-                            className="hover:bg-blue-50"
+                            className="hover:bg-green-50"
                           >
                             <Edit className="w-3 h-3 mr-1" />
                             Edit
@@ -2129,7 +2190,7 @@ export const AdminDashboard: React.FC = () => {
   );
 
   const renderSessions = () => (
-    <SessionScheduler 
+    <SessionScheduler
       onSessionCreated={(session) => {
         toast({
           title: "Session Created",
@@ -2138,7 +2199,7 @@ export const AdminDashboard: React.FC = () => {
       }}
       onSessionUpdated={(session) => {
         toast({
-          title: "Session Updated", 
+          title: "Session Updated",
           description: `${session.title} has been updated`,
         });
       }}
@@ -2154,7 +2215,9 @@ export const AdminDashboard: React.FC = () => {
   const renderSessionsOld = () => (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Live Session Management (Legacy)</h3>
+        <h3 className="text-lg font-semibold">
+          Live Session Management (Legacy)
+        </h3>
         <Dialog open={contentModalOpen} onOpenChange={setContentModalOpen}>
           <DialogTrigger asChild>
             <Button
@@ -2422,9 +2485,7 @@ export const AdminDashboard: React.FC = () => {
     </>
   );
 
-  const renderTradingJournal = () => (
-    <TradingJournal />
-  );
+  const renderTradingJournal = () => <TradingJournal />;
 
   return (
     <div className={section === "journal" ? "" : "p-6"}>
