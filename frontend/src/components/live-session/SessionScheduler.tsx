@@ -144,7 +144,7 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
     if (!editingSession) return;
 
     try {
-      const scheduledDateTime = selectedDate ? new Date(selectedDate) : new Date(editingSession.scheduledTime);
+      const scheduledDateTime = selectedDate ? new Date(selectedDate) : (safeParseDate(editingSession.date) || new Date());
       if (selectedTime) {
         const [hours, minutes] = selectedTime.split(':');
         scheduledDateTime.setHours(parseInt(hours), parseInt(minutes));
@@ -269,16 +269,59 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
     setFormData({
       title: session.title,
       description: session.description,
-      scheduledTime: session.scheduledTime,
+      scheduledTime: session.date,
       duration: session.duration || 60,
       maxParticipants: session.maxParticipants || 50,
       roleAccess: session.roleAccess,
       autoRecord: false,
     });
 
-    const sessionDate = new Date(session.scheduledTime);
-    setSelectedDate(sessionDate);
-    setSelectedTime(format(sessionDate, 'HH:mm'));
+    const sessionDate = safeParseDate(session.date);
+    if (sessionDate) {
+      setSelectedDate(sessionDate);
+      try {
+        setSelectedTime(format(sessionDate, 'HH:mm'));
+      } catch (error) {
+        console.warn('Error formatting time for editing:', session.date);
+        setSelectedTime('');
+      }
+    }
+  };
+
+  const safeParseDate = (dateValue: any): Date | null => {
+    if (!dateValue) return null;
+    
+    // Handle different types of date values
+    let dateString: string;
+    if (typeof dateValue === 'string') {
+      dateString = dateValue;
+    } else if (typeof dateValue === 'number') {
+      dateString = new Date(dateValue).toISOString();
+    } else if (dateValue instanceof Date) {
+      return isNaN(dateValue.getTime()) ? null : dateValue;
+    } else {
+      console.warn('Unexpected date value type:', typeof dateValue, dateValue);
+      return null;
+    }
+    
+    try {
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? null : date;
+    } catch (error) {
+      console.warn('Invalid date string:', dateString, error);
+      return null;
+    }
+  };
+
+  const formatSessionDate = (dateValue: any): string => {
+    const date = safeParseDate(dateValue);
+    if (!date) return 'No date set';
+    try {
+      return format(date, 'PPP p');
+    } catch (error) {
+      console.error('Error formatting date:', dateValue, error);
+      return 'Invalid date';
+    }
   };
 
   const getStatusBadge = (status: LiveSessionData['status']) => {
@@ -487,7 +530,9 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
             </CardContent>
           </Card>
         ) : (
-          sessions.map((session) => (
+          sessions.map((session) => {
+            try {
+              return (
             <Card key={session.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -498,7 +543,7 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
                     <div>
                       <CardTitle className="text-lg">{session.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(session.scheduledTime), 'PPP p')}
+                        {formatSessionDate(session.date)}
                       </p>
                     </div>
                   </div>
@@ -587,7 +632,18 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
                 )}
               </CardContent>
             </Card>
-          ))
+              );
+            } catch (error) {
+              console.error('Error rendering session:', session.id, error);
+              return (
+                <Card key={session.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-red-500">Error loading session: {session.title || 'Unknown'}</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+          })
         )}
       </div>
 

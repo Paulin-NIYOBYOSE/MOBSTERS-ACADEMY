@@ -202,16 +202,27 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
+        console.error('[AuthService] Token refresh failed:', {
+          error: refreshError,
+          currentPath: window.location.pathname,
+          errorMessage: refreshError instanceof Error ? refreshError.message : 'Unknown error'
+        });
+        
         // Clear tokens and redirect to login
         localStorage.removeItem("accessToken");
         Cookies.remove("refreshToken");
 
-        // Only redirect if we're not already on the login page
-        if (
-          !window.location.pathname.includes("/login") &&
-          !window.location.pathname.includes("/register")
-        ) {
+        // Only redirect if we're not already on the login page or in a session
+        const isInSession = window.location.pathname.includes('/session/');
+        const isOnAuthPage = window.location.pathname.includes("/login") || 
+                            window.location.pathname.includes("/register");
+        
+        if (!isOnAuthPage && !isInSession) {
+          console.log('[AuthService] Redirecting to login due to auth failure');
           window.location.href = "/login";
+        } else if (isInSession) {
+          console.log('[AuthService] Auth failed in session, letting session component handle it');
+          // Don't redirect immediately, let the session component handle the auth error
         }
 
         return Promise.reject(
@@ -263,9 +274,15 @@ export const authService = {
 
   getCurrentUser: async (): Promise<User> => {
     try {
+      console.log('[AuthService] Fetching current user...');
       const { data } = await api.get<User>("/auth/me");
+      console.log('[AuthService] Current user fetched successfully:', { id: data.id, email: data.email });
       return data;
     } catch (error) {
+      console.error('[AuthService] Failed to fetch current user:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
       throw AuthError.fromResponse(error as AxiosError);
     }
   },

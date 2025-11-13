@@ -129,6 +129,9 @@ async register(dto: RegisterDto) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    // Clean up expired tokens for this user before storing new one
+    await this.cleanupExpiredTokens(userId);
+
     await this.prisma.refreshToken.create({
       data: {
         hashedToken,
@@ -138,11 +141,41 @@ async register(dto: RegisterDto) {
     });
   }
 
+  private async cleanupExpiredTokens(userId?: number) {
+    try {
+      const whereClause = userId 
+        ? { userId, expiresAt: { lt: new Date() } }
+        : { expiresAt: { lt: new Date() } };
+
+      const deletedCount = await this.prisma.refreshToken.deleteMany({
+        where: whereClause
+      });
+
+      if (deletedCount.count > 0) {
+        this.logger.log(`Cleaned up ${deletedCount.count} expired refresh tokens${userId ? ` for user ${userId}` : ''}`);
+      }
+    } catch (error) {
+      this.logger.warn('Failed to cleanup expired tokens:', error);
+    }
+  }
+
   async refresh(refreshToken: string) {
     try {
+      this.logger.log('Token refresh attempt started');
       const tokenRecord = await this.findRefreshToken(refreshToken);
       
-      if (!tokenRecord || tokenRecord.revoked || tokenRecord.expiresAt < new Date()) {
+      if (!tokenRecord) {
+        this.logger.warn('Refresh token not found in database');
+        throw new InvalidRefreshTokenException();
+      }
+      
+      if (tokenRecord.revoked) {
+        this.logger.warn(`Refresh token ${tokenRecord.id} is revoked`);
+        throw new InvalidRefreshTokenException();
+      }
+      
+      if (tokenRecord.expiresAt < new Date()) {
+        this.logger.warn(`Refresh token ${tokenRecord.id} has expired`);
         throw new InvalidRefreshTokenException();
       }
 
@@ -165,9 +198,15 @@ async register(dto: RegisterDto) {
       const newRefreshToken = this.generateRefreshToken();
 
       // Clean up old token and store new one
-      await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
+      try {
+        await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
+      } catch (deleteError) {
+        // Token might have already been deleted, log but don't fail
+        this.logger.warn(`Failed to delete refresh token ${tokenRecord.id}:`, deleteError);
+      }
       await this.storeRefreshToken(newRefreshToken, user.id);
 
+      this.logger.log(`Token refresh successful for user: ${user.email}`);
       return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch (error) {
       if (error instanceof InvalidRefreshTokenException ||
@@ -181,20 +220,33 @@ async register(dto: RegisterDto) {
   }
 
   private async findRefreshToken(token: string) {
-    // Note: This method needs to be fixed - we should store and compare hashed tokens properly
-    // For now, we'll find by comparing all tokens (not ideal for production)
-    const allTokens = await this.prisma.refreshToken.findMany({
-      where: { revoked: false }
-    });
-    
-    for (const tokenRecord of allTokens) {
-      const isMatch = await bcrypt.compare(token, tokenRecord.hashedToken);
-      if (isMatch) {
-        return tokenRecord;
+    try {
+      // Note: This method needs to be fixed - we should store and compare hashed tokens properly
+      // For now, we'll find by comparing all tokens (not ideal for production)
+      const allTokens = await this.prisma.refreshToken.findMany({
+        where: { 
+          revoked: false,
+          expiresAt: { gt: new Date() } // Only get non-expired tokens
+        }
+      });
+      
+      for (const tokenRecord of allTokens) {
+        try {
+          const isMatch = await bcrypt.compare(token, tokenRecord.hashedToken);
+          if (isMatch) {
+            return tokenRecord;
+          }
+        } catch (compareError) {
+          this.logger.warn(`Failed to compare token ${tokenRecord.id}:`, compareError);
+          continue;
+        }
       }
+      
+      return null;
+    } catch (error) {
+      this.logger.error('Error finding refresh token:', error);
+      return null;
     }
-    
-    return null;
   }
 
   private validatePasswordStrength(password: string): void {
@@ -250,6 +302,26 @@ async register(dto: RegisterDto) {
       return { message: 'Logged out successfully' };
     } catch (error) {
       this.logger.error(`Logout failed for user ${userId}:`, error);
+      throw new AuthServerException(error);
+    }
+  }
+
+  // Periodic cleanup method - can be called by cron job or manually
+  async cleanupAllExpiredTokens() {
+    try {
+      const deletedCount = await this.prisma.refreshToken.deleteMany({
+        where: {
+          OR: [
+            { expiresAt: { lt: new Date() } },
+            { revoked: true }
+          ]
+        }
+      });
+
+      this.logger.log(`Periodic cleanup: removed ${deletedCount.count} expired/revoked refresh tokens`);
+      return { cleaned: deletedCount.count };
+    } catch (error) {
+      this.logger.error('Failed to cleanup expired tokens:', error);
       throw new AuthServerException(error);
     }
   }

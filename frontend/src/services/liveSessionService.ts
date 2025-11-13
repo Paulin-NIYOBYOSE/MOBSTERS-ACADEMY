@@ -4,9 +4,9 @@ export interface LiveSessionData {
   id: number;
   title: string;
   description: string;
-  scheduledTime: string;
+  date: string;
   duration?: number;
-  hostId: number;
+  uploadedBy: number;
   maxParticipants?: number;
   roleAccess: string[];
   status: 'scheduled' | 'live' | 'ended' | 'cancelled';
@@ -14,14 +14,19 @@ export interface LiveSessionData {
   recordingUrl?: string;
   createdAt: string;
   updatedAt: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  _count?: {
+    participants: number;
+  };
 }
 
 export interface SessionParticipant {
   id: string;
   userId: number;
-  name: string;
-  email: string;
-  avatar?: string;
   joinedAt: string;
   leftAt?: string;
   role: 'host' | 'participant';
@@ -29,6 +34,11 @@ export interface SessionParticipant {
     canShare: boolean;
     canChat: boolean;
     canUnmute: boolean;
+  };
+  user: {
+    id: number;
+    name: string;
+    email: string;
   };
 }
 
@@ -73,22 +83,50 @@ export interface SessionAnalytics {
 class LiveSessionService {
   // Session Management
   async createSession(data: CreateSessionRequest): Promise<LiveSessionData> {
-    const response = await api.post('/live-sessions', data);
+    const response = await api.post('/courses/live-session', {
+      title: data.title,
+      description: data.description,
+      date: data.scheduledTime,
+      roleAccess: data.roleAccess
+    });
     return response.data;
   }
 
   async updateSession(sessionId: number, data: UpdateSessionRequest): Promise<LiveSessionData> {
-    const response = await api.put(`/live-sessions/${sessionId}`, data);
+    const response = await api.put(`/courses/live-session/${sessionId}`, {
+      title: data.title,
+      description: data.description,
+      date: data.scheduledTime,
+      roleAccess: data.roleAccess
+    });
     return response.data;
   }
 
   async deleteSession(sessionId: number): Promise<void> {
-    await api.delete(`/live-sessions/${sessionId}`);
+    await api.delete(`/courses/live-session/${sessionId}`);
   }
 
   async getSession(sessionId: number): Promise<LiveSessionData> {
-    const response = await api.get(`/live-sessions/${sessionId}`);
-    return response.data;
+    try {
+      console.log('[LiveSessionService] Getting session:', sessionId);
+      // For now, get all sessions and filter by ID since individual session endpoint doesn't exist
+      const sessions = await this.getSessions();
+      console.log('[LiveSessionService] Retrieved sessions:', sessions.length);
+      const session = sessions.find(s => s.id === sessionId);
+      if (!session) {
+        console.error('[LiveSessionService] Session not found:', { sessionId, availableSessions: sessions.map(s => s.id) });
+        throw new Error(`Session with ID ${sessionId} not found`);
+      }
+      console.log('[LiveSessionService] Session found:', { id: session.id, title: session.title, status: session.status });
+      return session;
+    } catch (error) {
+      console.error('[LiveSessionService] Error getting session:', {
+        sessionId,
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
   }
 
   async getSessions(filters?: {
@@ -111,33 +149,100 @@ class LiveSessionService {
       });
     }
     
-    const response = await api.get(`/live-sessions?${params.toString()}`);
+    const response = await api.get(`/courses/live-sessions?${params.toString()}`);
     return response.data;
   }
 
   async getUpcomingSessions(): Promise<LiveSessionData[]> {
-    const response = await api.get('/live-sessions/upcoming');
-    return response.data;
+    const sessions = await this.getSessions();
+    const now = new Date();
+    return sessions.filter(s => {
+      if (s.status !== 'scheduled' || !s.date) return false;
+      const sessionDate = new Date(s.date);
+      return !isNaN(sessionDate.getTime()) && sessionDate > now;
+    });
+  }
+
+  async getUpcomingAndLiveSessions(): Promise<LiveSessionData[]> {
+    try {
+      const response = await api.get('/courses/upcoming-live-sessions');
+      return response.data;
+    } catch (error) {
+      // Fallback to regular live sessions if the new endpoint is not available
+      console.warn('Falling back to regular live sessions endpoint:', error);
+      try {
+        const response = await api.get('/courses/live-sessions');
+        return response.data;
+      } catch (fallbackError) {
+        console.error('Both live session endpoints failed:', fallbackError);
+        return [];
+      }
+    }
   }
 
   async getLiveSessions(): Promise<LiveSessionData[]> {
-    const response = await api.get('/live-sessions/live');
-    return response.data;
+    const sessions = await this.getSessions();
+    return sessions.filter(s => s.status === 'live');
   }
 
   // Session Participation
   async joinSession(sessionId: number): Promise<JoinSessionResponse> {
-    const response = await api.post(`/live-sessions/${sessionId}/join`);
-    return response.data;
+    try {
+      console.log('[LiveSessionService] Joining session:', sessionId);
+      const response = await api.post(`/courses/live-session/${sessionId}/join`);
+      console.log('[LiveSessionService] Join session response:', {
+        sessionId,
+        hasToken: !!response.data?.sessionToken,
+        hasSessionData: !!response.data?.sessionData,
+        hasParticipant: !!response.data?.participant
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[LiveSessionService] Error joining session:', {
+        sessionId,
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status,
+        statusText: (error as any)?.response?.statusText
+      });
+      throw error;
+    }
   }
 
   async leaveSession(sessionId: number): Promise<void> {
-    await api.post(`/live-sessions/${sessionId}/leave`);
+    try {
+      console.log('[LiveSessionService] Leaving session:', sessionId);
+      await api.post(`/courses/live-session/${sessionId}/leave`);
+      console.log('[LiveSessionService] Successfully left session:', sessionId);
+    } catch (error) {
+      console.error('[LiveSessionService] Error leaving session:', {
+        sessionId,
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status
+      });
+      throw error;
+    }
   }
 
   async getSessionParticipants(sessionId: number): Promise<SessionParticipant[]> {
-    const response = await api.get(`/live-sessions/${sessionId}/participants`);
-    return response.data;
+    try {
+      console.log('[LiveSessionService] Getting session participants:', sessionId);
+      const response = await api.get(`/courses/live-session/${sessionId}/participants`);
+      console.log('[LiveSessionService] Participants retrieved:', {
+        sessionId,
+        participantCount: response.data?.length || 0
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[LiveSessionService] Error getting session participants:', {
+        sessionId,
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status
+      });
+      throw error;
+    }
   }
 
   async updateParticipantPermissions(
@@ -145,32 +250,32 @@ class LiveSessionService {
     participantId: string, 
     permissions: Partial<SessionParticipant['permissions']>
   ): Promise<void> {
-    await api.put(`/live-sessions/${sessionId}/participants/${participantId}/permissions`, permissions);
+    await api.put(`/courses/live-session/${sessionId}/participants/${participantId}/permissions`, permissions);
   }
 
   async kickParticipant(sessionId: number, participantId: string): Promise<void> {
-    await api.delete(`/live-sessions/${sessionId}/participants/${participantId}`);
+    await api.delete(`/courses/live-session/${sessionId}/participants/${participantId}`);
   }
 
   // Session Control
   async startSession(sessionId: number): Promise<LiveSessionData> {
-    const response = await api.post(`/live-sessions/${sessionId}/start`);
+    const response = await api.post(`/courses/live-session/${sessionId}/start`);
     return response.data;
   }
 
   async endSession(sessionId: number): Promise<LiveSessionData> {
-    const response = await api.post(`/live-sessions/${sessionId}/end`);
+    const response = await api.post(`/courses/live-session/${sessionId}/end`);
     return response.data;
   }
 
   async pauseSession(sessionId: number): Promise<LiveSessionData> {
-    const response = await api.post(`/live-sessions/${sessionId}/pause`);
-    return response.data;
+    // Not implemented in backend yet
+    throw new Error('Pause functionality not implemented');
   }
 
   async resumeSession(sessionId: number): Promise<LiveSessionData> {
-    const response = await api.post(`/live-sessions/${sessionId}/resume`);
-    return response.data;
+    // Not implemented in backend yet
+    throw new Error('Resume functionality not implemented');
   }
 
   // Recording Management
@@ -191,7 +296,7 @@ class LiveSessionService {
 
   // Analytics and Reporting
   async getSessionAnalytics(sessionId: number): Promise<SessionAnalytics> {
-    const response = await api.get(`/live-sessions/${sessionId}/analytics`);
+    const response = await api.get(`/courses/live-session/${sessionId}/analytics`);
     return response.data;
   }
 
@@ -212,7 +317,7 @@ class LiveSessionService {
     comment?: string;
     categories?: { [key: string]: number };
   }): Promise<void> {
-    await api.post(`/live-sessions/${sessionId}/feedback`, feedback);
+    await api.post(`/courses/live-session/${sessionId}/feedback`, feedback);
   }
 
   async getSessionFeedback(sessionId: number): Promise<{
@@ -220,7 +325,7 @@ class LiveSessionService {
     totalResponses: number;
     comments: { rating: number; comment: string; createdAt: string }[];
   }> {
-    const response = await api.get(`/live-sessions/${sessionId}/feedback`);
+    const response = await api.get(`/courses/live-session/${sessionId}/feedback`);
     return response.data;
   }
 
@@ -243,14 +348,17 @@ class LiveSessionService {
   }
 
   isSessionUpcoming(session: LiveSessionData): boolean {
+    if (session.status !== 'scheduled' || !session.date) return false;
     const now = new Date();
-    const sessionTime = new Date(session.scheduledTime);
-    return session.status === 'scheduled' && sessionTime > now;
+    const sessionTime = new Date(session.date);
+    return !isNaN(sessionTime.getTime()) && sessionTime > now;
   }
 
   getSessionTimeRemaining(session: LiveSessionData): number {
+    if (!session.date) return 0;
     const now = new Date();
-    const sessionTime = new Date(session.scheduledTime);
+    const sessionTime = new Date(session.date);
+    if (isNaN(sessionTime.getTime())) return 0;
     return Math.max(0, sessionTime.getTime() - now.getTime());
   }
 

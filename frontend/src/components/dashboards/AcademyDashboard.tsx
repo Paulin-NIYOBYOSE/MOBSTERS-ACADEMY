@@ -40,6 +40,9 @@ import { Navigate, useLocation } from "react-router-dom";
 import ReactPlayer from "react-player";
 import { CourseViewer } from "@/components/CourseViewer";
 import TradingJournal from "@/components/trading-journal/TradingJournal";
+import { LiveSessionCard } from "@/components/live-session/LiveSessionCard";
+import liveSessionService, { LiveSessionData } from "@/services/liveSessionService";
+import { format } from "date-fns";
 
 interface CourseVideo {
   id: number;
@@ -73,7 +76,8 @@ export const AcademyDashboard: React.FC = () => {
   const [content, setContent] = useState<AcademyContent | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [signals, setSignals] = useState<any[]>([]);
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<LiveSessionData[]>([]);
+  const [joiningSession, setJoiningSession] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
@@ -101,7 +105,7 @@ export const AcademyDashboard: React.FC = () => {
           authService.getAcademyContent(),
           authService.getCourses(),
           authService.getSignals(),
-          authService.getLiveSessions(),
+          liveSessionService.getUpcomingAndLiveSessions(),
         ]);
       setContent(contentData);
       const coursesWithVideos = await Promise.all(
@@ -135,6 +139,28 @@ export const AcademyDashboard: React.FC = () => {
       }
       return newSet;
     });
+  };
+
+  const handleJoinSession = async (sessionId: number) => {
+    try {
+      setJoiningSession(sessionId);
+      await liveSessionService.joinSession(sessionId);
+      // Navigate to session page
+      window.open(`/session/${sessionId}`, '_blank');
+      toast({
+        title: "Joined Session",
+        description: "You have successfully joined the live session",
+      });
+    } catch (error) {
+      console.error('Failed to join session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningSession(null);
+    }
   };
 
   if (loading) {
@@ -259,24 +285,44 @@ export const AcademyDashboard: React.FC = () => {
 
       {/* Secondary Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className={`cursor-pointer transition-all duration-200 ${sessions.length > 0 && sessions[0].status === 'live' ? 'ring-2 ring-red-500 bg-red-50 dark:bg-red-950/20' : ''}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Next Live Session
+              {sessions.length > 0 && sessions[0].status === 'live' ? 'Live Now!' : 'Next Live Session'}
             </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1">
+              {sessions.length > 0 && sessions[0].status === 'live' && (
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              )}
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">
-              {content?.liveSession?.title || "Advanced Strategies"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {content?.liveSession?.scheduledTime
-                ? new Date(
-                    content.liveSession.scheduledTime
-                  ).toLocaleDateString()
-                : "Tomorrow 3:00 PM"}
-            </p>
+            {sessions.length > 0 ? (
+              <>
+                <div className="text-lg font-bold">
+                  {sessions[0].title}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {sessions[0].status === 'live' ? 'Live now' : 
+                    sessions[0].date ? format(new Date(sessions[0].date), 'MMM dd, h:mm a') : 'Date TBD'}
+                </p>
+                {sessions[0].status === 'live' && (
+                  <Button 
+                    size="sm" 
+                    className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => handleJoinSession(sessions[0].id)}
+                  >
+                    Join Now
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="text-lg font-bold">No sessions scheduled</div>
+                <p className="text-xs text-muted-foreground">Check back later</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -708,46 +754,25 @@ export const AcademyDashboard: React.FC = () => {
   const renderLive = () => (
     <div className="space-y-4">
       {sessions.length > 0 ? (
-        sessions.map((session, index) => (
-          <Card
-            key={index}
-            className="border-none shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800"
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <Calendar className="w-5 h-5 text-green-500" />
-                {session.title}
-              </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-300">
-                {session.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Scheduled {new Date(session.date).toLocaleDateString()} at{" "}
-                  {new Date(session.date).toLocaleTimeString()}
-                </p>
-                <Button
-                  variant="cta"
-                  className="bg-green-500 hover:bg-green-600 text-white"
-                  onClick={() =>
-                    window.open(`/session/${session.id}`, "_blank")
-                  }
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Session
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+        <div className="space-y-4">
+          {sessions.map((session) => (
+            <LiveSessionCard
+              key={session.id}
+              session={session}
+              onJoinSession={handleJoinSession}
+              isJoining={joiningSession === session.id}
+            />
+          ))}
+        </div>
       ) : (
         <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
           <CardContent className="text-center py-12">
             <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
-              Live session schedule will appear here.
+              No upcoming or live sessions available.
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+              Live sessions will appear here when scheduled by your instructors.
             </p>
           </CardContent>
         </Card>

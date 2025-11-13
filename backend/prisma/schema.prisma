@@ -20,6 +20,8 @@ model User {
   uploadedSignals Signal[]
   tradingAccounts TradingAccount[]
   trades        Trade[]
+  sessionParticipations SessionParticipant[]
+  sessionFeedback SessionFeedback[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -78,15 +80,27 @@ model Course {
 }
 
 model LiveSession {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  date        DateTime
-  roleAccess  String[]
-  uploadedBy  Int
-  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               Int                 @id @default(autoincrement())
+  title            String
+  description      String
+  date             DateTime
+  duration         Int?                @default(60) // duration in minutes
+  maxParticipants  Int?                @default(50)
+  roleAccess       String[]
+  status           String              @default("scheduled") // scheduled, live, ended, cancelled
+  sessionUrl       String?
+  recordingUrl     String?
+  autoRecord       Boolean             @default(false)
+  actualStartTime  DateTime?
+  actualEndTime    DateTime?
+  uploadedBy       Int
+  user             User                @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  participants     SessionParticipant[]
+  recordings       SessionRecording[]
+  feedback         SessionFeedback[]
+  analytics        SessionAnalytics?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 }
 
 model Signal {
@@ -153,4 +167,62 @@ model Trade {
   @@index([userId])
   @@index([userId, accountId])
   @@index([userId, status])
+}
+
+model SessionParticipant {
+  id          String      @id @default(cuid())
+  sessionId   Int
+  userId      Int
+  joinedAt    DateTime    @default(now())
+  leftAt      DateTime?
+  role        String      @default("participant") // host, participant
+  permissions Json        @default("{\"canShare\": false, \"canChat\": true, \"canUnmute\": true}")
+  session     LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model SessionRecording {
+  id           Int         @id @default(autoincrement())
+  sessionId    Int
+  recordingUrl String
+  duration     Int?        // duration in seconds
+  fileSize     BigInt?     // file size in bytes
+  startedAt    DateTime
+  endedAt      DateTime?
+  session      LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+model SessionFeedback {
+  id         Int         @id @default(autoincrement())
+  sessionId  Int
+  userId     Int
+  rating     Int         // 1-5 rating
+  comment    String?
+  categories Json?       // additional rating categories
+  session    LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model SessionAnalytics {
+  id               Int         @id @default(autoincrement())
+  sessionId        Int         @unique
+  totalParticipants Int        @default(0)
+  peakParticipants Int         @default(0)
+  averageDuration  Int         @default(0) // in seconds
+  chatMessages     Int         @default(0)
+  engagementRate   Float       @default(0)
+  attendanceByRole Json        @default("{}")
+  session          LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 }

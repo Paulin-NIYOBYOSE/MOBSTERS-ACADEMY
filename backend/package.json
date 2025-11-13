@@ -23,6 +23,8 @@
     "@nestjs/jwt": "^8.0.1",
     "@nestjs/passport": "^8.2.2",
     "@nestjs/platform-express": "^7.6.18",
+    "@nestjs/platform-socket.io": "^11.1.8",
+    "@nestjs/websockets": "^11.1.8",
     "@prisma/client": "^5.18.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
@@ -33,6 +35,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
     "stripe": "^16.9.0"
   },
   "devDependencies": {

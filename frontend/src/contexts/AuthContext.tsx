@@ -43,6 +43,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    let refreshInterval: NodeJS.Timeout;
+    let visibilityChangeHandler: () => void;
+
     const initializeAuth = async () => {
       const token = localStorage.getItem('accessToken');
       if (token) {
@@ -57,32 +60,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
     };
 
+    const startRefreshInterval = () => {
+      // Skip refresh if we're in a session to prevent interruptions
+      const isInSession = window.location.pathname.includes('/session/');
+      if (isInSession) {
+        console.log('[AuthContext] Skipping auth refresh - user is in active session');
+        return;
+      }
+      
+      refreshInterval = setInterval(async () => {
+        if (user && !document.hidden) { // Only refresh when tab is visible
+          try {
+            await authService.getCurrentUser();
+          } catch (error) {
+            console.error('[AuthContext] Refresh failed:', error);
+          }
+        }
+      }, 60000); // Reduced from 30s to 60s to be less aggressive
+    };
+
+    // Handle visibility changes to prevent session interruption
+    visibilityChangeHandler = () => {
+      const isInSession = window.location.pathname.includes('/session/');
+      
+      if (document.hidden && isInSession) {
+        // Tab became hidden while in session - pause refresh
+        console.log('[AuthContext] Tab hidden during session - pausing auth refresh');
+        if (refreshInterval) {
+          clearInterval(refreshInterval);
+        }
+      } else if (!document.hidden && isInSession) {
+        // Tab became visible again - don't restart refresh during session
+        console.log('[AuthContext] Tab visible again during session - keeping auth refresh paused');
+      } else if (!document.hidden && !isInSession) {
+        // Tab became visible and not in session - restart refresh
+        console.log('[AuthContext] Tab visible - restarting auth refresh');
+        if (refreshInterval) {
+          clearInterval(refreshInterval);
+        }
+        startRefreshInterval();
+      }
+    };
+
     initializeAuth();
 
     // Refresh when window gains focus (e.g., after admin approves roles)
     const onFocus = () => {
-      if (localStorage.getItem('accessToken')) {
+      const isInSession = window.location.pathname.includes('/session/');
+      if (localStorage.getItem('accessToken') && !isInSession) {
         refreshUser();
       }
     };
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') onFocus();
-    });
-    window.addEventListener('focus', onFocus);
 
-    // Periodic refresh (every 30s) to pick up role changes
-    const interval = window.setInterval(() => {
-      if (localStorage.getItem('accessToken')) {
-        refreshUser();
-      }
-    }, 30 * 1000);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('visibilitychange', visibilityChangeHandler);
+
+    startRefreshInterval();
 
     return () => {
       window.removeEventListener('focus', onFocus);
-      window.removeEventListener('visibilitychange', onFocus as any);
-      window.clearInterval(interval);
+      window.removeEventListener('visibilitychange', visibilityChangeHandler);
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
     };
-  }, []);
+  }, [user]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {

@@ -37,6 +37,9 @@ import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { CourseViewer } from "@/components/CourseViewer";
+import { LiveSessionCard } from "@/components/live-session/LiveSessionCard";
+import liveSessionService, { LiveSessionData } from "@/services/liveSessionService";
+import { format } from "date-fns";
 
 interface CommunityContent {
   freeCourses: any[];
@@ -58,7 +61,8 @@ interface Course {
 
 export const FreeDashboard: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<LiveSessionData[]>([]);
+  const [joiningSession, setJoiningSession] = useState<number | null>(null);
   const [myRequests, setMyRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState<{
@@ -110,7 +114,7 @@ export const FreeDashboard: React.FC = () => {
       const [coursesData, sessionsData, myReq] = await Promise.all(
         [
           authService.getCourses(),
-          authService.getLiveSessions(),
+          liveSessionService.getUpcomingAndLiveSessions(),
           authService.getMyRoleRequests().catch(() => []),
         ]
       );
@@ -165,6 +169,28 @@ export const FreeDashboard: React.FC = () => {
       }
       return newSet;
     });
+  };
+
+  const handleJoinSession = async (sessionId: number) => {
+    try {
+      setJoiningSession(sessionId);
+      await liveSessionService.joinSession(sessionId);
+      // Navigate to session page
+      window.open(`/session/${sessionId}`, '_blank');
+      toast({
+        title: "Joined Session",
+        description: "You have successfully joined the live session",
+      });
+    } catch (error) {
+      console.error('Failed to join session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningSession(null);
+    }
   };
 
   // Compose content object from state
@@ -858,6 +884,49 @@ export const FreeDashboard: React.FC = () => {
           </div>
         )}
 
+
+        {section === "live" && (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Live Trading Sessions
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-8">
+                Join live sessions with expert traders and learn in real-time
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              {sessions.length > 0 ? (
+                <div className="space-y-4">
+                  {sessions.map((session) => (
+                    <LiveSessionCard
+                      key={session.id}
+                      session={session}
+                      onJoinSession={handleJoinSession}
+                      isJoining={joiningSession === session.id}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
+                  <CardContent className="text-center py-12">
+                    <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
+                      <Users className="w-16 h-16 text-green-500 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">No Live Sessions Available</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Live sessions will appear here when scheduled by instructors.
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Upgrade to Academy or Mentorship for exclusive live sessions!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
 
         {section === "community" && (
           <div className="space-y-8">

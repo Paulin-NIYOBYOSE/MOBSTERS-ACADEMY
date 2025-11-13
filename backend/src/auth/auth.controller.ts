@@ -66,4 +66,16 @@ export class AuthController {
     const userId = (req.user as any).sub;
     return this.authService.logout(userId);
   }
+
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('cleanup-tokens')
+  async cleanupTokens(@Req() req: Request) {
+    // Simple admin check - you can enhance this based on your user model
+    const user = req.user as any;
+    if (!user.roles || !user.roles.includes('admin')) {
+      throw new Error('Admin access required');
+    }
+    return this.authService.cleanupAllExpiredTokens();
+  }
 }

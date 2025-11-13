@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import liveSessionService, { LiveSessionData, JoinSessionResponse } from '@/services/liveSessionService';
-import LiveSession from './LiveSession';
+import LiveSessionRoom from './LiveSessionRoom';
 
 interface DeviceTest {
   camera: boolean;
@@ -69,39 +69,73 @@ export const SessionJoin: React.FC = () => {
   const loadSession = async () => {
     try {
       setLoading(true);
+      console.log('[SessionJoin] Loading session:', sessionId);
       const sessionData = await liveSessionService.getSession(parseInt(sessionId!));
+      console.log('[SessionJoin] Session data loaded:', sessionData);
       setSession(sessionData);
 
       // Check if session is accessible
       if (sessionData.status === 'ended' || sessionData.status === 'cancelled') {
+        console.log('[SessionJoin] Session is not accessible:', sessionData.status);
         toast({
           title: "Session Unavailable",
           description: "This session has ended or been cancelled",
           variant: "destructive",
         });
-        navigate('/dashboard');
+        setTimeout(() => navigate('/dashboard'), 2000); // Delay navigation
         return;
       }
 
       // Check if user has access
       if (!hasSessionAccess(sessionData)) {
+        console.log('[SessionJoin] User does not have access to session:', {
+          userRoles: user?.roles,
+          sessionRoleAccess: sessionData.roleAccess
+        });
         toast({
           title: "Access Denied",
           description: "You don't have permission to join this session",
           variant: "destructive",
         });
-        navigate('/dashboard');
+        setTimeout(() => navigate('/dashboard'), 2000); // Delay navigation
         return;
       }
 
+      console.log('[SessionJoin] Session loaded successfully');
+
     } catch (error) {
-      console.error('Failed to load session:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load session details",
-        variant: "destructive",
+      console.error('[SessionJoin] Failed to load session:', {
+        error,
+        sessionId,
+        user: user?.id,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined
       });
-      navigate('/dashboard');
+      
+      // Check if it's an auth error vs session error
+      const isAuthError = error instanceof Error && 
+        (error.message.includes('401') || error.message.includes('unauthorized') || error.message.includes('token'));
+      
+      if (isAuthError) {
+        console.log('[SessionJoin] Auth error detected, user will be redirected by auth service');
+        toast({
+          title: "Authentication Error",
+          description: "Please log in again to access the session",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Connection Error",
+          description: "Failed to load session details. Please try again.",
+          variant: "destructive",
+        });
+        
+        // Don't immediately navigate, give user a chance to retry
+        setTimeout(() => {
+          console.log('[SessionJoin] Retrying session load...');
+          loadSession();
+        }, 3000);
+      }
     } finally {
       setLoading(false);
     }
@@ -164,9 +198,11 @@ export const SessionJoin: React.FC = () => {
 
     try {
       setJoining(true);
+      console.log('[SessionJoin] Attempting to join session:', session.id);
 
       // Join session via API
       const joinResponse: JoinSessionResponse = await liveSessionService.joinSession(session.id);
+      console.log('[SessionJoin] Join response received:', joinResponse);
       
       toast({
         title: "Joining Session",
@@ -174,14 +210,33 @@ export const SessionJoin: React.FC = () => {
       });
 
       setHasJoined(true);
+      console.log('[SessionJoin] Successfully joined session');
 
     } catch (error) {
-      console.error('Failed to join session:', error);
-      toast({
-        title: "Join Failed",
-        description: "Failed to join the session. Please try again.",
-        variant: "destructive",
+      console.error('[SessionJoin] Failed to join session:', {
+        error,
+        sessionId: session.id,
+        user: user?.id,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined
       });
+      
+      const isAuthError = error instanceof Error && 
+        (error.message.includes('401') || error.message.includes('unauthorized') || error.message.includes('token'));
+      
+      if (isAuthError) {
+        toast({
+          title: "Authentication Error",
+          description: "Please log in again to join the session",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Join Failed",
+          description: "Failed to join the session. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setJoining(false);
     }
@@ -216,7 +271,11 @@ export const SessionJoin: React.FC = () => {
   };
 
   const formatSessionTime = (dateString: string) => {
+    if (!dateString) return { date: 'No date', time: 'No time' };
+    
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return { date: 'Invalid date', time: 'Invalid time' };
+    
     return {
       date: date.toLocaleDateString(),
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -224,10 +283,12 @@ export const SessionJoin: React.FC = () => {
   };
 
   const getSessionStatus = () => {
-    if (!session) return null;
+    if (!session || !session.date) return null;
 
     const now = new Date();
-    const sessionTime = new Date(session.scheduledTime);
+    const sessionTime = new Date(session.date);
+    if (isNaN(sessionTime.getTime())) return null;
+    
     const timeDiff = sessionTime.getTime() - now.getTime();
 
     if (session.status === 'live') {
@@ -276,18 +337,11 @@ export const SessionJoin: React.FC = () => {
   }
 
   if (hasJoined) {
-    return (
-      <LiveSession
-        sessionId={sessionId!}
-        sessionTitle={session.title}
-        isHost={session.hostId === user?.id}
-        onLeave={handleLeaveSession}
-      />
-    );
+    return <LiveSessionRoom sessionId={sessionId} skipJoin={true} />;
   }
 
   const sessionStatus = getSessionStatus();
-  const { date, time } = formatSessionTime(session.scheduledTime);
+  const { date, time } = formatSessionTime(session.date);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
