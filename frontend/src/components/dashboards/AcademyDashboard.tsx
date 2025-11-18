@@ -41,8 +41,11 @@ import ReactPlayer from "react-player";
 import { CourseViewer } from "@/components/CourseViewer";
 import TradingJournal from "@/components/trading-journal/TradingJournal";
 import { LiveSessionCard } from "@/components/live-session/LiveSessionCard";
-import liveSessionService, { LiveSessionData } from "@/services/liveSessionService";
+import liveSessionService, {
+  LiveSessionData,
+} from "@/services/liveSessionService";
 import { format } from "date-fns";
+import { courseService } from "@/services/courseService";
 
 interface CourseVideo {
   id: number;
@@ -108,12 +111,29 @@ export const AcademyDashboard: React.FC = () => {
           liveSessionService.getUpcomingAndLiveSessions(),
         ]);
       setContent(contentData);
+
+      // Load videos and progress for each course
       const coursesWithVideos = await Promise.all(
         coursesData.map(async (course: any) => {
-          const videos = await authService.getCourseVideos(course.id);
-          return { ...course, videos: videos || [] };
+          try {
+            const videos = await authService.getCourseVideos(course.id);
+            return {
+              ...course,
+              videos: videos || [],
+              progress: course.progress || 0,
+              completed: course.completed || false,
+            };
+          } catch (error) {
+            return {
+              ...course,
+              videos: [],
+              progress: 0,
+              completed: false,
+            };
+          }
         })
       );
+
       setCourses(coursesWithVideos);
       setSignals(signalsData);
       setSessions(sessionsData);
@@ -146,13 +166,13 @@ export const AcademyDashboard: React.FC = () => {
       setJoiningSession(sessionId);
       await liveSessionService.joinSession(sessionId);
       // Navigate to session page
-      window.open(`/session/${sessionId}`, '_blank');
+      window.open(`/session/${sessionId}`, "_blank");
       toast({
         title: "Joined Session",
         description: "You have successfully joined the live session",
       });
     } catch (error) {
-      console.error('Failed to join session:', error);
+      console.error("Failed to join session:", error);
       toast({
         title: "Error",
         description: "Failed to join session. Please try again.",
@@ -181,15 +201,13 @@ export const AcademyDashboard: React.FC = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // If viewing a course, show the CourseViewer
-  if (viewingCourse) {
-    return (
-      <CourseViewer
-        course={viewingCourse}
-        onBack={() => setViewingCourse(null)}
-      />
-    );
-  }
+  // Render course viewer within dashboard layout
+  const renderCourseViewer = () => (
+    <CourseViewer
+      course={viewingCourse!}
+      onBack={() => setViewingCourse(null)}
+    />
+  );
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -285,13 +303,21 @@ export const AcademyDashboard: React.FC = () => {
 
       {/* Secondary Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className={`cursor-pointer transition-all duration-200 ${sessions.length > 0 && sessions[0].status === 'live' ? 'ring-2 ring-red-500 bg-red-50 dark:bg-red-950/20' : ''}`}>
+        <Card
+          className={`cursor-pointer transition-all duration-200 ${
+            sessions.length > 0 && sessions[0].status === "live"
+              ? "ring-2 ring-red-500 bg-red-50 dark:bg-red-950/20"
+              : ""
+          }`}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {sessions.length > 0 && sessions[0].status === 'live' ? 'Live Now!' : 'Next Live Session'}
+              {sessions.length > 0 && sessions[0].status === "live"
+                ? "Live Now!"
+                : "Next Live Session"}
             </CardTitle>
             <div className="flex items-center gap-1">
-              {sessions.length > 0 && sessions[0].status === 'live' && (
+              {sessions.length > 0 && sessions[0].status === "live" && (
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -300,16 +326,17 @@ export const AcademyDashboard: React.FC = () => {
           <CardContent>
             {sessions.length > 0 ? (
               <>
-                <div className="text-lg font-bold">
-                  {sessions[0].title}
-                </div>
+                <div className="text-lg font-bold">{sessions[0].title}</div>
                 <p className="text-xs text-muted-foreground">
-                  {sessions[0].status === 'live' ? 'Live now' : 
-                    sessions[0].date ? format(new Date(sessions[0].date), 'MMM dd, h:mm a') : 'Date TBD'}
+                  {sessions[0].status === "live"
+                    ? "Live now"
+                    : sessions[0].date
+                    ? format(new Date(sessions[0].date), "MMM dd, h:mm a")
+                    : "Date TBD"}
                 </p>
-                {sessions[0].status === 'live' && (
-                  <Button 
-                    size="sm" 
+                {sessions[0].status === "live" && (
+                  <Button
+                    size="sm"
                     className="mt-2 bg-red-600 hover:bg-red-700 text-white"
                     onClick={() => handleJoinSession(sessions[0].id)}
                   >
@@ -320,7 +347,9 @@ export const AcademyDashboard: React.FC = () => {
             ) : (
               <>
                 <div className="text-lg font-bold">No sessions scheduled</div>
-                <p className="text-xs text-muted-foreground">Check back later</p>
+                <p className="text-xs text-muted-foreground">
+                  Check back later
+                </p>
               </>
             )}
           </CardContent>
@@ -863,75 +892,84 @@ export const AcademyDashboard: React.FC = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
-                <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+        {/* Only show header on overview tab */}
+        {section === "overview" && !viewingCourse && (
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                  <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
+                    Academy{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
+                      Dashboard
+                    </span>
+                  </h1>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
+                    Your 6-month journey to forex trading mastery and
+                    professional development.
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
-                  Academy{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
-                    Dashboard
-                  </span>
-                </h1>
-                <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed">
-                  Your 6-month journey to forex trading mastery and professional
-                  development.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-blue-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
-                size="sm"
-                onClick={() => {
-                  loadAcademyContent();
-                  setLastRefresh(new Date());
-                }}
-                disabled={loading}
-              >
-                {loading ? "Refreshing..." : "Refresh"}
-              </Button>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-blue-200/50 dark:border-slate-700/50">
-                Last updated: {lastRefresh.toLocaleTimeString()}
-              </div>
-            </div>
-          </div>
-
-          <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
-                  Overall Progress
-                </CardTitle>
-                <Badge
-                  variant="secondary"
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold"
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-blue-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl"
+                  size="sm"
+                  onClick={() => {
+                    loadAcademyContent();
+                    setLastRefresh(new Date());
+                  }}
+                  disabled={loading}
                 >
-                  {overallProgress}% Complete
-                </Badge>
+                  {loading ? "Refreshing..." : "Refresh"}
+                </Button>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-blue-200/50 dark:border-slate-700/50">
+                  Last updated: {lastRefresh.toLocaleTimeString()}
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Progress
-                value={overallProgress}
-                className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Keep up the great work! You're making excellent progress.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            <Card className="border-none shadow-lg bg-white dark:bg-gray-900 rounded-xl">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
+                    Overall Progress
+                  </CardTitle>
+                  <Badge
+                    variant="secondary"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold"
+                  >
+                    {overallProgress}% Complete
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Progress
+                  value={overallProgress}
+                  className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Keep up the great work! You're making excellent progress.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="space-y-6">
-          {section === "overview" && renderOverview()}
-          {section === "courses" && renderCourses()}
-          {section === "live" && renderLive()}
-          {section === "assignments" && renderAssignments()}
+          {viewingCourse ? (
+            renderCourseViewer()
+          ) : (
+            <>
+              {section === "overview" && renderOverview()}
+              {section === "courses" && renderCourses()}
+              {section === "live" && renderLive()}
+              {section === "assignments" && renderAssignments()}
+            </>
+          )}
         </div>
       </div>
     </div>

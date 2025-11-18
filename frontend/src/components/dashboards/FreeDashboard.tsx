@@ -38,7 +38,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { CourseViewer } from "@/components/CourseViewer";
 import { LiveSessionCard } from "@/components/live-session/LiveSessionCard";
-import liveSessionService, { LiveSessionData } from "@/services/liveSessionService";
+import liveSessionService, {
+  LiveSessionData,
+} from "@/services/liveSessionService";
 import { format } from "date-fns";
 
 interface CommunityContent {
@@ -102,22 +104,22 @@ export const FreeDashboard: React.FC = () => {
         setMyRequests(reqs || []);
         // If any request approved, refresh user to switch dashboard
         if ((reqs || []).some((r: any) => r.status === "approved")) {
-          await refreshUser();
+          // Call refreshUser directly from authService to avoid dependency issues
+          await authService.getCurrentUser();
+          window.location.reload(); // Reload to switch to new dashboard
         }
       } catch {}
     }, 20000);
     return () => clearInterval(interval);
-  }, [refreshUser]);
+  }, []); // Empty dependency array to avoid infinite loops
 
   const loadCommunityContent = async () => {
     try {
-      const [coursesData, sessionsData, myReq] = await Promise.all(
-        [
-          authService.getCourses(),
-          liveSessionService.getUpcomingAndLiveSessions(),
-          authService.getMyRoleRequests().catch(() => []),
-        ]
-      );
+      const [coursesData, sessionsData, myReq] = await Promise.all([
+        authService.getCourses(),
+        liveSessionService.getUpcomingAndLiveSessions(),
+        authService.getMyRoleRequests().catch(() => []),
+      ]);
 
       // Fetch videos for each course
       const coursesWithVideos = await Promise.all(
@@ -176,13 +178,13 @@ export const FreeDashboard: React.FC = () => {
       setJoiningSession(sessionId);
       await liveSessionService.joinSession(sessionId);
       // Navigate to session page
-      window.open(`/session/${sessionId}`, '_blank');
+      window.open(`/session/${sessionId}`, "_blank");
       toast({
         title: "Joined Session",
         description: "You have successfully joined the live session",
       });
     } catch (error) {
-      console.error('Failed to join session:', error);
+      console.error("Failed to join session:", error);
       toast({
         title: "Error",
         description: "Failed to join session. Please try again.",
@@ -485,16 +487,16 @@ export const FreeDashboard: React.FC = () => {
                       <MessageCircle className="w-7 h-7 text-primary" />
                     </div>
                     <div className="text-right">
-                      <div className="heading-sm text-foreground">
-                        Free
-                      </div>
+                      <div className="heading-sm text-foreground">Free</div>
                     </div>
                   </div>
 
                   <CardTitle className="heading-xs mb-2">
                     Free Community
                   </CardTitle>
-                  <p className="body-sm text-muted-foreground">Daily Signals & Support</p>
+                  <p className="body-sm text-muted-foreground">
+                    Daily Signals & Support
+                  </p>
                 </CardHeader>
 
                 <CardContent className="pt-0 relative">
@@ -527,7 +529,9 @@ export const FreeDashboard: React.FC = () => {
 
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 mb-6">
                     <Star className="w-4 h-4 text-primary fill-primary" />
-                    <span className="text-sm font-medium text-foreground">No commitment required</span>
+                    <span className="text-sm font-medium text-foreground">
+                      No commitment required
+                    </span>
                   </div>
 
                   <Button
@@ -549,7 +553,10 @@ export const FreeDashboard: React.FC = () => {
 
                 {/* Badge */}
                 <div className="absolute top-4 right-4 z-10">
-                  <Badge variant="default" className="bg-gradient-primary text-white border-0 shadow-md">
+                  <Badge
+                    variant="default"
+                    className="bg-gradient-primary text-white border-0 shadow-md"
+                  >
                     <Star className="w-3 h-3 mr-1" />
                     Most Popular
                   </Badge>
@@ -561,9 +568,7 @@ export const FreeDashboard: React.FC = () => {
                       <Award className="w-7 h-7 text-white" />
                     </div>
                     <div className="text-right">
-                      <div className="heading-sm text-foreground">
-                        $497
-                      </div>
+                      <div className="heading-sm text-foreground">$497</div>
                       <div className="text-sm line-through text-destructive/70 font-medium">
                         $697
                       </div>
@@ -573,7 +578,9 @@ export const FreeDashboard: React.FC = () => {
                   <CardTitle className="heading-xs mb-2">
                     6-Month Academy
                   </CardTitle>
-                  <p className="body-sm text-muted-foreground">Complete Trading Education</p>
+                  <p className="body-sm text-muted-foreground">
+                    Complete Trading Education
+                  </p>
                 </CardHeader>
 
                 <CardContent className="pt-0 relative">
@@ -606,7 +613,9 @@ export const FreeDashboard: React.FC = () => {
 
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 mb-6">
                     <Star className="w-4 h-4 text-primary fill-primary" />
-                    <span className="text-sm font-medium text-foreground">Limited to 50 students per cohort</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Limited to 50 students per cohort
+                    </span>
                   </div>
 
                   <Button
@@ -647,7 +656,9 @@ export const FreeDashboard: React.FC = () => {
                   <CardTitle className="heading-xs mb-2">
                     Monthly Mentorship
                   </CardTitle>
-                  <p className="body-sm text-muted-foreground">Ongoing Expert Support</p>
+                  <p className="body-sm text-muted-foreground">
+                    Ongoing Expert Support
+                  </p>
                 </CardHeader>
 
                 <CardContent className="pt-0 relative">
@@ -680,7 +691,9 @@ export const FreeDashboard: React.FC = () => {
 
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 mb-6">
                     <Star className="w-4 h-4 text-primary fill-primary" />
-                    <span className="text-sm font-medium text-foreground">Cancel anytime</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Cancel anytime
+                    </span>
                   </div>
 
                   <Button
@@ -710,7 +723,8 @@ export const FreeDashboard: React.FC = () => {
                           className="flex items-center justify-between rounded-md border p-3"
                         >
                           <p className="text-sm text-muted-foreground">
-                            Requested {new Date(r.createdAt).toLocaleDateString()}
+                            Requested{" "}
+                            {new Date(r.createdAt).toLocaleDateString()}
                           </p>
                           <Badge
                             variant={
@@ -746,7 +760,8 @@ export const FreeDashboard: React.FC = () => {
                     Free Courses
                   </h2>
                   <p className="text-gray-600 dark:text-gray-300 mt-1">
-                    Start your forex trading journey with our comprehensive free courses
+                    Start your forex trading journey with our comprehensive free
+                    courses
                   </p>
                 </div>
               </div>
@@ -799,7 +814,9 @@ export const FreeDashboard: React.FC = () => {
                         <div className="absolute bottom-4 right-4">
                           <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-white text-xs">
                             <Timer className="w-3 h-3" />
-                            {course.duration ? `${course.duration}min` : "45min"}
+                            {course.duration
+                              ? `${course.duration}min`
+                              : "45min"}
                           </div>
                         </div>
                       </div>
@@ -842,12 +859,17 @@ export const FreeDashboard: React.FC = () => {
                           {/* Progress Bar */}
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs">
-                              <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                              <span className="text-gray-600 dark:text-gray-400">
+                                Progress
+                              </span>
                               <span className="font-medium text-green-600 dark:text-green-400">
                                 {course.progress || 0}%
                               </span>
                             </div>
-                            <Progress value={course.progress || 0} className="h-2" />
+                            <Progress
+                              value={course.progress || 0}
+                              className="h-2"
+                            />
                           </div>
 
                           {/* Action Buttons */}
@@ -884,7 +906,6 @@ export const FreeDashboard: React.FC = () => {
           </div>
         )}
 
-
         {section === "live" && (
           <div className="space-y-8">
             <div className="text-center">
@@ -895,7 +916,7 @@ export const FreeDashboard: React.FC = () => {
                 Join live sessions with expert traders and learn in real-time
               </p>
             </div>
-            
+
             <div className="space-y-4">
               {sessions.length > 0 ? (
                 <div className="space-y-4">
@@ -914,12 +935,16 @@ export const FreeDashboard: React.FC = () => {
                     <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
                       <Users className="w-16 h-16 text-green-500 dark:text-green-400" />
                     </div>
-                    <h3 className="text-xl font-bold mb-2">No Live Sessions Available</h3>
+                    <h3 className="text-xl font-bold mb-2">
+                      No Live Sessions Available
+                    </h3>
                     <p className="text-muted-foreground mb-6">
-                      Live sessions will appear here when scheduled by instructors.
+                      Live sessions will appear here when scheduled by
+                      instructors.
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Upgrade to Academy or Mentorship for exclusive live sessions!
+                      Upgrade to Academy or Mentorship for exclusive live
+                      sessions!
                     </p>
                   </CardContent>
                 </Card>
@@ -938,7 +963,7 @@ export const FreeDashboard: React.FC = () => {
                 Connect with fellow traders and share insights
               </p>
             </div>
-            
+
             <Card className="shadow-soft hover:shadow-medium transition-all duration-300 border-green-200 dark:border-green-800 card-glow">
               <CardContent className="text-center py-12">
                 <div className="p-4 rounded-full bg-green-100 dark:bg-green-900 w-fit mx-auto mb-4">
@@ -946,7 +971,8 @@ export const FreeDashboard: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2">Join Our Community</h3>
                 <p className="text-muted-foreground mb-6">
-                  Connect with other traders, share strategies, and learn together.
+                  Connect with other traders, share strategies, and learn
+                  together.
                 </p>
                 <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
                   <MessageCircle className="w-4 h-4 mr-2" />

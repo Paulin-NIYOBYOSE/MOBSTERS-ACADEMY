@@ -4,6 +4,12 @@ interface TradingAccount {
   startingBalance: number;
   currentBalance: number;
   description?: string;
+  brokerType?: string;
+  accountNumber?: string;
+  serverName?: string;
+  isConnected?: boolean;
+  autoSync?: boolean;
+  lastSyncAt?: string;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -16,12 +22,26 @@ interface CreateTradingAccountDto {
   startingBalance: number;
   currentBalance?: number;
   description?: string;
+  brokerType?: string;
+  accountNumber?: string;
+  serverName?: string;
+  isConnected?: boolean;
+  autoSync?: boolean;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
 interface UpdateTradingAccountDto {
   name?: string;
   startingBalance?: number;
   description?: string;
+  brokerType?: string;
+  accountNumber?: string;
+  serverName?: string;
+  isConnected?: boolean;
+  autoSync?: boolean;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
 class TradingAccountService {

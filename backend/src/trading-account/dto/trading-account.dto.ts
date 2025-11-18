@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsNotEmpty, Min, IsBoolean, IsIn } from 'class-validator';
 
 export class CreateTradingAccountDto {
   @IsString()
@@ -17,6 +17,35 @@ export class CreateTradingAccountDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['MT4', 'MT5', 'CTRADER', 'TRADINGVIEW', 'MANUAL'])
+  brokerType?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  serverName?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isConnected?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  autoSync?: boolean;
+
+  @IsOptional()
+  @IsString()
+  apiKey?: string;
+
+  @IsOptional()
+  @IsString()
+  apiSecret?: string;
 }
 
 export class UpdateTradingAccountDto {
@@ -33,4 +62,33 @@ export class UpdateTradingAccountDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['MT4', 'MT5', 'CTRADER', 'TRADINGVIEW', 'MANUAL'])
+  brokerType?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  serverName?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isConnected?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  autoSync?: boolean;
+
+  @IsOptional()
+  @IsString()
+  apiKey?: string;
+
+  @IsOptional()
+  @IsString()
+  apiSecret?: string;
 }

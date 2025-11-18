@@ -17,6 +17,41 @@ export class CreateTradeDto {
   time: string;
 
   @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  entryPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  exitPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  lotSize?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  stopLoss?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  takeProfit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  commission?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  swap?: number;
+
+  @IsOptional()
   @IsString()
   chartLink?: string;
 
@@ -35,9 +70,49 @@ export class CreateTradeDto {
   profit?: number;
 
   @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  pips?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  riskReward?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  duration?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsString()
+  setup?: string;
+
+  @IsOptional()
+  @IsString()
+  mistakes?: string;
+
+  @IsOptional()
+  @IsString()
+  emotions?: string;
+
+  @IsOptional()
   @IsString()
   @IsIn(['RUNNING', 'WIN', 'LOSS', 'BREAKEVEN'])
   status?: string;
+
+  @IsOptional()
+  @IsString()
+  brokerTradeId?: string;
+
+  @IsOptional()
+  @IsString()
+  importedFrom?: string;
 }
 
 export class UpdateTradeDto {
@@ -55,6 +130,41 @@ export class UpdateTradeDto {
   time?: string;
 
   @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  entryPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  exitPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  lotSize?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  stopLoss?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  takeProfit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  commission?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  swap?: number;
+
+  @IsOptional()
   @IsString()
   chartLink?: string;
 
@@ -71,6 +181,38 @@ export class UpdateTradeDto {
   @IsNumber()
   @Type(() => Number)
   profit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  pips?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  riskReward?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  duration?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsString()
+  setup?: string;
+
+  @IsOptional()
+  @IsString()
+  mistakes?: string;
+
+  @IsOptional()
+  @IsString()
+  emotions?: string;
 
   @IsOptional()
   @IsString()

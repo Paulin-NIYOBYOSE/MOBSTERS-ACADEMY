@@ -34,6 +34,9 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { useToast } from "../../hooks/use-toast";
+import BrokerConnectionModal from "./BrokerConnectionModal";
+import { tradingAccountService } from "../../services/tradingAccountService";
 
 interface DashboardMetrics {
   netPL: number;
@@ -54,52 +57,193 @@ interface CalendarDay {
 }
 
 const TradingJournal: React.FC = () => {
+  const { toast } = useToast();
   // State
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("open-positions");
+  const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<number | undefined>();
+  const [showBrokerModal, setShowBrokerModal] = useState(false);
+  const [trades, setTrades] = useState<any[]>([]);
+  const [lastImportDate, setLastImportDate] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateRange, setDateRange] = useState<{
+    startDate: string;
+    endDate: string;
+  }>(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setMonth(start.getMonth() - 1);
+    return {
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+    };
+  });
 
-  // Dashboard metrics
-  const metrics: DashboardMetrics = {
-    netPL: 248.78,
-    tradeExpectancy: 248.78,
-    profitFactor: 1.2412,
-    winPercentage: 39.02,
-    avgWinTrade: 54.52,
-    avgLossTrade: 51.32,
-    zellaScore: 81,
+  // Load data from backend
+  useEffect(() => {
+    loadData();
+  }, [selectedAccount, dateRange]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Please log in to view trading journal",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Fetch accounts
+      const accountsData = await tradingAccountService.getAccounts();
+      setAccounts(accountsData);
+
+      // Fetch advanced analytics
+      const params = new URLSearchParams();
+      if (selectedAccount)
+        params.append("accountId", selectedAccount.toString());
+      params.append("period", "month");
+
+      const analyticsResponse = await fetch(
+        `http://localhost:3000/api/trading-journal/analytics/advanced?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (analyticsResponse.ok) {
+        const data = await analyticsResponse.json();
+        setAnalytics(data);
+      } else {
+        // Set default analytics if API fails
+        setAnalytics(null);
+      }
+
+      // Fetch trades
+      const tradesParams = new URLSearchParams();
+      if (selectedAccount)
+        tradesParams.append("accountId", selectedAccount.toString());
+      if (dateRange.startDate)
+        tradesParams.append("startDate", dateRange.startDate);
+      if (dateRange.endDate) tradesParams.append("endDate", dateRange.endDate);
+
+      const tradesResponse = await fetch(
+        `http://localhost:3000/api/trading-journal/trades?${tradesParams}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (tradesResponse.ok) {
+        const tradesData = await tradesResponse.json();
+        // Ensure tradesData is an array
+        setTrades(Array.isArray(tradesData) ? tradesData : []);
+      } else {
+        setTrades([]);
+      }
+
+      // Get last import date from accounts
+      if (accountsData.length > 0) {
+        const latestSync = accountsData
+          .filter((acc: any) => acc.lastSyncAt)
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.lastSyncAt).getTime() -
+              new Date(a.lastSyncAt).getTime()
+          )[0];
+
+        if (latestSync) {
+          setLastImportDate(latestSync.lastSyncAt);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load trading data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Chart data
-  const dailyCumulativePLData = [
-    { date: "12/04/2022", value: 0 },
-    { date: "12/05/2022", value: 100 },
-    { date: "12/06/2022", value: 200 },
-    { date: "12/07/2022", value: 150 },
-    { date: "12/08/2022", value: -100 },
-    { date: "12/09/2022", value: 250 },
-  ];
+  // Dashboard metrics from analytics or defaults
+  const metrics: DashboardMetrics = analytics
+    ? {
+        netPL: analytics.totalProfit || 0,
+        tradeExpectancy: analytics.expectancy || 0,
+        profitFactor: analytics.profitFactor || 0,
+        winPercentage: analytics.winRate || 0,
+        avgWinTrade: analytics.averageWin || 0,
+        avgLossTrade: Math.abs(analytics.averageLoss || 0),
+        zellaScore: analytics.zellaScore || 0,
+      }
+    : {
+        netPL: 0,
+        tradeExpectancy: 0,
+        profitFactor: 0,
+        winPercentage: 0,
+        avgWinTrade: 0,
+        avgLossTrade: 0,
+        zellaScore: 0,
+      };
 
-  const netDailyPLData = [
-    { date: "12/04/2022", value: 50 },
-    { date: "12/05/2022", value: 100 },
-    { date: "12/06/2022", value: 80 },
-    { date: "12/07/2022", value: -50 },
-    { date: "12/08/2022", value: -150 },
-    { date: "12/09/2022", value: 120 },
-  ];
+  // Chart data from analytics
+  const dailyCumulativePLData =
+    analytics?.equityCurve?.map((point: any) => ({
+      date: new Date(point.date).toLocaleDateString(),
+      value: point.equity,
+    })) || [];
 
-  const openPositions = [
-    { id: 1, openDate: "11.12.2023", symbol: "MRO", netPL: 371.21 },
-    { id: 2, openDate: "11.12.2023", symbol: "MRO", netPL: -114.31 },
-    { id: 3, openDate: "11.12.2023", symbol: "MRO", netPL: 314.21 },
-    { id: 4, openDate: "11.12.2023", symbol: "MRO", netPL: -62.21 },
-  ];
+  const netDailyPLData =
+    analytics?.dailyPL?.map((point: any) => ({
+      date: new Date(point.date).toLocaleDateString(),
+      value: point.profit,
+    })) || [];
 
-  const recentTrades = [
-    { id: 1, openDate: "11.12.2023", symbol: "MRO", netPL: 371.21 },
-    { id: 2, openDate: "10.12.2023", symbol: "MRO", netPL: -114.31 },
-    { id: 3, openDate: "09.12.2023", symbol: "MRO", netPL: 314.21 },
-  ];
+  // Filter trades by status
+  const openPositions = trades.filter((t) => t.status === "RUNNING");
+  const recentTrades = trades
+    .filter((t) => t.status !== "RUNNING")
+    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    .slice(0, 10);
+
+  const formatTradeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+      .replace(/\//g, ".");
+  };
+
+  const getRelativeTime = (dateString: string | null) => {
+    if (!dateString) return "Never";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+
+    if (diffMonths > 0)
+      return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    return "Today";
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -195,26 +339,197 @@ const TradingJournal: React.FC = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading trading journal...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:ml-3 md:mr-2">
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 mt-5 ">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+            Dashboard
+          </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-gray-600 border-gray-300"
+          >
             <Eye className="w-4 h-4 mr-2" />
             Filters
           </Button>
-          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
-            <Calendar className="w-4 h-4 mr-2" />
-            Date range
-          </Button>
-          <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
-            All Accounts
-          </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => setShowDatePicker(!showDatePicker)}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Date range
+            </Button>
+            {showDatePicker && (
+              <div className="absolute right-0 mt-2 p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 w-80">
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-500" />
+                      Date Range
+                    </h3>
+                    <button
+                      onClick={() => setShowDatePicker(false)}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={dateRange.startDate}
+                      onChange={(e) =>
+                        setDateRange({
+                          ...dateRange,
+                          startDate: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors outline-none"
+                      style={{
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={dateRange.endDate}
+                      onChange={(e) =>
+                        setDateRange({ ...dateRange, endDate: e.target.value })
+                      }
+                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors outline-none"
+                      style={{
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+                  {/* Quick Select Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setDate(start.getDate() - 7);
+                        setDateRange({
+                          startDate: start.toISOString().split("T")[0],
+                          endDate: end.toISOString().split("T")[0],
+                        });
+                      }}
+                      className="flex-1 text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Last 7 Days
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setMonth(start.getMonth() - 1);
+                        setDateRange({
+                          startDate: start.toISOString().split("T")[0],
+                          endDate: end.toISOString().split("T")[0],
+                        });
+                      }}
+                      className="flex-1 text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Last Month
+                    </Button>
+                  </div>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <Button
+                      size="sm"
+                      onClick={() => setShowDatePicker(false)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Apply
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setMonth(start.getMonth() - 1);
+                        setDateRange({
+                          startDate: start.toISOString().split("T")[0],
+                          endDate: end.toISOString().split("T")[0],
+                        });
+                      }}
+                      className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <select
+            value={selectedAccount || ""}
+            onChange={(e) =>
+              setSelectedAccount(
+                e.target.value ? Number(e.target.value) : undefined
+              )
+            }
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+          >
+            <option value="">All Accounts</option>
+            {accounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.name}
+              </option>
+            ))}
+          </select>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            size="sm"
+            onClick={() => setShowBrokerModal(true)}
+          >
             <Import className="w-4 h-4 mr-2" />
             Import Trades
           </Button>
@@ -225,8 +540,12 @@ const TradingJournal: React.FC = () => {
       <div className="flex items-center justify-between mb-6 text-sm text-gray-500">
         <div></div>
         <div className="flex items-center gap-4">
-          <span>Last imported 2 months ago</span>
-          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0 h-auto">
+          <span>Last imported {getRelativeTime(lastImportDate)}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-700 p-0 h-auto"
+          >
             Edit Widgets
           </Button>
         </div>
@@ -240,7 +559,9 @@ const TradingJournal: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Net P&L</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Net P&L
+                  </span>
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -260,7 +581,9 @@ const TradingJournal: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Trade Expectancy</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Trade Expectancy
+                  </span>
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -280,7 +603,9 @@ const TradingJournal: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Profit Factor</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Profit Factor
+                  </span>
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -319,7 +644,9 @@ const TradingJournal: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Win %</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Win %
+                  </span>
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -358,16 +685,16 @@ const TradingJournal: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg win/loss trade</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Avg win/loss trade
+                  </span>
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xl font-bold text-green-600">
                     $34.82
                   </span>
-                  <span className="text-xl font-bold text-red-600">
-                    $51.32
-                  </span>
+                  <span className="text-xl font-bold text-red-600">$51.32</span>
                 </div>
               </div>
             </div>
@@ -388,7 +715,12 @@ const TradingJournal: React.FC = () => {
             <div className="flex flex-col items-center">
               {/* Triangle Chart */}
               <div className="relative w-48 h-32 mb-4">
-                <svg width="100%" height="100%" viewBox="0 0 192 128" className="overflow-visible">
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 192 128"
+                  className="overflow-visible"
+                >
                   {/* Triangle outline */}
                   <path
                     d="M 96 20 L 20 108 L 172 108 Z"
@@ -406,15 +738,25 @@ const TradingJournal: React.FC = () => {
                   <circle cx="96" cy="20" r="3" fill="#8b5cf6" />
                   <circle cx="20" cy="108" r="3" fill="#8b5cf6" />
                   <circle cx="172" cy="108" r="3" fill="#8b5cf6" />
-                  
+
                   <defs>
-                    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <linearGradient
+                      id="purpleGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="0%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.2" />
+                      <stop
+                        offset="100%"
+                        stopColor="#8b5cf6"
+                        stopOpacity="0.2"
+                      />
                     </linearGradient>
                   </defs>
                 </svg>
-                
+
                 {/* Labels */}
                 <div className="absolute bottom-0 left-0 text-xs text-gray-600 dark:text-gray-400">
                   Avg win/loss
@@ -426,11 +768,13 @@ const TradingJournal: React.FC = () => {
                   Win %
                 </div>
               </div>
-              
+
               {/* Score display */}
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Your Zella Score: <span className="font-semibold text-green-600">81</span> <span className="text-green-600">+1</span>
+                  Your Zella Score:{" "}
+                  <span className="font-semibold text-green-600">81</span>{" "}
+                  <span className="text-green-600">+1</span>
                 </div>
               </div>
             </div>
@@ -441,32 +785,50 @@ const TradingJournal: React.FC = () => {
         <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-              Daily Net Cumulative P&L <Info className="w-4 h-4 text-gray-400" />
+              Daily Net Cumulative P&L{" "}
+              <Info className="w-4 h-4 text-gray-400" />
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dailyCumulativePLData} margin={{ top: 10, right: 10, left: 10, bottom: 40 }}>
+                <AreaChart
+                  data={dailyCumulativePLData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
                     tickMargin={8}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
                     tickFormatter={(value) => `$${value}`}
                   />
                   <defs>
-                    <linearGradient id="cumulativePLGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="cumulativePLGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#10b981" stopOpacity={0.8} />
-                      <stop offset="50%" stopColor="#10b981" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0.4} />
+                      <stop
+                        offset="50%"
+                        stopColor="#10b981"
+                        stopOpacity={0.4}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#ef4444"
+                        stopOpacity={0.4}
+                      />
                     </linearGradient>
                   </defs>
                   <Area
@@ -492,28 +854,30 @@ const TradingJournal: React.FC = () => {
           <CardContent className="pt-0">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={netDailyPLData} margin={{ top: 10, right: 10, left: 10, bottom: 40 }}>
+                <BarChart
+                  data={netDailyPLData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
                     tickMargin={8}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
                     tickFormatter={(value) => `$${value}`}
                   />
-                  <Bar 
-                    dataKey="value" 
-                    radius={[2, 2, 0, 0]}
-                    fill="#10b981"
-                  >
+                  <Bar dataKey="value" radius={[2, 2, 0, 0]} fill="#10b981">
                     {netDailyPLData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#10b981' : '#ef4444'} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.value >= 0 ? "#10b981" : "#ef4444"}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -547,21 +911,30 @@ const TradingJournal: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {openPositions.map((trade) => (
-                      <TableRow key={trade.id}>
-                        <TableCell className="font-medium">
-                          {trade.openDate}
-                        </TableCell>
-                        <TableCell>{trade.symbol}</TableCell>
+                    {openPositions.length === 0 ? (
+                      <TableRow>
                         <TableCell
-                          className={`text-right font-medium ${getPLColor(
-                            trade.netPL
-                          )}`}
+                          colSpan={3}
+                          className="text-center text-gray-500"
                         >
-                          {formatCurrency(trade.netPL)}
+                          No open positions
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      openPositions.map((trade) => (
+                        <TableRow key={trade.id}>
+                          <TableCell>{formatTradeDate(trade.time)}</TableCell>
+                          <TableCell>{trade.pair}</TableCell>
+                          <TableCell
+                            className={`text-right ${getPLColor(
+                              trade.profit || 0
+                            )}`}
+                          >
+                            {formatCurrency(trade.profit || 0)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </TabsContent>
@@ -576,21 +949,32 @@ const TradingJournal: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {recentTrades.map((trade) => (
-                      <TableRow key={trade.id}>
-                        <TableCell className="font-medium">
-                          {trade.openDate}
-                        </TableCell>
-                        <TableCell>{trade.symbol}</TableCell>
+                    {recentTrades.length === 0 ? (
+                      <TableRow>
                         <TableCell
-                          className={`text-right font-medium ${getPLColor(
-                            trade.netPL
-                          )}`}
+                          colSpan={3}
+                          className="text-center text-gray-500"
                         >
-                          {formatCurrency(trade.netPL)}
+                          No recent trades
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      recentTrades.map((trade) => (
+                        <TableRow key={trade.id}>
+                          <TableCell className="font-medium">
+                            {formatTradeDate(trade.time)}
+                          </TableCell>
+                          <TableCell>{trade.pair}</TableCell>
+                          <TableCell
+                            className={`text-right font-medium ${getPLColor(
+                              trade.profit || 0
+                            )}`}
+                          >
+                            {formatCurrency(trade.profit || 0)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </TabsContent>
@@ -703,6 +1087,14 @@ const TradingJournal: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Broker Connection Modal */}
+      <BrokerConnectionModal
+        open={showBrokerModal}
+        onClose={() => setShowBrokerModal(false)}
+        onSuccess={loadData}
+        accountId={selectedAccount}
+      />
     </div>
   );
 };

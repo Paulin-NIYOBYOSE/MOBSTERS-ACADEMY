@@ -35,9 +35,10 @@ async function bootstrap() {
     }
   });
 
-  // Serve uploaded files
-  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'));
-  app.setBaseViewsDir(join(__dirname, '..', '..', 'uploads'));
+  // Serve uploaded files with /uploads prefix
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   await app.listen(3000);
 }

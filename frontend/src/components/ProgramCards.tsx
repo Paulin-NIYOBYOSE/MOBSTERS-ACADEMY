@@ -21,8 +21,8 @@ export const ProgramCards = () => {
       id: "academy",
       title: "6-Month Academy",
       subtitle: "Complete Trading Education",
-      price: "$497",
-      originalPrice: "$697",
+      price: "$217",
+      originalPrice: "$497",
       badge: "Most Popular",
       keyFeatures: [
         "50+ hours of structured lessons",
@@ -38,7 +38,7 @@ export const ProgramCards = () => {
       id: "mentorship",
       title: "Monthly Mentorship",
       subtitle: "Ongoing Expert Support",
-      price: "$97",
+      price: "$49",
       priceUnit: "/month",
       badge: "Ongoing Support",
       keyFeatures: [
@@ -79,7 +79,10 @@ export const ProgramCards = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto" id="programs">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto"
+      id="programs"
+    >
       {programs.map((program) => (
         <Card
           key={program.id}
@@ -99,7 +102,9 @@ export const ProgramCards = () => {
               <Badge
                 variant={program.popular ? "default" : "secondary"}
                 className={`shadow-md ${
-                  program.popular ? "bg-gradient-primary text-white border-0" : ""
+                  program.popular
+                    ? "bg-gradient-primary text-white text-[9px] border-0"
+                    : ""
                 }`}
               >
                 {program.popular && <Sparkles className="w-3 h-3 mr-1" />}
@@ -112,8 +117,8 @@ export const ProgramCards = () => {
             <div className="flex items-start justify-between mb-6">
               <div
                 className={`p-3 rounded-xl shadow-sm transition-all duration-300 group-hover:scale-110 ${
-                  program.popular 
-                    ? "bg-gradient-primary text-white" 
+                  program.popular
+                    ? "bg-gradient-primary text-white"
                     : "bg-accent"
                 }`}
               >
@@ -123,11 +128,11 @@ export const ProgramCards = () => {
                   }`}
                 />
               </div>
-              <div className="text-right">
+              <div className="text-right mt-[10px]">
                 <div className="heading-sm text-foreground">
                   {program.price}
                   {program.priceUnit && (
-                    <span className="text-base font-normal text-muted-foreground">
+                    <span className="text-base font-normal text-[1] text-muted-foreground">
                       {program.priceUnit}
                     </span>
                   )}
@@ -140,9 +145,7 @@ export const ProgramCards = () => {
               </div>
             </div>
 
-            <CardTitle className="heading-xs mb-2">
-              {program.title}
-            </CardTitle>
+            <CardTitle className="heading-xs mb-2">{program.title}</CardTitle>
             <p className="body-sm text-muted-foreground">{program.subtitle}</p>
           </CardHeader>
 
@@ -160,7 +163,9 @@ export const ProgramCards = () => {
 
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 mb-6">
               <Star className="w-4 h-4 text-primary fill-primary" />
-              <span className="text-sm font-medium text-foreground">{program.highlight}</span>
+              <span className="text-sm font-medium text-foreground">
+                {program.highlight}
+              </span>
             </div>
 
             <div className="space-y-2">

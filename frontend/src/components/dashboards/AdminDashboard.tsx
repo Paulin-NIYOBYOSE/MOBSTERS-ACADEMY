@@ -2489,7 +2489,7 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className={section === "journal" ? "" : "p-6"}>
-      <div className={section === "journal" ? "" : "max-w-7xl mx-auto"}>
+      <div className={section === "journal" ? "" : ""}>
         {section !== "journal" && (
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>

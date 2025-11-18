@@ -568,3 +568,45 @@ All colors MUST be HSL.
     @apply ring-2 ring-primary/50 ring-offset-2 ring-offset-background outline-none;
   }
 }
+
+/* Date Picker Dark Mode Support */
+@layer components {
+  /* Style native date picker calendar for dark mode */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+
+  /* Date input styling */
+  input[type="date"] {
+    position: relative;
+  }
+
+  input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-text {
+    padding: 0 0.25rem;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="date"]::-webkit-datetime-edit-year-field {
+    padding: 0 0.25rem;
+  }
+
+  /* Calendar popup styling for browsers that support it */
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 0.25rem;
+  }
+}

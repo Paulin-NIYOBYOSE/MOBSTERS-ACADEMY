@@ -13,12 +13,16 @@ import {
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { TradingJournalService } from './trading-journal.service';
+import { EnhancedAnalyticsService } from './enhanced-analytics.service';
 import { CreateTradeDto, UpdateTradeDto, TradeQueryDto, AnalyticsQueryDto } from './dto/trading-journal.dto';
 
 @Controller('trading-journal')
 @UseGuards(JwtGuard)
 export class TradingJournalController {
-  constructor(private readonly tradingJournalService: TradingJournalService) {}
+  constructor(
+    private readonly tradingJournalService: TradingJournalService,
+    private readonly enhancedAnalyticsService: EnhancedAnalyticsService,
+  ) {}
 
   @Post('trades')
   async createTrade(@Request() req, @Body() createTradeDto: CreateTradeDto) {
@@ -67,5 +71,19 @@ export class TradingJournalController {
   @Delete('trades/:id')
   async deleteTrade(@Request() req, @Param('id', ParseIntPipe) tradeId: number) {
     return this.tradingJournalService.deleteTrade(req.user.id, tradeId);
+  }
+
+  @Get('analytics/advanced')
+  async getAdvancedAnalytics(@Request() req, @Query() query: AnalyticsQueryDto) {
+    console.log('getAdvancedAnalytics called with query:', query);
+    console.log('userId:', req.user.id);
+    
+    return this.enhancedAnalyticsService.getAdvancedAnalytics(
+      req.user.id,
+      query.accountId,
+      query.period,
+      query.startDate,
+      query.endDate,
+    );
   }
 }

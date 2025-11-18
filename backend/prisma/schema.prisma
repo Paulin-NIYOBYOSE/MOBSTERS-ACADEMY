@@ -8,22 +8,22 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  name          String
-  password      String
-  roles         UserRole[]
-  refreshTokens RefreshToken[]
-  pendingRequests PendingRoleRequest[]
-  uploadedCourses Course[]
-  uploadedSessions LiveSession[]
-  uploadedSignals Signal[]
-  tradingAccounts TradingAccount[]
-  trades        Trade[]
+  id                    Int                  @id @default(autoincrement())
+  email                 String               @unique
+  name                  String
+  password              String
+  roles                 UserRole[]
+  refreshTokens         RefreshToken[]
+  pendingRequests       PendingRoleRequest[]
+  uploadedCourses       Course[]
+  uploadedSessions      LiveSession[]
+  uploadedSignals       Signal[]
+  tradingAccounts       TradingAccount[]
+  trades                Trade[]
   sessionParticipations SessionParticipant[]
-  sessionFeedback SessionFeedback[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  sessionFeedback       SessionFeedback[]
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
 }
 
 model Role {
@@ -45,20 +45,20 @@ model UserRole {
 }
 
 model RefreshToken {
-  id        Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   hashedToken String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revoked   Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model PendingRoleRequest {
   id        Int      @id @default(autoincrement())
   userId    Int
-  program   String   // 'academy', 'mentorship'
+  program   String // 'academy', 'mentorship'
   status    String   @default("pending") // 'pending', 'paid', 'approved', 'rejected'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,50 +68,50 @@ model PendingRoleRequest {
 }
 
 model Course {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  roleAccess  String[] // e.g., ['academy_student', 'community_student']
-  uploadedBy  Int
-  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  videos      CourseVideo[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int           @id @default(autoincrement())
+  title      String
+  content    String
+  roleAccess String[] // e.g., ['academy_student', 'community_student']
+  uploadedBy Int
+  user       User          @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  videos     CourseVideo[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }
 
 model LiveSession {
-  id               Int                 @id @default(autoincrement())
-  title            String
-  description      String
-  date             DateTime
-  duration         Int?                @default(60) // duration in minutes
-  maxParticipants  Int?                @default(50)
-  roleAccess       String[]
-  status           String              @default("scheduled") // scheduled, live, ended, cancelled
-  sessionUrl       String?
-  recordingUrl     String?
-  autoRecord       Boolean             @default(false)
-  actualStartTime  DateTime?
-  actualEndTime    DateTime?
-  uploadedBy       Int
-  user             User                @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  participants     SessionParticipant[]
-  recordings       SessionRecording[]
-  feedback         SessionFeedback[]
-  analytics        SessionAnalytics?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  id              Int                  @id @default(autoincrement())
+  title           String
+  description     String
+  date            DateTime
+  duration        Int?                 @default(60) // duration in minutes
+  maxParticipants Int?                 @default(50)
+  roleAccess      String[]
+  status          String               @default("scheduled") // scheduled, live, ended, cancelled
+  sessionUrl      String?
+  recordingUrl    String?
+  autoRecord      Boolean              @default(false)
+  actualStartTime DateTime?
+  actualEndTime   DateTime?
+  uploadedBy      Int
+  user            User                 @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  participants    SessionParticipant[]
+  recordings      SessionRecording[]
+  feedback        SessionFeedback[]
+  analytics       SessionAnalytics?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 }
 
 model Signal {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  roleAccess  String[]
-  uploadedBy  Int
-  user        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  roleAccess String[]
+  uploadedBy Int
+  user       User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model CourseVideo {
@@ -126,47 +126,89 @@ model CourseVideo {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([courseId])
   @@unique([courseId, orderIndex])
+  @@index([courseId])
 }
 
 model TradingAccount {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   userId          Int
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name            String   // e.g., "Live Account", "Demo Account"
-  startingBalance Float    // initial account balance
-  currentBalance  Float    // current account balance
-  description     String?  // simple description of the account
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String // e.g., "Live Account", "Demo Account"
+  startingBalance Float // initial account balance
+  currentBalance  Float // current account balance
+  description     String? // simple description of the account
+  brokerType      String? // MT4, MT5, CTRADER, TRADINGVIEW, MANUAL
+  accountNumber   String? // broker account number
+  serverName      String? // broker server name
+  isConnected     Boolean   @default(false)
+  autoSync        Boolean   @default(false)
+  lastSyncAt      DateTime?
+  apiKey          String? // encrypted API key
+  apiSecret       String? // encrypted API secret
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
   // Relations
-  trades          Trade[]
+  trades        Trade[]
+  importHistory TradeImportHistory[]
 
   @@index([userId])
 }
 
 model Trade {
-  id              Int            @id @default(autoincrement())
-  userId          Int
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId       Int
-  account         TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  pair            String         // e.g., "EURUSD", "GBPJPY"
-  type            String         // "BUY" or "SELL"
-  time            DateTime       // trade entry time
-  chartLink       String?        // link to trading chart/screenshot
-  riskPercent     Float?         // risk percentage of account
-  notes           String?        // trade notes and comments
-  profit          Float?         // actual profit/loss amount
-  status          String         @default("RUNNING") // "RUNNING", "WIN", "LOSS", "BREAKEVEN"
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId     Int
+  account       TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  pair          String // e.g., "EURUSD", "GBPJPY"
+  type          String // "BUY" or "SELL"
+  time          DateTime // trade entry time
+  entryPrice    Float? // entry price
+  exitPrice     Float? // exit price
+  lotSize       Float? // position size in lots
+  stopLoss      Float? // stop loss price
+  takeProfit    Float? // take profit price
+  commission    Float? // commission paid
+  swap          Float? // swap/rollover
+  chartLink     String? // link to trading chart/screenshot
+  riskPercent   Float? // risk percentage of account
+  notes         String? // trade notes and comments
+  profit        Float? // actual profit/loss amount
+  pips          Float? // profit/loss in pips
+  riskReward    Float? // risk:reward ratio
+  duration      Int? // trade duration in minutes
+  tags          String[] // trade tags/categories
+  setup         String? // trade setup description
+  mistakes      String? // mistakes made in trade
+  emotions      String? // emotional state during trade
+  status        String         @default("RUNNING") // "RUNNING", "WIN", "LOSS", "BREAKEVEN"
+  brokerTradeId String? // unique trade ID from broker
+  importedFrom  String? // source of import (MT4, MT5, etc.)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([userId])
   @@index([userId, accountId])
   @@index([userId, status])
+  @@index([brokerTradeId])
+}
+
+model TradeImportHistory {
+  id             Int            @id @default(autoincrement())
+  accountId      Int
+  account        TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  importSource   String // MT4, MT5, CTRADER, TRADINGVIEW, CSV
+  tradesImported Int            @default(0)
+  tradesSkipped  Int            @default(0)
+  startDate      DateTime?
+  endDate        DateTime?
+  status         String         @default("PENDING") // PENDING, SUCCESS, FAILED
+  errorMessage   String?
+  createdAt      DateTime       @default(now())
+
+  @@index([accountId])
 }
 
 model SessionParticipant {
@@ -188,8 +230,8 @@ model SessionRecording {
   id           Int         @id @default(autoincrement())
   sessionId    Int
   recordingUrl String
-  duration     Int?        // duration in seconds
-  fileSize     BigInt?     // file size in bytes
+  duration     Int? // duration in seconds
+  fileSize     BigInt? // file size in bytes
   startedAt    DateTime
   endedAt      DateTime?
   session      LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -202,9 +244,9 @@ model SessionFeedback {
   id         Int         @id @default(autoincrement())
   sessionId  Int
   userId     Int
-  rating     Int         // 1-5 rating
+  rating     Int // 1-5 rating
   comment    String?
-  categories Json?       // additional rating categories
+  categories Json? // additional rating categories
   session    LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt  DateTime    @default(now())
@@ -214,15 +256,15 @@ model SessionFeedback {
 }
 
 model SessionAnalytics {
-  id               Int         @id @default(autoincrement())
-  sessionId        Int         @unique
-  totalParticipants Int        @default(0)
-  peakParticipants Int         @default(0)
-  averageDuration  Int         @default(0) // in seconds
-  chatMessages     Int         @default(0)
-  engagementRate   Float       @default(0)
-  attendanceByRole Json        @default("{}")
-  session          LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id                Int         @id @default(autoincrement())
+  sessionId         Int         @unique
+  totalParticipants Int         @default(0)
+  peakParticipants  Int         @default(0)
+  averageDuration   Int         @default(0) // in seconds
+  chatMessages      Int         @default(0)
+  engagementRate    Float       @default(0)
+  attendanceByRole  Json        @default("{}")
+  session           LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
