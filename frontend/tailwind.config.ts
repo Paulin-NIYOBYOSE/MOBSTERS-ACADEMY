@@ -14,8 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        sans: ['Quicksand', 'system-ui', 'sans-serif'],
+        display: ['Quicksand', 'system-ui', 'sans-serif'],
+        body: ['Quicksand', 'system-ui', 'sans-serif'],
+        heading: ['Quicksand', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -175,7 +175,7 @@ All colors MUST be HSL.
 @layer base {
   html {
     scroll-behavior: smooth;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   * {
@@ -184,17 +184,21 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+    font-size: 16px; /* Increased base font size */
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
 
   /* Typography Utilities */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
   }
   
   /* Custom scrollbar */
@@ -217,56 +221,130 @@ All colors MUST be HSL.
 
 /* Typography Utilities */
 @layer components {
-  /* Headings */
+  /* Display Headings - Hero sections */
+  .display-xl {
+    @apply text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+  }
+  
+  .display-lg {
+    @apply text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+  }
+
+  /* Headings - Section titles */
   .heading-xl {
-    @apply text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
   }
   
   .heading-lg {
-    @apply text-4xl md:text-5xl font-bold tracking-tight;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
   }
   
   .heading-md {
-    @apply text-3xl md:text-4xl font-bold tracking-tight;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight leading-tight;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
   }
   
   .heading-sm {
-    @apply text-2xl md:text-3xl font-semibold tracking-tight;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-2xl md:text-3xl lg:text-4xl font-medium tracking-tight leading-tight;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
   }
   
   .heading-xs {
-    @apply text-xl md:text-2xl font-semibold tracking-tight;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-xl md:text-2xl lg:text-3xl font-medium tracking-tight leading-tight;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Subheadings */
+  .subheading-lg {
+    @apply text-2xl md:text-3xl font-normal leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+  }
+  
+  .subheading-md {
+    @apply text-xl md:text-2xl font-normal leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
   }
 
   /* Body Text */
+  .body-xl {
+    @apply text-2xl leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+  }
+  
   .body-lg {
-    @apply text-lg leading-relaxed;
+    @apply text-xl leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
   }
   
   .body-md {
-    @apply text-base leading-relaxed;
+    @apply text-lg leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
   }
   
   .body-sm {
-    @apply text-sm leading-relaxed;
+    @apply text-base leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
   }
 
-  /* Labels & Captions */
+  /* Labels & UI Text */
   .label-lg {
-    @apply text-sm font-medium tracking-wide uppercase;
+    @apply text-base font-medium tracking-wide;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
   }
   
   .label-md {
-    @apply text-xs font-medium tracking-wide uppercase;
+    @apply text-sm font-medium tracking-wide;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+  
+  .caption-lg {
+    @apply text-base text-muted-foreground leading-normal;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
   }
   
   .caption {
-    @apply text-xs text-muted-foreground;
+    @apply text-sm text-muted-foreground leading-normal;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Button Text */
+  .btn-text-lg {
+    @apply text-lg font-medium;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+  
+  .btn-text-md {
+    @apply text-base font-medium;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+  
+  .btn-text-sm {
+    @apply text-sm font-medium;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
   }
 
   /* Modern Effects */
@@ -300,6 +378,122 @@ All colors MUST be HSL.
 
   .btn-modern {
     @apply rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Enhanced Layout & Spacing */
+  .section-spacing {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+  
+  .container-spacing {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .content-spacing {
+    @apply space-y-6 md:space-y-8 lg:space-y-10;
+  }
+  
+  .card-spacing {
+    @apply p-6 md:p-8 lg:p-10;
+  }
+  
+  .grid-balanced {
+    @apply grid gap-6 md:gap-8 lg:gap-10;
+  }
+  
+  /* Professional Card Styles */
+  .card-professional {
+    @apply bg-card border border-border/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300;
+  }
+  
+  .card-elevated {
+    @apply bg-card border-0 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .card-modern {
+    @apply bg-gradient-to-br from-card to-card/80 border border-border/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 backdrop-blur-sm;
+  }
+
+  /* Text Balance & Readability */
+  .text-balanced {
+    text-wrap: balance;
+  }
+  
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  
+  .prose-quicksand {
+    font-family: 'Quicksand', sans-serif;
+  }
+  
+  .prose-quicksand h1,
+  .prose-quicksand h2,
+  .prose-quicksand h3,
+  .prose-quicksand h4,
+  .prose-quicksand h5,
+  .prose-quicksand h6 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  .prose-quicksand p {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* Visual Balance & Composition */
+  .visual-balance {
+    @apply flex flex-col items-center text-center;
+  }
+  
+  .visual-balance-left {
+    @apply flex flex-col items-start text-left;
+  }
+  
+  .visual-balance-right {
+    @apply flex flex-col items-end text-right;
+  }
+  
+  /* Modern Button Styles */
+  .btn-primary-modern {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+  
+  .btn-secondary-modern {
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+  
+  .btn-outline-modern {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Enhanced Focus States */
+  .focus-modern {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background;
+  }
+  
+  /* Smooth Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
   }
   
   /* Lighting effect utilities */
@@ -432,6 +626,40 @@ All colors MUST be HSL.
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
+}
+
+/* Modern Animation Keyframes */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(40px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
 }
 
 /* Enhanced lighting animations */
