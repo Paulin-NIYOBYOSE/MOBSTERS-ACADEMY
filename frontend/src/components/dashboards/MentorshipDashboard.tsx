@@ -75,13 +75,11 @@ export const MentorshipDashboard: React.FC = () => {
 
   const loadMentorshipContent = async () => {
     try {
-      const [contentData, coursesData, signalsData, sessionsData] =
-        await Promise.all([
-          authService.getMentorshipContent(),
-          authService.getCourses(),
-          authService.getSignals(),
-          authService.getLiveSessions(),
-        ]);
+      // Only fetch endpoints that exist
+      const [coursesData, sessionsData] = await Promise.all([
+        authService.getCourses(),
+        authService.getLiveSessions(),
+      ]);
 
       // Fetch videos for each course
       const coursesWithVideos = await Promise.all(
@@ -99,9 +97,16 @@ export const MentorshipDashboard: React.FC = () => {
         })
       );
 
-      setContent(contentData);
+      // Set default content since endpoint doesn't exist
+      setContent({
+        mentorshipSessions: [],
+        advancedStrategies: [],
+        signals: [],
+        challenges: [],
+        performance: {},
+      });
       setCourses(coursesWithVideos);
-      setSignals(signalsData);
+      setSignals([]); // Signals removed from system
       setSessions(sessionsData);
     } catch (error) {
       console.error("Failed to load mentorship content:", error);
