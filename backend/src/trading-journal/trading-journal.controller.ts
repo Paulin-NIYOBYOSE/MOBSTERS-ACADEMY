@@ -72,18 +72,4 @@ export class TradingJournalController {
   async deleteTrade(@Request() req, @Param('id', ParseIntPipe) tradeId: number) {
     return this.tradingJournalService.deleteTrade(req.user.id, tradeId);
   }
-
-  @Get('analytics/advanced')
-  async getAdvancedAnalytics(@Request() req, @Query() query: AnalyticsQueryDto) {
-    console.log('getAdvancedAnalytics called with query:', query);
-    console.log('userId:', req.user.id);
-    
-    return this.enhancedAnalyticsService.getAdvancedAnalytics(
-      req.user.id,
-      query.accountId,
-      query.period,
-      query.startDate,
-      query.endDate,
-    );
-  }
 }

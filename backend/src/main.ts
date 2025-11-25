@@ -10,9 +10,24 @@ async function bootstrap() {
   // Set global API prefix
   app.setGlobalPrefix('api');
   
+  // Configure CORS for production
+  const allowedOrigins = [
+    'http://localhost:8080', // Local development
+    'https://mobsters-academy.vercel.app', // Production frontend
+  ];
+  
   app.enableCors({
-    origin: 'http://localhost:8080', // Frontend origin
-    methods: 'GET,POST,PUT,DELETE',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      return callback(new Error('Not allowed by CORS'));
+    },
+    methods: 'GET,POST,PUT,DELETE,PATCH,OPTIONS',
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -40,6 +55,8 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
