@@ -32,7 +32,7 @@ export const Footer = () => {
               </div>
             </div>
             <p className="body-md text-muted-foreground mb-6 max-w-md">
-              Transform your financial future with professional forex trading
+              Transform your financial future with professional trading
               education. Join thousands of successful traders who have mastered
               the markets with our comprehensive academy program.
             </p>

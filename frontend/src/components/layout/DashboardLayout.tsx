@@ -1,5 +1,9 @@
 import React from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardNotifications } from "./DashboardNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -14,6 +18,8 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useAuth();
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
 
   return (
     <SidebarProvider>
@@ -24,7 +30,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Main Content Area with offset for fixed sidebar */}
-        <div className="flex-1 flex flex-col ml-16 lg:ml-64 transition-all duration-300">
+        <div
+          className={`flex-1 flex flex-col transition-all duration-300 ${
+            collapsed ? "ml-16" : "lg:ml-64"
+          }`}
+          style={{
+            width: collapsed ? "calc(100% - 4rem)" : "calc(100% - 16rem)",
+          }}
+        >
           {/* Fixed Header */}
           <header className="h-16 bg-background/95 backdrop-blur-md border-b border-border/50 flex items-center px-6 gap-4 sticky top-0 z-20">
             <SidebarTrigger className="p-2">

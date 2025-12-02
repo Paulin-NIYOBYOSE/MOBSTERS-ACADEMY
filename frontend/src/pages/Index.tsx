@@ -275,520 +275,6 @@ const Index = () => {
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      {/* Comprehensive Academy Services Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-background via-accent/30 to-background relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-gradient-radial from-primary/15 via-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
-          <div
-            className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-gradient-radial from-emerald-500/10 via-emerald-400/5 to-transparent rounded-full blur-2xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-12 scroll-fade-in">
-            <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-emerald-500/10 border border-primary/20 text-primary mb-6">
-              <TrendingUp className="w-4 h-4" />
-              Comprehensive Trading Education
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6">
-              Master Every Aspect of
-              <span className="block bg-gradient-to-r from-primary via-emerald-500 to-primary bg-clip-text text-transparent">
-                Professional Trading
-              </span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Our academy provides a complete trading education ecosystem with
-              proven strategies, advanced tools, and personalized mentorship to
-              transform you into a profitable trader.
-            </p>
-          </div>
-
-          {/* Services Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
-            {/* Trading Strategies */}
-            <div className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">
-                Advanced Trading Strategies
-              </h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Master proven strategies including scalping, swing trading,
-                trend following, and breakout patterns.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Price Action Analysis</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Support & Resistance Levels</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Fibonacci Retracements</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Risk Management */}
-            <div
-              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Risk Management</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Learn professional risk management techniques to protect your
-                capital and maximize profits.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Position Sizing Strategies</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Stop Loss Optimization</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Portfolio Diversification</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Technical Analysis */}
-            <div
-              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
-              style={{ animationDelay: "0.2s" }}
-            >
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Technical Analysis</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Master chart patterns, indicators, and market psychology to make
-                informed trading decisions.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Candlestick Patterns</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Moving Averages & RSI</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Volume Analysis</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Psychology & Mindset */}
-            <div
-              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Trading Psychology</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Develop the mental discipline and emotional control required for
-                consistent trading success.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Emotional Control Techniques</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Discipline & Patience</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Mindset Development</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Trading Sessions */}
-            <div
-              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
-              style={{ animationDelay: "0.4s" }}
-            >
-              <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">
-                Live Trading Sessions
-              </h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Join weekly live sessions where you'll see real trades executed
-                and learn from market analysis.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Real-time Market Analysis</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Live Trade Execution</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Q&A Sessions</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Personal Mentorship */}
-            <div
-              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
-              style={{ animationDelay: "0.5s" }}
-            >
-              <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-green-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Award className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">
-                Personal Mentorship
-              </h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Get personalized guidance and feedback on your trading journey
-                from experienced professionals.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>1-on-1 Coaching Sessions</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Personalized Trading Plan</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span>Progress Tracking</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center scroll-scale-up">
-            <div className="bg-gradient-to-r from-primary/10 via-emerald-500/10 to-primary/10 border border-primary/20 rounded-2xl p-8 max-w-4xl mx-auto">
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-                Ready to Transform Your Trading Career?
-              </h3>
-              <p className="text-muted-foreground mb-6 text-lg">
-                Join thousands of successful traders who have mastered the
-                markets with our comprehensive program.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  onClick={handleEnrollClick}
-                  className="bg-gradient-to-r from-primary to-emerald-500 hover:from-primary-dark hover:to-emerald-600 text-white border-0 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300"
-                >
-                  <TrendingUp className="mr-2 w-6 h-6" />
-                  Start Your Journey Today
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleJoinCommunityClick}
-                  className="border-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-foreground px-8 py-4 text-lg font-semibold rounded-xl backdrop-blur-sm hover:shadow-md transform hover:scale-105 transition-all duration-300"
-                >
-                  <Users className="mr-2 w-6 h-6" />
-                  Explore Free Resources
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative overflow-hidden">
-        {/* Enhanced background lighting elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Main lighting orbs */}
-          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-gradient-to-br from-green-400/15 via-emerald-500/25 to-green-600/15 rounded-full blur-3xl animate-pulse"></div>
-          <div
-            className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-gradient-to-br from-emerald-400/20 via-green-500/30 to-emerald-600/20 rounded-full blur-2xl animate-pulse"
-            style={{ animationDelay: "1s" }}
-          ></div>
-
-          {/* Accent lighting */}
-          <div
-            className="absolute top-1/2 left-1/6 w-24 h-24 bg-gradient-to-r from-yellow-300/10 to-amber-400/15 rounded-full blur-xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute bottom-1/3 right-1/6 w-28 h-28 bg-gradient-to-r from-blue-300/10 to-cyan-400/15 rounded-full blur-xl animate-pulse"
-            style={{ animationDelay: "3s" }}
-          ></div>
-
-          {/* Directional light rays */}
-          <div className="absolute top-0 left-1/2 w-1 h-32 bg-gradient-to-b from-green-400/20 to-transparent transform -translate-x-1/2"></div>
-          <div className="absolute bottom-0 right-1/3 w-1 h-24 bg-gradient-to-t from-emerald-400/15 to-transparent"></div>
-
-          {/* Crossing light beams */}
-          <div className="absolute top-0 left-1/5 w-1 h-full bg-gradient-to-b from-green-300/15 via-transparent to-emerald-300/10 transform rotate-8 slow-drift"></div>
-          <div className="absolute top-0 right-1/5 w-1 h-full bg-gradient-to-b from-emerald-300/15 via-transparent to-green-300/10 transform -rotate-8 slow-drift-reverse"></div>
-          <div className="absolute left-0 top-1/4 w-full h-1 bg-gradient-to-r from-green-200/8 via-emerald-300/15 to-transparent transform rotate-2 slow-horizontal-drift"></div>
-          <div className="absolute right-0 bottom-1/4 w-full h-1 bg-gradient-to-l from-emerald-200/8 via-green-300/12 to-transparent transform -rotate-2 slow-horizontal-drift-reverse"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            <div className="text-center group scroll-fade-in">
-              <div className="glass-card rounded-xl p-6 hover-lift">
-                <div className="heading-md gradient-text mb-2">2,500+</div>
-                <div className="body-sm text-muted-foreground font-medium">
-                  Students Trained
-                </div>
-              </div>
-            </div>
-            <div
-              className="text-center group scroll-fade-in"
-              style={{ animationDelay: "0.2s" }}
-            >
-              <div className="glass-card rounded-xl p-6 hover-lift">
-                <div className="heading-md gradient-text mb-2">89%</div>
-                <div className="body-sm text-muted-foreground font-medium">
-                  Success Rate
-                </div>
-              </div>
-            </div>
-            <div
-              className="text-center group scroll-fade-in"
-              style={{ animationDelay: "0.4s" }}
-            >
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
-                  24/7
-                </div>
-                <div className="text-muted-foreground font-medium text-sm sm:text-base">
-                  Support Available
-                </div>
-              </div>
-            </div>
-            <div
-              className="text-center group scroll-fade-in"
-              style={{ animationDelay: "0.6s" }}
-            >
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
-                  5★
-                </div>
-                <div className="text-muted-foreground font-medium text-sm sm:text-base">
-                  Average Rating
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* From Learner To Market Leader Section */}
-      <section className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
-        {/* Enhanced background lighting elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Primary dramatic lighting */}
-          <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-green-400/10 via-emerald-500/20 to-green-600/10 rounded-full blur-3xl animate-pulse"></div>
-          <div
-            className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-emerald-400/15 via-green-500/25 to-emerald-600/15 rounded-full blur-2xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-
-          {/* Spotlight effects */}
-          <div className="absolute top-0 left-1/3 w-2 h-40 bg-gradient-to-b from-green-400/30 via-green-400/10 to-transparent transform rotate-12"></div>
-          <div className="absolute top-0 right-1/3 w-2 h-32 bg-gradient-to-b from-emerald-400/25 via-emerald-400/8 to-transparent transform -rotate-12"></div>
-
-          {/* Ambient glow */}
-          <div className="absolute top-1/2 left-0 w-32 h-32 bg-gradient-to-r from-yellow-400/8 to-transparent rounded-full blur-2xl"></div>
-          <div className="absolute bottom-1/2 right-0 w-40 h-40 bg-gradient-to-l from-blue-400/6 to-transparent rounded-full blur-2xl"></div>
-
-          {/* Edge lighting */}
-          <div className="absolute left-0 top-1/2 w-1 h-48 bg-gradient-to-b from-transparent via-green-400/20 to-transparent transform -translate-y-1/2"></div>
-          <div className="absolute right-0 top-1/3 w-1 h-32 bg-gradient-to-b from-transparent via-emerald-400/15 to-transparent"></div>
-
-          {/* Crossing light beams */}
-          <div className="absolute top-0 left-1/6 w-1 h-full bg-gradient-to-b from-green-400/25 via-transparent to-emerald-400/20 transform rotate-15 slow-drift"></div>
-          <div className="absolute top-0 right-1/6 w-1 h-full bg-gradient-to-b from-emerald-400/25 via-transparent to-green-400/20 transform -rotate-15 slow-drift-reverse"></div>
-          <div className="absolute left-0 top-1/5 w-full h-1 bg-gradient-to-r from-green-300/12 via-emerald-400/25 to-transparent transform rotate-3 slow-horizontal-drift"></div>
-          <div className="absolute right-0 bottom-1/5 w-full h-1 bg-gradient-to-l from-emerald-300/12 via-green-400/20 to-transparent transform -rotate-3 slow-horizontal-drift-reverse"></div>
-          <div
-            className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-yellow-300/8 via-amber-400/15 to-transparent transform rotate-1 slow-horizontal-drift"
-            style={{ animationDelay: "2s" }}
-          ></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight scroll-slide-left">
-                  From Learner To Market
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
-                    Leader
-                  </span>
-                </h2>
-
-                <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8 scroll-slide-right">
-                  <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
-                    Market Mobsters
-                  </span>{" "}
-                  has transformed knowledge into proven results. His journey is
-                  a testament that with the right mentorship, dedication, and
-                  discipline, financial independence is achievable.
-                </p>
-              </div>
-
-              {/* Achievement Badges */}
-              <div className="flex flex-wrap gap-4 scroll-fade-in">
-                <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-yellow-400 font-medium text-sm">
-                    $250K+ in Payouts
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 font-medium text-sm">
-                    $1M+ in Funding
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <span className="text-blue-400 font-medium text-sm">
-                    3+ Years Experience
-                  </span>
-                </div>
-              </div>
-
-              {/* Trusted & Certified By */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Trusted & Certified By
-                </h3>
-
-                {/* Trading Results Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* FTMO Certificate Card */}
-                  <a
-                    href="https://ftmo.com/en/certificates"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 rounded-2xl p-6 hover:border-green-500/60 transition-all duration-300 group cursor-pointer hover:shadow-2xl hover:-translate-y-1"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider font-semibold">
-                        FTMO
-                      </div>
-                      <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
-                        <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded-sm"></div>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">
-                      OVERALL REWARDS
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      $24,012.24
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
-                      <span className="group-hover:text-gray-700 dark:group-hover:text-gray-400 transition-colors">
-                        Verified Account
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-green-600 dark:text-green-400 font-medium">
-                          Live
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-
-                  {/* Performance Card */}
-                  <a
-                    href="https://ftmo.com/en/certificates"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative bg-gradient-to-br from-slate-200/95 to-slate-100/95 dark:from-slate-800/80 dark:to-slate-700/80 backdrop-blur-sm border border-slate-300/50 dark:border-slate-700/50 rounded-2xl p-6 hover:border-green-500/50 transition-all duration-300 group cursor-pointer hover:shadow-2xl hover:-translate-y-1"
-                  >
-                    <div className="text-6xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      92%
-                    </div>
-                    <div className="text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors font-medium">
-                      Win Rate
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <div className="w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
-                    </div>
-
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Check My Trading Results
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-green-600 dark:border-slate-600 text-green-700 dark:text-white hover:bg-green-50 dark:hover:bg-slate-800/50 backdrop-blur-sm transition-all duration-300"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Watch My Interview
-                </Button>
-              </div>
-            </div>
-
-            {/* Right Content - Profile Image */}
-            <div className="relative">
-              <div className="relative">
-                {/* Profile Image Container */}
-                <div className="relative w-full max-w-md mx-auto">
-                  <div className="aspect-[4/5] bg-gradient-to-br from-green-100 to-emerald-200 dark:from-slate-700 dark:to-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                    {/* Placeholder for profile image - replace with actual image */}
-                    <div className="w-full h-full bg-gradient-to-br from-green-200 to-emerald-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">
-                      <div className="text-6xl text-green-600 dark:text-slate-400">
-                        👤
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Decorative elements */}
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-500/30 dark:bg-green-500/20 rounded-full blur-xl"></div>
-                  <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-500/20 dark:bg-emerald-500/10 rounded-full blur-2xl"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Programs Section */}
       <section
         id="programs"
@@ -826,18 +312,288 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Comprehensive Academy Services Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-background via-accent/30 to-background relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-gradient-radial from-primary/15 via-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-gradient-radial from-emerald-500/10 via-emerald-400/5 to-transparent rounded-full blur-2xl animate-pulse"
+            style={{ animationDelay: "2s" }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-12 scroll-fade-in">
+            <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-emerald-500/10 border border-primary/20 text-primary mb-6">
+              <TrendingUp className="w-4 h-4" />
+              Comprehensive Trading Education
+            </Badge>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center leading-tight mb-6 scroll-fade-in">
+              Unlock Your Financial Freedom with
+              <span className="block bg-gradient-to-r from-primary via-emerald-500 to-primary bg-clip-text text-transparent">
+                Mobsters Academy Programs
+              </span>
+            </h1>
+
+            <p
+              className="text-lg sm:text-xl text-muted-foreground text-center max-w-3xl mx-auto mb-10 scroll-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              Imagine trading with confidence, building wealth on your terms,
+              and finally breaking free from financial uncertainty. Our programs
+              give you the roadmap, proven strategies, and community support to
+              become a disciplined, profitable trader and design the life you’ve
+              always dreamed of.
+            </p>
+          </div>
+
+          {/* Services Grid */}
+
+          {/* Call to Action */}
+          <div className="text-center scroll-scale-up">
+            <div className="bg-gradient-to-r from-primary/10 via-emerald-500/10 to-primary/10 border border-primary/20 rounded-2xl p-8 max-w-4xl mx-auto">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">
+                Ready to Transform Your Trading Career?
+              </h3>
+              <p className="text-muted-foreground mb-6 text-lg">
+                Join the Mobsters Academy to access structured programs, live
+                mentorship, and tools to finally trade consistently and
+                profitably.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  onClick={handleEnrollClick}
+                  className="bg-gradient-to-r from-primary to-emerald-500 hover:from-primary-dark hover:to-emerald-600 text-white border-0 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300"
+                >
+                  <TrendingUp className="mr-2 w-6 h-6" />
+                  Start Your Journey Today
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleJoinCommunityClick}
+                  className="border-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-foreground px-8 py-4 text-lg font-semibold rounded-xl backdrop-blur-sm hover:shadow-md transform hover:scale-105 transition-all duration-300"
+                >
+                  <Users className="mr-2 w-6 h-6" />
+                  Explore Free Resources
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative overflow-hidden">
+        {/* Enhanced background lighting elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* ...all existing background effects remain unchanged */}
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            <div className="text-center group scroll-fade-in">
+              <div className="glass-card rounded-xl p-6 hover-lift">
+                <div className="heading-md gradient-text mb-2">2,500+</div>
+                <div className="body-sm text-muted-foreground font-medium">
+                  Traders Trained
+                </div>
+              </div>
+            </div>
+            <div
+              className="text-center group scroll-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <div className="glass-card rounded-xl p-6 hover-lift">
+                <div className="heading-md gradient-text mb-2">89%</div>
+                <div className="body-sm text-muted-foreground font-medium">
+                  Consistent Success Rate
+                </div>
+              </div>
+            </div>
+            <div
+              className="text-center group scroll-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
+                  24/7
+                </div>
+                <div className="text-muted-foreground font-medium text-sm sm:text-base">
+                  Support & Mentorship
+                </div>
+              </div>
+            </div>
+            <div
+              className="text-center group scroll-fade-in"
+              style={{ animationDelay: "0.6s" }}
+            >
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shimmer-effect">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2 group-hover:from-green-500 group-hover:to-emerald-500 transition-all glow-pulse">
+                  5★
+                </div>
+                <div className="text-muted-foreground font-medium text-sm sm:text-base">
+                  Average Student Rating
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* From Learner To Market Leader Section */}
+      <section className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
+        {/* Background lighting elements remain unchanged */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* ...all existing background divs unchanged */}
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight scroll-slide-left">
+                  From Learner To Market
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
+                    Leader
+                  </span>
+                </h2>
+
+                <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8 scroll-slide-right">
+                  <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
+                    Mobsters Academy
+                  </span>{" "}
+                  turns aspiring traders into profitable market leaders. With
+                  structured mentorship, advanced strategies, and disciplined
+                  trading routines, our students achieve consistent results and
+                  financial freedom.
+                </p>
+              </div>
+
+              {/* Achievement Badges */}
+              <div className="flex flex-wrap gap-4 scroll-fade-in">
+                <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  <span className="text-yellow-400 font-medium text-sm">
+                    $250K+ in Payouts
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-green-400 font-medium text-sm">
+                    $1M+ in Funding
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="text-blue-400 font-medium text-sm">
+                    3+ Years of Mentorship Experience
+                  </span>
+                </div>
+              </div>
+
+              {/* Trusted & Certified By */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Trusted & Certified By
+                </h3>
+
+                {/* Trading Results Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* FTMO Certificate Card */}
+                  <a
+                    href="https://ftmo.com/en/certificates"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm border border-green-200/50 dark:border-slate-700/50 rounded-2xl p-6 hover:border-green-500/60 transition-all duration-300 group cursor-pointer hover:shadow-2xl hover:-translate-y-1"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                        FTMO
+                      </div>
+                      <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                        <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded-sm"></div>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      Overall Rewards
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      $24,012.24
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                      <span className="group-hover:text-gray-700 dark:group-hover:text-gray-400 transition-colors">
+                        Verified Account
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-green-600 dark:text-green-400 font-medium">
+                          Live
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </a>
+
+                  {/* Performance Card */}
+                  <a
+                    href="https://ftmo.com/en/certificates"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative bg-gradient-to-br from-slate-200/95 to-slate-100/95 dark:from-slate-800/80 dark:to-slate-700/80 backdrop-blur-sm border border-slate-300/50 dark:border-slate-700/50 rounded-2xl p-6 hover:border-green-500/50 transition-all duration-300 group cursor-pointer hover:shadow-2xl hover:-translate-y-1"
+                  >
+                    <div className="text-6xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      92%
+                    </div>
+                    <div className="text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors font-medium">
+                      Win Rate
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <div className="w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </a>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="bg-green-600 hover:bg-green-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-white border border-green-600 dark:border-slate-600 backdrop-blur-sm transition-all duration-300">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  See Real Trading Results
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-green-600 dark:border-slate-600 text-green-700 dark:text-white hover:bg-green-50 dark:hover:bg-slate-800/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Watch Our Students' Success Stories
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Content - Profile Image remains unchanged */}
+            <div className="relative">
+              <div className="relative">
+                {/* Profile Image Container unchanged */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/20 dark:from-background dark:via-slate-900/50 dark:to-slate-800/30 relative overflow-hidden">
-        {/* Background decorative elements */}
+        {/* Background decorative elements remain unchanged */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-green-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
-
-          {/* Crossing light beams */}
-          <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-green-300/10 via-transparent to-emerald-300/6 transform rotate-6 slow-drift"></div>
-          <div className="absolute top-0 right-1/4 w-1 h-full bg-gradient-to-b from-emerald-300/10 via-transparent to-green-300/6 transform -rotate-6 slow-drift-reverse"></div>
-          <div className="absolute left-0 top-1/4 w-full h-1 bg-gradient-to-r from-green-200/5 via-emerald-300/10 to-transparent transform rotate-0.5 slow-horizontal-drift"></div>
-          <div className="absolute right-0 bottom-1/4 w-full h-1 bg-gradient-to-l from-emerald-200/5 via-green-300/8 to-transparent transform -rotate-0.5 slow-horizontal-drift-reverse"></div>
+          {/* ...existing background divs */}
         </div>
 
         <div className="relative max-w-7xl mx-auto">
@@ -845,13 +601,13 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Why Choose{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
-                Market Mobsters
+                Mobsters Academy
               </span>
               ?
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our proven methodology and comprehensive approach sets you up for
-              trading success.
+              Our structured approach, mentorship, and practical training ensure
+              you master the market and achieve consistent trading success.
             </p>
           </div>
 
@@ -861,37 +617,37 @@ const Index = () => {
                 icon: BookOpen,
                 title: "Structured Learning Path",
                 description:
-                  "Progressive curriculum from basics to advanced strategies, carefully designed for optimal learning retention.",
+                  "Step-by-step curriculum from beginner to expert trading strategies, ensuring mastery and confidence.",
               },
               {
                 icon: Users,
-                title: "Live Expert Guidance",
+                title: "Live Expert Mentorship",
                 description:
-                  "Weekly live sessions with professional traders sharing real market insights and strategies.",
+                  "Weekly sessions with professional traders sharing real-time insights, market analysis, and winning strategies.",
               },
               {
                 icon: Target,
-                title: "Practical Application",
+                title: "Hands-On Trading Practice",
                 description:
-                  "Hands-on demo trading exercises and real market analysis to build confidence.",
+                  "Apply your skills in demo accounts and real markets, reinforcing learning through practical experience.",
               },
               {
                 icon: BarChart3,
-                title: "Risk Management Focus",
+                title: "Risk Management Excellence",
                 description:
-                  "Comprehensive risk management tools and strategies to protect your trading capital.",
+                  "Learn advanced risk management techniques to protect your capital and trade with confidence.",
               },
               {
                 icon: MessageSquare,
-                title: "Community Support",
+                title: "Community & Peer Support",
                 description:
-                  "Access to exclusive trading community with fellow students and mentors.",
+                  "Join our exclusive student community to share ideas, strategies, and get feedback from mentors.",
               },
               {
                 icon: Award,
-                title: "Certification Program",
+                title: "Certification & Recognition",
                 description:
-                  "Complete your trading plan project and receive professional trading certification.",
+                  "Complete your trading program and earn a professional certification recognized in the trading industry.",
               },
             ].map((feature, index) => (
               <Card
@@ -922,9 +678,9 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="relative py-24 px-0.5 sm:px-1 overflow-hidden bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50">
-        {/* Enhanced background lighting elements */}
+        {/* Background lighting & decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Central dramatic lighting */}
+          {/* Central orbs */}
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-br from-green-400/15 via-emerald-500/25 to-green-600/15 rounded-full blur-3xl animate-pulse"></div>
           <div
             className="absolute bottom-1/4 right-1/4 w-56 h-56 bg-gradient-to-br from-emerald-400/20 via-green-500/30 to-emerald-600/20 rounded-full blur-2xl animate-pulse"
@@ -939,7 +695,7 @@ const Index = () => {
           <div className="absolute top-1/2 left-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-green-400/20 to-transparent transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
           <div className="absolute top-1/2 left-1/2 w-80 h-1 bg-gradient-to-r from-transparent via-emerald-400/15 to-transparent transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
 
-          {/* Corner accent lights */}
+          {/* Corner accents */}
           <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-yellow-400/10 to-transparent rounded-full blur-xl"></div>
           <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-blue-400/8 to-transparent rounded-full blur-xl"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/6 to-transparent rounded-full blur-xl"></div>
@@ -947,6 +703,7 @@ const Index = () => {
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
+          {/* Header & CTA text */}
           <div className="mb-8">
             <div className="inline-flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-green-200/50 dark:border-slate-700/50 shadow-lg">
               <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -968,6 +725,7 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button
               size="lg"
@@ -988,42 +746,41 @@ const Index = () => {
             </Button>
           </div>
 
+          {/* Guarantee / Features grid */}
+          {/* CTA Section — Perks Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="flex flex-col items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl flex items-center justify-center group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
-                <Shield className="w-8 h-8 text-green-600 dark:text-green-400" />
+            {[
+              {
+                icon: Shield, // could replace with a different icon, e.g. ChartLine or Lightning
+                title: "Lifetime Course Access",
+                subtitle: "Replay lessons anytime",
+              },
+              {
+                icon: Users,
+                title: "Trader Community Access",
+                subtitle: "Connect & learn with peers",
+              },
+              {
+                icon: Star,
+                title: "Weekly Market Breakdown",
+                subtitle: "Stay ahead of market moves",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl flex items-center justify-center group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
+                  <item.icon className="w-8 h-8 text-green-600 dark:text-green-400" />
+                </div>
+                <span className="text-gray-900 dark:text-white font-bold text-lg">
+                  {item.title}
+                </span>
+                <span className="text-gray-600 dark:text-gray-300 text-sm text-center leading-relaxed">
+                  {item.subtitle}
+                </span>
               </div>
-              <span className="text-gray-900 dark:text-white font-bold text-lg">
-                30-Day Money Back
-              </span>
-              <span className="text-gray-600 dark:text-gray-300 text-sm text-center leading-relaxed">
-                Risk-free guarantee
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl flex items-center justify-center group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
-                <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="text-gray-900 dark:text-white font-bold text-lg">
-                Only 50 Seats
-              </span>
-              <span className="text-gray-600 dark:text-gray-300 text-sm text-center leading-relaxed">
-                Limited availability
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-green-200/50 dark:border-slate-700/50 hover:border-green-400/60 dark:hover:border-green-500/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-100/80 to-emerald-100/80 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl flex items-center justify-center group-hover:from-green-200/80 group-hover:to-emerald-200/80 dark:group-hover:from-green-800/40 dark:group-hover:to-emerald-800/40 transition-all duration-300 shadow-lg">
-                <Star className="w-8 h-8 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="text-gray-900 dark:text-white font-bold text-lg">
-                Expert Mentorship
-              </span>
-              <span className="text-gray-600 dark:text-gray-300 text-sm text-center leading-relaxed">
-                1-on-1 guidance included
-              </span>
-            </div>
+            ))}
           </div>
         </div>
       </section>

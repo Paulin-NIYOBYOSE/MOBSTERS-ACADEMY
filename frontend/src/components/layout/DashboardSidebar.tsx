@@ -224,7 +224,8 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
       className={cn(
         "h-screen flex flex-col transition-all duration-300 ease-in-out border-r glass-effect",
         theme.border,
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-16" : "w-64",
+        "fixed left-0 top-0 z-40"
       )}
     >
       {/* Background decorative elements */}
@@ -234,7 +235,10 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
       </div>
 
       <SidebarContent
-        className={cn("relative p-4 flex flex-col h-full", theme.sidebarBg)}
+        className={cn("relative flex flex-col h-full", theme.sidebarBg, {
+          "p-4": !collapsed,
+          "p-2": collapsed,
+        })}
       >
         {/* User Profile */}
         <div

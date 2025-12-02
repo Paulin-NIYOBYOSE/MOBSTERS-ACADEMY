@@ -9,7 +9,7 @@ export const Testimonials = () => {
       role: "Former Beginner, Now Profitable Trader",
       image: "👩‍💼",
       content:
-        "I started with zero knowledge about forex. After completing the 6-month academy, I'm consistently profitable. The structured approach and live sessions made all the difference.",
+        "I started with zero knowledge about forex. After completing the 6-month academy, I'm consistently profitable. The structured curriculum and live sessions helped me gain real trading skills.",
       rating: 5,
       profit: "+$12,400 in 6 months",
     },
@@ -18,16 +18,16 @@ export const Testimonials = () => {
       role: "Academy Graduate",
       image: "👨‍💻",
       content:
-        "The risk management tools alone are worth the entire course fee. I went from losing my account to having a solid trading plan. Best investment I've made.",
+        "The practical exercises and risk management modules transformed my trading approach. I went from inconsistent trades to a solid, repeatable strategy.",
       rating: 5,
       profit: "+89% portfolio growth",
     },
     {
       name: "Elena Rodriguez",
-      role: "Monthly Mentorship Member",
+      role: "Active Community Member",
       image: "👩‍🎓",
       content:
-        "The weekly mentorship calls keep me accountable and learning. The signals are educational and help me understand market movements better.",
+        "Being part of the student community and following the educational signals helped me understand market trends and improve my decision-making.",
       rating: 5,
       profit: "Consistent 15% monthly returns",
     },
@@ -36,25 +36,25 @@ export const Testimonials = () => {
       role: "Community Member",
       image: "👨‍🚀",
       content:
-        "Started with the free community and immediately saw value. The daily signals helped me understand market analysis. Upgrading to the full academy next!",
+        "Joining the free community first gave me confidence. The daily educational signals helped me learn market analysis effectively before moving to live trading.",
       rating: 5,
       profit: "First profitable month ever",
     },
     {
       name: "Lisa Thompson",
-      role: "Academy Graduate & Mentor",
+      role: "Academy Graduate & Community Contributor",
       image: "👩‍🏫",
       content:
-        "Not only did I master trading, but now I help others in the community. The certification opened doors I never expected in the finance industry.",
+        "Completing the academy helped me master trading concepts. Now I share insights in the community and continue growing my portfolio.",
       rating: 5,
-      profit: "Career change success",
+      profit: "Portfolio growth and financial independence",
     },
     {
       name: "Ahmed Al-Rashid",
       role: "Professional Trader",
       image: "👨‍💼",
       content:
-        "I had some experience but was inconsistent. The academy's systematic approach and journal templates helped me identify and fix my weaknesses.",
+        "Even with some prior experience, the structured academy and journal templates helped me refine my strategy and maximize profits systematically.",
       rating: 5,
       profit: "+$45K in 8 months",
     },
