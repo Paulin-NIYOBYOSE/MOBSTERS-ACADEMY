@@ -101,8 +101,12 @@ const TradingJournal: React.FC = () => {
         return;
       }
 
+      console.log("Loading trading journal data...");
+      console.log("Token:", token ? "Present" : "Missing");
+
       // Fetch accounts
       const accountsData = await tradingAccountService.getAccounts();
+      console.log("Accounts loaded:", accountsData);
       setAccounts(accountsData);
 
       // Fetch advanced analytics
@@ -112,7 +116,7 @@ const TradingJournal: React.FC = () => {
       params.append("period", "month");
 
       const analyticsResponse = await fetch(
-        `http://localhost:3000/api/trading-journal/analytics/advanced?${params}`,
+        `http://localhost:3000/api/trading-journal/analytics?${params}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -122,8 +126,20 @@ const TradingJournal: React.FC = () => {
 
       if (analyticsResponse.ok) {
         const data = await analyticsResponse.json();
+        console.log("Analytics response:", data);
+        console.log(
+          "Analytics has data:",
+          data && Object.keys(data).length > 0
+        );
+        console.log("Total trades in analytics:", data?.totalTrades);
         setAnalytics(data);
       } else {
+        const errorText = await analyticsResponse.text();
+        console.error(
+          "Failed to fetch analytics:",
+          analyticsResponse.status,
+          errorText
+        );
         // Set default analytics if API fails
         setAnalytics(null);
       }
@@ -147,9 +163,17 @@ const TradingJournal: React.FC = () => {
 
       if (tradesResponse.ok) {
         const tradesData = await tradesResponse.json();
-        // Ensure tradesData is an array
-        setTrades(Array.isArray(tradesData) ? tradesData : []);
+        console.log("Trades response:", tradesData);
+        // Backend returns { trades: [], pagination: {} }
+        if (tradesData.trades && Array.isArray(tradesData.trades)) {
+          setTrades(tradesData.trades);
+        } else if (Array.isArray(tradesData)) {
+          setTrades(tradesData);
+        } else {
+          setTrades([]);
+        }
       } else {
+        console.error("Failed to fetch trades:", tradesResponse.status);
         setTrades([]);
       }
 

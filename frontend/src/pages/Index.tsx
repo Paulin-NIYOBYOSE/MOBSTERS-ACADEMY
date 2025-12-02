@@ -14,6 +14,8 @@ import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { ProgramCards } from "@/components/ProgramCards";
+import dashboardImg from "@/assets/dashboard.png"; // adjust filename
+
 import {
   Card,
   CardContent,
@@ -64,130 +66,454 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section
-        className="relative py-16 sm:py-20 lg:py-24 px-4 sm:px-6 bg-cover bg-center bg-no-repeat overflow-hidden"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 dark:from-slate-900/70 via-background/70 dark:via-slate-900/50 to-transparent"></div>
+      {/* Hero Section - Enhanced Modern Design */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background/95 to-background/90 mt-16 sm:mt-20">
+        {/* Dynamic Background Image with Enhanced Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/85 to-background/75 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-slate-800/75" />
 
-        {/* Enhanced animated background elements with lighting effects */}
+        {/* Enhanced Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Primary lighting orbs */}
-          <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-gradient-to-r from-green-400/20 via-emerald-500/30 to-green-600/20 rounded-full blur-3xl floating-animation"></div>
+          {/* Primary Gradient Orbs with Enhanced Glow */}
           <div
-            className="absolute top-1/2 right-1/4 w-32 h-32 bg-gradient-to-r from-emerald-400/25 via-green-500/35 to-emerald-600/25 rounded-full blur-2xl floating-animation"
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-radial from-primary/15 via-primary/10 to-transparent rounded-full blur-3xl animate-pulse"
+            style={{ animationDuration: "4s" }}
+          />
+          <div
+            className="absolute top-1/2 right-1/4 w-48 h-48 bg-gradient-radial from-emerald-500/12 via-primary/8 to-transparent rounded-full blur-2xl animate-pulse"
+            style={{ animationDuration: "5s", animationDelay: "1s" }}
+          />
+          <div
+            className="absolute bottom-1/4 left-1/2 w-40 h-40 bg-gradient-radial from-green-400/10 via-emerald-400/8 to-transparent rounded-full blur-xl animate-pulse"
+            style={{ animationDuration: "6s", animationDelay: "2s" }}
+          />
+
+          {/* Accent Light Orbs */}
+          <div className="absolute top-1/3 right-1/3 w-32 h-32 bg-gradient-radial from-yellow-400/15 to-transparent rounded-full blur-2xl floating-animation" />
+          <div
+            className="absolute bottom-1/3 left-1/3 w-36 h-36 bg-gradient-radial from-blue-400/10 to-transparent rounded-full blur-xl floating-animation"
             style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute bottom-1/4 left-1/2 w-28 h-28 bg-gradient-to-r from-green-300/15 via-emerald-400/25 to-green-500/15 rounded-full blur-xl floating-animation"
-            style={{ animationDelay: "4s" }}
-          ></div>
+          />
 
-          {/* Additional accent lights */}
-          <div
-            className="absolute top-1/3 right-1/3 w-20 h-20 bg-gradient-to-r from-yellow-400/20 to-amber-500/20 rounded-full blur-2xl floating-animation"
-            style={{ animationDelay: "1s" }}
-          ></div>
-          <div
-            className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-gradient-to-r from-blue-400/15 to-cyan-500/15 rounded-full blur-xl floating-animation"
-            style={{ animationDelay: "3s" }}
-          ></div>
+          {/* Modern Light Beams */}
+          <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-primary/20 to-transparent transform rotate-12 slow-drift" />
+          <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-emerald-400/15 to-transparent transform -rotate-12 slow-drift-reverse" />
 
-          {/* Subtle rim lighting */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400/30 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent"></div>
+          {/* Subtle Grid Pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(34,197,94,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.05)_1px,transparent_1px)]" />
+        </div>
 
-          {/* Enhanced crossing light beams */}
-          <div
-            className="absolute top-0 left-1/4 w-2 h-full beam-vertical transform rotate-12 slow-drift"
-            style={{ ["--rotation" as any]: "12deg" }}
-          ></div>
-          <div
-            className="absolute top-0 right-1/4 w-2 h-full beam-vertical transform -rotate-12 slow-drift-reverse"
-            style={{ ["--rotation" as any]: "-12deg" }}
-          ></div>
-          <div
-            className="absolute left-0 top-1/3 w-full h-2 beam-horizontal transform rotate-1 slow-horizontal-drift"
-            style={{ ["--rotation" as any]: "1deg" }}
-          ></div>
-          <div
-            className="absolute right-0 bottom-1/3 w-full h-2 beam-horizontal transform -rotate-1 slow-horizontal-drift-reverse"
-            style={{ ["--rotation" as any]: "-1deg" }}
-          ></div>
+        {/* Main Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-0 sm:px-1 py-8 sm:py-12 lg:py-10">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 2xl:gap-20 items-center">
+            {/* Left Column - Main Content */}
+            <div className="text-center lg:text-left space-y-6">
+              {/* Announcement Badge */}
+              <div className="scroll-fade-in">
+                <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-emerald-500/10 border border-primary/20 text-primary hover:shadow-glow transition-all duration-300 hover:scale-105">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  🎯 Limited Cohort Opening - December 2024
+                </Badge>
+              </div>
 
-          {/* Traveling beam effects */}
+              {/* Main Headline */}
+              <div className="space-y-4 scroll-slide-left">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight">
+                  Turn Charts into
+                  <span className="block bg-gradient-to-r from-primary via-emerald-500 to-primary bg-clip-text text-transparent animate-pulse">
+                    Cash Flow
+                  </span>
+                  <span className="block text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-muted-foreground font-medium mt-2">
+                    with Market Mobsters
+                  </span>
+                </h1>
+              </div>
+
+              {/* Subtitle */}
+              <div className="scroll-slide-right">
+                <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                  From zero to market legend in just 6 months. Our proven system
+                  has created
+                  <span className="text-primary font-semibold">
+                    {" "}
+                    thousands of profitable traders
+                  </span>{" "}
+                  who live the life most only dream of.
+                </p>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start scroll-scale-up">
+                <Button
+                  size="lg"
+                  onClick={handleEnrollClick}
+                  className="group relative overflow-hidden bg-gradient-to-r from-primary to-emerald-500 hover:from-primary-dark hover:to-emerald-600 text-white border-0 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <TrendingUp className="mr-2 w-6 h-6" />
+                  Start Your Journey
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleJoinCommunityClick}
+                  className="group border-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-foreground px-8 py-4 text-lg font-semibold rounded-xl backdrop-blur-sm hover:shadow-md transform hover:scale-105 transition-all duration-300"
+                >
+                  <Users className="mr-2 w-6 h-6" />
+                  Join Free Community
+                </Button>
+              </div>
+
+              {/* Feature Pills */}
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-start scroll-fade-in">
+                {[
+                  { icon: CheckCircle, text: "6-Month Structured Program" },
+                  { icon: CheckCircle, text: "Weekly Live Sessions" },
+                  { icon: CheckCircle, text: "Personal Trading Plan" },
+                ].map((feature, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-slate-800/30 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 rounded-full hover:bg-white/20 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-105"
+                  >
+                    <feature.icon className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground/80">
+                      {feature.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column - Visual Elements */}
+            <div className="relative lg:block hidden">
+              <div className="scroll-scale-up">
+                {/* Main Visual Card */}
+                <div className="relative z-50">
+                  {/* Floating Stats Cards */}
+                  <div
+                    className="absolute -top-24 -left-24 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 z-60"
+                    style={{ animation: "pulse 4s ease-in-out infinite" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
+                        <TrendingUp className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">
+                          80%
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Win rate strategies
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="absolute -bottom-24 -right-24 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 z-60"
+                    style={{
+                      animation: "pulse 4s ease-in-out infinite",
+                      animationDelay: "2s",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center">
+                        <Users className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">
+                          Weekly
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Live sessions
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Central Chart Visual */}
+                  <div className="relative z-70">
+                    <div className="absolute inset-0 bg-white dark:bg-slate-800 rounded-3xl opacity-95"></div>
+                    <div className="relative bg-gradient-to-br from-white/95 to-white/90 dark:from-slate-800/95 dark:to-slate-900/90 backdrop-blur-xl border border-white/30 dark:border-slate-700/50 rounded-3xl p-8 shadow-2xl">
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <CheckCircle className="w-8 h-8 text-primary" />
+                            <div>
+                              <div className="font-semibold text-foreground">
+                                Advanced Trading Journal
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Track your progress
+                              </div>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                            Verified
+                          </Badge>
+                        </div>
+
+                        {/* Dashboard Image filling the remaining space */}
+                        <div className="relative w-full h-full">
+                          <img
+                            src={dashboardImg}
+                            alt="Dashboard"
+                            className="object-cover w-full h-full rounded-xl"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Gradient Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+      </section>
+
+      {/* Comprehensive Academy Services Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-background via-accent/30 to-background relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-gradient-radial from-primary/15 via-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
           <div
-            className="absolute top-0 left-1/3 w-1 h-full bg-gradient-to-b from-transparent via-green-400/30 to-transparent transform rotate-8"
-            style={{
-              animation: "beam-travel 15s linear infinite",
-              animationDelay: "0s",
-            }}
-          ></div>
-          <div
-            className="absolute top-0 right-1/3 w-1 h-full bg-gradient-to-b from-transparent via-emerald-400/25 to-transparent transform -rotate-8"
-            style={{
-              animation: "beam-travel 18s linear infinite",
-              animationDelay: "5s",
-            }}
-          ></div>
+            className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-gradient-radial from-emerald-500/10 via-emerald-400/5 to-transparent rounded-full blur-2xl animate-pulse"
+            style={{ animationDelay: "2s" }}
+          />
         </div>
 
         <div className="relative max-w-7xl mx-auto">
-          <div className="max-w-3xl">
-            <Badge className="mb-6 glass-effect border-primary/30 text-primary hover-lift scroll-fade-in">
-              🎯 Limited Cohort Opening - December 2024
+          {/* Section Header */}
+          <div className="text-center mb-12 scroll-fade-in">
+            <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-emerald-500/10 border border-primary/20 text-primary mb-6">
+              <TrendingUp className="w-4 h-4" />
+              Comprehensive Trading Education
             </Badge>
-
-            <h1 className="heading-xl text-foreground mb-6 scroll-slide-left">
-              Turn Charts into Cash with
-              <span className="gradient-text block mt-2">Market Mobsters</span>
-            </h1>
-
-            <p className="body-lg text-foreground/80 mb-8 max-w-2xl scroll-slide-right">
-              From zero to market legend in just 6 months. Our proven system has
-              created thousands of traders who make serious money and live the
-              life most only dream of.
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6">
+              Master Every Aspect of
+              <span className="block bg-gradient-to-r from-primary via-emerald-500 to-primary bg-clip-text text-transparent">
+                Professional Trading
+              </span>
+            </h2>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Our academy provides a complete trading education ecosystem with
+              proven strategies, advanced tools, and personalized mentorship to
+              transform you into a profitable trader.
             </p>
+          </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-12 scroll-scale-up">
-              <Button
-                size="lg"
-                onClick={handleEnrollClick}
-                className="btn-modern bg-gradient-primary hover:shadow-glow-lg text-white border-0 px-8 py-6 text-lg font-semibold"
-              >
-                <TrendingUp className="mr-2 w-5 h-5" />
-                Enroll in Academy
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleJoinCommunityClick}
-                className="btn-modern border-2 border-primary/50 hover:border-primary hover:bg-primary/5 px-8 py-6 text-lg font-semibold"
-              >
-                <Users className="mr-2 w-5 h-5" />
-                Join Free Community
-              </Button>
+          {/* Services Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
+            {/* Trading Strategies */}
+            <div className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">
+                Advanced Trading Strategies
+              </h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Master proven strategies including scalping, swing trading,
+                trend following, and breakout patterns.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Price Action Analysis</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Support & Resistance Levels</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Fibonacci Retracements</span>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 scroll-fade-in">
-              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="body-sm font-medium">
-                  6-Month Structured Program
-                </span>
+            {/* Risk Management */}
+            <div
+              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="body-sm font-medium">
-                  Weekly Live Sessions
-                </span>
+              <h3 className="text-xl font-semibold mb-3">Risk Management</h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Learn professional risk management techniques to protect your
+                capital and maximize profits.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Position Sizing Strategies</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Stop Loss Optimization</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Portfolio Diversification</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3 glass-effect px-4 py-2 rounded-lg hover-lift">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="body-sm font-medium">
-                  Personal Trading Plan
-                </span>
+            </div>
+
+            {/* Technical Analysis */}
+            <div
+              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Technical Analysis</h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Master chart patterns, indicators, and market psychology to make
+                informed trading decisions.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Candlestick Patterns</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Moving Averages & RSI</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Volume Analysis</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Psychology & Mindset */}
+            <div
+              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Trading Psychology</h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Develop the mental discipline and emotional control required for
+                consistent trading success.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Emotional Control Techniques</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Discipline & Patience</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Mindset Development</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Trading Sessions */}
+            <div
+              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <MessageSquare className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">
+                Live Trading Sessions
+              </h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Join weekly live sessions where you'll see real trades executed
+                and learn from market analysis.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Real-time Market Analysis</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Live Trade Execution</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Q&A Sessions</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Personal Mentorship */}
+            <div
+              className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 scroll-fade-in"
+              style={{ animationDelay: "0.5s" }}
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-green-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">
+                Personal Mentorship
+              </h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Get personalized guidance and feedback on your trading journey
+                from experienced professionals.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>1-on-1 Coaching Sessions</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Personalized Trading Plan</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Progress Tracking</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center scroll-scale-up">
+            <div className="bg-gradient-to-r from-primary/10 via-emerald-500/10 to-primary/10 border border-primary/20 rounded-2xl p-8 max-w-4xl mx-auto">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">
+                Ready to Transform Your Trading Career?
+              </h3>
+              <p className="text-muted-foreground mb-6 text-lg">
+                Join thousands of successful traders who have mastered the
+                markets with our comprehensive program.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  onClick={handleEnrollClick}
+                  className="bg-gradient-to-r from-primary to-emerald-500 hover:from-primary-dark hover:to-emerald-600 text-white border-0 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300"
+                >
+                  <TrendingUp className="mr-2 w-6 h-6" />
+                  Start Your Journey Today
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleJoinCommunityClick}
+                  className="border-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-foreground px-8 py-4 text-lg font-semibold rounded-xl backdrop-blur-sm hover:shadow-md transform hover:scale-105 transition-all duration-300"
+                >
+                  <Users className="mr-2 w-6 h-6" />
+                  Explore Free Resources
+                </Button>
               </div>
             </div>
           </div>
@@ -195,7 +521,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative overflow-hidden">
+      <section className="py-12 sm:py-16 lg:py-20 px-0.5 sm:px-1 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative overflow-hidden">
         {/* Enhanced background lighting elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Main lighting orbs */}
@@ -278,7 +604,7 @@ const Index = () => {
       </section>
 
       {/* From Learner To Market Leader Section */}
-      <section className="py-24 px-6 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
+      <section className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
         {/* Enhanced background lighting elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Primary dramatic lighting */}
@@ -466,7 +792,7 @@ const Index = () => {
       {/* Programs Section */}
       <section
         id="programs"
-        className="py-24 px-6 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/20 dark:from-background dark:via-slate-900/50 dark:to-slate-800/30 relative overflow-hidden"
+        className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/20 dark:from-background dark:via-slate-900/50 dark:to-slate-800/30 relative overflow-hidden"
       >
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -501,7 +827,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-6 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/20 dark:from-background dark:via-slate-900/50 dark:to-slate-800/30 relative overflow-hidden">
+      <section className="py-24 px-0.5 sm:px-1 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/20 dark:from-background dark:via-slate-900/50 dark:to-slate-800/30 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-green-500/10 rounded-full blur-3xl"></div>
@@ -595,7 +921,7 @@ const Index = () => {
       <Testimonials />
 
       {/* CTA Section */}
-      <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50">
+      <section className="relative py-24 px-0.5 sm:px-1 overflow-hidden bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50">
         {/* Enhanced background lighting elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Central dramatic lighting */}
