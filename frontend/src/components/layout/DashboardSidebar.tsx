@@ -207,11 +207,13 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
   // Determine dashboard theme colors based on user role - consistent green theme across all dashboards
   const getDashboardTheme = () => {
     return {
-      gradient: "from-green-50/30 via-emerald-50/20 to-green-50/30 dark:from-slate-900/30 dark:via-slate-800/20 dark:to-slate-900/30",
+      gradient:
+        "from-green-50/30 via-emerald-50/20 to-green-50/30 dark:from-slate-900/30 dark:via-slate-800/20 dark:to-slate-900/30",
       accent: "from-primary to-primary-light",
       border: "border-green-200/50 dark:border-slate-700/50",
       bg: "bg-white/80 dark:bg-slate-800/80",
-      sidebarBg: "bg-gradient-to-b from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
+      sidebarBg:
+        "bg-gradient-to-b from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50",
     };
   };
 
@@ -220,7 +222,7 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
   return (
     <Sidebar
       className={cn(
-        "transition-all duration-300 ease-in-out border-r glass-effect",
+        "h-screen flex flex-col transition-all duration-300 ease-in-out border-r glass-effect",
         theme.border,
         collapsed ? "w-16" : "w-64"
       )}
@@ -231,7 +233,9 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
         <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl"></div>
       </div>
 
-      <SidebarContent className={cn("relative p-4", theme.sidebarBg)}>
+      <SidebarContent
+        className={cn("relative p-4 flex flex-col h-full", theme.sidebarBg)}
+      >
         {/* User Profile */}
         <div
           className={cn(
@@ -276,32 +280,34 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
           )}
         </div>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={getNavClassName(item.url)}
-                    >
-                      <item.icon className="w-5 h-5 shrink-0" />
-                      {!collapsed && (
-                        <div className="flex items-center justify-between flex-1 min-w-0">
-                          <span className="truncate body-sm font-medium">
-                            {item.title}
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Main Navigation - Scrollable Area */}
+        <div className="flex-1 overflow-y-auto">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {visibleItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={getNavClassName(item.url)}
+                      >
+                        <item.icon className="w-5 h-5 shrink-0" />
+                        {!collapsed && (
+                          <div className="flex items-center justify-between flex-1 min-w-0">
+                            <span className="truncate body-sm font-medium">
+                              {item.title}
+                            </span>
+                          </div>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
 
         {/* Quick Actions */}
         {/* {!collapsed && (
@@ -328,11 +334,11 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
           </SidebarGroup>
         )} */}
 
-        {/* Settings & Logout */}
-        <div className={`mt-auto pt-4 border-t ${theme.border}`}>
+        {/* Settings & Logout - Fixed at bottom */}
+        <div className={`pt-4 border-t ${theme.border}`}>
           <SidebarMenu className="space-y-1">
             <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-accent/50 transition-all duration-200 rounded-lg">
+              <SidebarMenuButton className="hover:bg-accent/50 transition-all duration-200 rounded-lg w-full">
                 <Settings className="w-5 h-5" />
                 {!collapsed && (
                   <span className="body-sm font-medium">Settings</span>
@@ -345,7 +351,7 @@ export function DashboardSidebar({ onQuickAction }: DashboardSidebarProps) {
                   await authService.logout();
                   window.location.href = "/";
                 }}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg w-full"
               >
                 <LogOut className="w-5 h-5" />
                 {!collapsed && (
