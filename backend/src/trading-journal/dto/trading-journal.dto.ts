@@ -234,6 +234,8 @@ export class TradeAnalyticsDto {
   largestLoss: number;
   consecutiveWins: number;
   consecutiveLosses: number;
+  expectancy: number;
+  zellaScore: number;
 }
 
 export class TradeQueryDto {

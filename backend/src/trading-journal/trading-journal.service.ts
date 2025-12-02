@@ -131,6 +131,8 @@ export class TradingJournalService {
   }
 
   async getTradeAnalytics(userId: number, accountId?: number, period?: string, startDate?: string, endDate?: string): Promise<TradeAnalyticsDto> {
+    console.log('getTradeAnalytics service called with:', { userId, accountId, period, startDate, endDate });
+    
     const where: any = { 
       userId, 
       status: { 
@@ -143,14 +145,22 @@ export class TradingJournalService {
     }
     
     const dateRange = this.getDateRange(period, startDate, endDate);
+    console.log('Analytics date range:', dateRange);
     if (dateRange) {
       where.time = dateRange;
     }
+    
+    console.log('Analytics where clause:', where);
     
     const trades = await this.prisma.trade.findMany({
       where,
       orderBy: { time: 'asc' },
     });
+    
+    console.log('Analytics found trades:', trades.length);
+    if (trades.length > 0) {
+      console.log('Sample trade:', { id: trades[0].id, pair: trades[0].pair, status: trades[0].status, profit: trades[0].profit });
+    }
 
     if (trades.length === 0) {
       return {
@@ -167,6 +177,8 @@ export class TradingJournalService {
         largestLoss: 0,
         consecutiveWins: 0,
         consecutiveLosses: 0,
+        expectancy: 0,
+        zellaScore: 0,
       };
     }
 
@@ -192,6 +204,19 @@ export class TradingJournalService {
     const maxDrawdown = this.calculateMaxDrawdown(equityCurve);
     
     const { consecutiveWins, consecutiveLosses } = this.calculateConsecutiveWinsLosses(trades);
+    
+    // Calculate expectancy: (Win% × Avg Win) - (Loss% × Avg Loss)
+    const lossRate = trades.length > 0 ? (losingTrades.length / trades.length) * 100 : 0;
+    const expectancy = (winRate / 100 * averageWin) - (lossRate / 100 * averageLoss);
+    
+    // Calculate Zella Score (0-100 based on multiple factors)
+    // Factors: Win Rate (30%), Profit Factor (25%), Expectancy (20%), Max Drawdown (15%), Consistency (10%)
+    const winRateScore = Math.min(winRate, 100) * 0.3;
+    const profitFactorScore = Math.min(profitFactor * 20, 100) * 0.25; // Scale profit factor
+    const expectancyScore = Math.min(Math.max(expectancy * 2, 0), 100) * 0.2; // Scale expectancy
+    const drawdownScore = Math.max(100 - (maxDrawdown / 10), 0) * 0.15; // Lower drawdown = higher score
+    const consistencyScore = Math.min((consecutiveWins + consecutiveLosses) * 5, 100) * 0.1;
+    const zellaScore = Math.round(winRateScore + profitFactorScore + expectancyScore + drawdownScore + consistencyScore);
 
     return {
       totalTrades: trades.length,
@@ -207,6 +232,8 @@ export class TradingJournalService {
       largestLoss: Math.round(largestLoss * 100) / 100,
       consecutiveWins,
       consecutiveLosses,
+      expectancy: Math.round(expectancy * 100) / 100,
+      zellaScore: Math.min(Math.max(zellaScore, 0), 100), // Clamp between 0-100
     };
   }
 
