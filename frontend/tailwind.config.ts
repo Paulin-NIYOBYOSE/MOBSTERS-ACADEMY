@@ -14,10 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Quicksand', 'system-ui', 'sans-serif'],
-        display: ['Quicksand', 'system-ui', 'sans-serif'],
-        body: ['Quicksand', 'system-ui', 'sans-serif'],
-        heading: ['Quicksand', 'system-ui', 'sans-serif'],
+        sans: ['Urbanist', 'system-ui', 'sans-serif'],
+        display: ['Urbanist', 'system-ui', 'sans-serif'],
+        body: ['Urbanist', 'system-ui', 'sans-serif'],
+        heading: ['Urbanist', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
